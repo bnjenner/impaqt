@@ -110,17 +110,17 @@ public:
 
 		std::cerr << chr_num << std::endl;
 		if (cluster_list.set_head(inFile, alignment)) {
-			std::cerr << "head set!" << std::endl;
+			// std::cerr << "head set!" << std::endl;
 			cluster_list.create_clusters(inFile, alignment);  
-			std::cerr << "clusters found!" << std::endl;
+			// std::cerr << "clusters found!" << std::endl;
 			cluster_list.collapse_clusters();
-			std::cerr << "graph collaped!" << std::endl;
+			// std::cerr << "graph collaped!" << std::endl;
 
 			multimapped_reads = cluster_list.multimapped_reads;
 			total_reads = cluster_list.total_reads;
 		
 		} else {
-			std::cerr << "ignoring chr" << "\n";
+			// std::cerr << "ignoring chr" << "\n";
 			ignore_chr = true;
 		}
 	}
@@ -367,7 +367,7 @@ public:
 		this -> open_alignment_file();			  // open files
 		this -> find_clusters();	  			  // find clusters
 		if (ignore_chr) { return; }
-		// this -> find_transcripts();	  		  // dbscan clustering algorithm
+		this -> find_transcripts();	  		  // dbscan clustering algorithm
 		this -> overlap_genes();  	  			  // overlap genes
 		this -> close_alignment_file();		  	  // close files
 	}

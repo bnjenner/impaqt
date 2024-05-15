@@ -1,20 +1,20 @@
 std::vector<int> offset(ClusterNode *cluster) {
 
-	std::vector<int> adj_mid_vec = cluster -> mid_vec;
+	std::vector<int> adj_five_vec = cluster -> five_vec;
 
-	for (int i = 0; i < adj_mid_vec.size(); i++) {
+	for (int i = 0; i < adj_five_vec.size(); i++) {
 			for (int j = 1; j < cluster -> clust_count; j++) {
-				if (adj_mid_vec[i] >= cluster -> clust_vec[(2 * j)]) {
-					adj_mid_vec[i] -= (cluster -> clust_vec[(2 * j)] - cluster -> clust_vec[(2 * j) - 1]);
+				if (adj_five_vec[i] >= cluster -> clust_vec[(2 * j)]) {
+					adj_five_vec[i] -= (cluster -> clust_vec[(2 * j)] - cluster -> clust_vec[(2 * j) - 1]);
 				} else {
 					break;
 				}
 			}
-			adj_mid_vec[i] -= cluster -> clust_vec[0];
+			adj_five_vec[i] -= cluster -> clust_vec[0];
 		}
-		std::sort(adj_mid_vec.begin(), adj_mid_vec.end()); 
+		std::sort(adj_five_vec.begin(), adj_five_vec.end()); 
 
-	return adj_mid_vec;
+	return adj_five_vec;
 }
 
 void dbscan(ClusterNode *cluster, const int &count_percentage, const int &epsilon) {
@@ -36,13 +36,13 @@ void dbscan(ClusterNode *cluster, const int &count_percentage, const int &epsilo
 
 	int index;
 	int min_counts = std::min((int)((float)cluster -> read_count * ((float)count_percentage / 100)), 20); 
-	int points = cluster -> mid_vec.size();
+	int points = cluster -> five_vec.size();
 	std::vector<bool> visted(points, false);
 	std::vector<std::vector<int>> assignment;
 	std::vector<int> neighbors;
 	std::vector<int> sub_neighbors;
 
-	std::vector<int> adj_mid_vec = offset(cluster);
+	std::vector<int> adj_five_vec = offset(cluster);
 
 	std::cerr << "////////////////////////////////////////////////\n";
 	std::cerr << "Region: " << cluster -> chrom_index << ":"
@@ -58,7 +58,7 @@ void dbscan(ClusterNode *cluster, const int &count_percentage, const int &epsilo
 
 	std::cerr << "\n///////////////////////\n";
 
-	for (const auto &mid : adj_mid_vec) {
+	for (const auto &mid : adj_five_vec) {
 		std::cerr << mid << "\t";
 	}
 
@@ -71,10 +71,10 @@ void dbscan(ClusterNode *cluster, const int &count_percentage, const int &epsilo
 		if (visted[i] == false) {
 
 			for (int j = 0; j < points; j++) {
-				if ((i != j) && (std::abs(adj_mid_vec[j] - adj_mid_vec[i]) <= epsilon)) {
+				if ((i != j) && (std::abs(adj_five_vec[j] - adj_five_vec[i]) <= epsilon)) {
 					neighbors.push_back(j);
-					// std::cerr << adj_mid_vec[i] << "\t" << adj_mid_vec[j] << "\n\t"
-					// 		  << std::abs(adj_mid_vec[i] - adj_mid_vec[j]) << "\n";
+					// std::cerr << adj_five_vec[i] << "\t" << adj_five_vec[j] << "\n\t"
+					// 		  << std::abs(adj_five_vec[i] - adj_five_vec[j]) << "\n";
 				}
 			}
 
@@ -94,7 +94,7 @@ void dbscan(ClusterNode *cluster, const int &count_percentage, const int &epsilo
 						visted[index] = true;
 
 						for (int k = 0; k < points; k++) {
-							if (std::abs(adj_mid_vec[index] - adj_mid_vec[k]) <= epsilon) {
+							if (std::abs(adj_five_vec[index] - adj_five_vec[k]) <= epsilon) {
 								sub_neighbors.push_back(k);
 							}
 						}
@@ -133,10 +133,10 @@ void dbscan(ClusterNode *cluster, const int &count_percentage, const int &epsilo
 		std::cerr << "    Core Points: " << assignment[i].size() << "\n\t";
 		min_result = std::min_element(assignment[i].begin(), assignment[i].end());
 		max_result = std::max_element(assignment[i].begin(), assignment[i].end());
-		std::cerr << cluster -> mid_vec.at(*min_result) + min_offset << "-" 
-				  << cluster -> mid_vec.at(*max_result) + max_offset << "\n\t";
-		std::cerr << adj_mid_vec.at(*min_result) << "-" 
-				  << adj_mid_vec.at(*max_result) << "\n";
+		std::cerr << cluster -> five_vec.at(*min_result) + min_offset << "-" 
+				  << cluster -> five_vec.at(*max_result) + max_offset << "\n\t";
+		std::cerr << adj_five_vec.at(*min_result) << "-" 
+				  << adj_five_vec.at(*max_result) << "\n";
 
 		std::cerr << "///////////////////////\n";
 

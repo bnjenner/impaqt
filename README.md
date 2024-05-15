@@ -28,8 +28,8 @@ Bradley Jenner at <bnjenner@ucdavis.edu>
 
 1. Clone this repository and change into it.
 ```
-git clone https://github.com/bnjenner/impact.git
-cd impact
+git clone https://github.com/bnjenner/impaqt.git
+cd impaqt
 ```
 
 2. Create a build directory and change into it.

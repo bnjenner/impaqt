@@ -221,8 +221,7 @@ public:
 	ClusterNode *next = NULL;
 	ClusterNode *prev = NULL;
 
-	std::vector<int> mid_vec;			    // vector of read midpoints for transcript identification
-	std::vector<int> three_vec;
+	std::vector<int> five_vec;			   // vector of read 5' site for transcript identification
 
 	bool ambiguous = false;				   // is cluster ambigously assigned
 	bool unassigned = true;			       // is cluster assigned
@@ -250,19 +249,12 @@ public:
 			count_vec.emplace_back(1);
 		}
 
-		// check if midpoint should be added to vector
-		// if (clust_vec.size() < 3) {
-		// 	mid_vec.push_back((clust_vec[0] + clust_vec[1]) / 2);
-		// }
-		// if (clust_vec.size() < 3) {
-
 		if (strand == 0) {
-			mid_vec.push_back(clust_vec[1]);
+			five_vec.push_back(clust_vec[0]);
 		} else {
-			mid_vec.push_back(clust_vec[0]);
+			five_vec.push_back(clust_vec[1]);
 		}
-			
-		// }
+
 	}
 
 
@@ -281,20 +273,12 @@ public:
 			count_vec.emplace_back(1);
 		}
 
-		// // check if midpoint should be added to vector
-		// if (clust_vec.size() < 3) {
-		// 	mid_vec.push_back((clust_vec[0] + clust_vec[1]) / 2);
-		// }
-
-		// if (clust_vec.size() < 3) {
 
 		if (strand == 0) {
-			mid_vec.push_back(clust_vec[1]);
+			five_vec.push_back(clust_vec[0]);
 		} else {
-			mid_vec.push_back(clust_vec[0]);
+			five_vec.push_back(clust_vec[1]);
 		}
-			
-		// }
 	}
 
 	void set_next(ClusterNode *node) { next = node; }

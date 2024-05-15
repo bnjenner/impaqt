@@ -139,12 +139,12 @@ public:
 						// if (regions < 2) {
 
 						if (temp_strand == 0) {
-							curr_node -> mid_vec.push_back(temp_vec[1]);
+							curr_node -> five_vec.push_back(temp_vec[0]);
 						} else {
-							curr_node -> mid_vec.push_back(temp_vec[0]);
+							curr_node -> five_vec.push_back(temp_vec[1]);
 						}
 							
-							// curr_node -> mid_vec.push_back((temp_vec[0] + temp_vec[1]) / 2);
+							// curr_node -> five_vec.push_back((temp_vec[0] + temp_vec[1]) / 2);
 						// }
 						
 						curr_node -> read_count++;
@@ -219,11 +219,11 @@ public:
 
 						curr_node -> read_count += temp_node -> read_count;
 
-						if (!(temp_node -> mid_vec.empty())) {
-							curr_node -> mid_vec.reserve(curr_node -> mid_vec.size() + temp_node -> mid_vec.size());
-							curr_node -> mid_vec.insert(std::end(curr_node -> mid_vec), 
-														std::begin(temp_node -> mid_vec),
-														std::end(temp_node -> mid_vec));
+						if (!(temp_node -> five_vec.empty())) {
+							curr_node -> five_vec.reserve(curr_node -> five_vec.size() + temp_node -> five_vec.size());
+							curr_node -> five_vec.insert(std::end(curr_node -> five_vec), 
+														std::begin(temp_node -> five_vec),
+														std::end(temp_node -> five_vec));
 						}
 
 						if ((temp_node -> next) != NULL) {
