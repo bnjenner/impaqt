@@ -52,11 +52,9 @@ int main(int argc, char const ** argv) {
     init_process.close_alignment_file();
 
 
-    std::cerr << "test\n";
-
     // Number of contigs for subdividing work across multiple threads
-    // const int n = init_process.contig_map.size();
-    const int n = 1; // only do first chromosome
+    const int n = init_process.contig_map.size();
+    // const int n = 1; // only do first chromosome
 
 
      /*
@@ -115,20 +113,20 @@ int main(int argc, char const ** argv) {
     std::cerr << "[...Counts Data...]\n";
 
 
-    // for (int i = 0; i < n; i++) {
-    //     processes[i] -> print_counts();
-    //     total_ambiguous += processes[i] -> ambiguous_reads;
-    //     total_unique += processes[i] -> unique_reads;
-    //     total_multimapping += processes[i] -> multimapped_reads;
-    //     total_no_feature += processes[i] -> unassigned_reads;
-    //     total_reads += processes[i] -> total_reads;
-    // }
+    for (int i = 0; i < n; i++) {
+        processes[i] -> print_counts();
+        total_ambiguous += processes[i] -> ambiguous_reads;
+        total_unique += processes[i] -> unique_reads;
+        total_multimapping += processes[i] -> multimapped_reads;
+        total_no_feature += processes[i] -> unassigned_reads;
+        total_reads += processes[i] -> total_reads;
+    }
 
-    // std::cout << "__unique\t" << total_unique << "\n";
-    // std::cout << "__ambiguous\t" << total_ambiguous << "\n";
-    // std::cout << "__multimapping\t" << total_multimapping << "\n";
-    // std::cout << "__unassigned\t" << total_no_feature << "\n";
-    // std::cout << "__total\t" << total_reads << std::endl;
+    std::cout << "__unique\t" << total_unique << "\n";
+    std::cout << "__ambiguous\t" << total_ambiguous << "\n";
+    std::cout << "__multimapping\t" << total_multimapping << "\n";
+    std::cout << "__unassigned\t" << total_no_feature << "\n";
+    std::cout << "__total\t" << total_reads << std::endl;
 
     // Output read cluster gtf if specified
     if (args.gtf_output != "") {

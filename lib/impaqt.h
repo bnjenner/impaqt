@@ -108,7 +108,6 @@ public:
 			return;
 		}
 
-		std::cerr << chr_num << std::endl;
 		if (cluster_list.set_head(inFile, alignment)) {
 			// std::cerr << "head set!" << std::endl;
 			cluster_list.create_clusters(inFile, alignment);  
@@ -367,7 +366,7 @@ public:
 		this -> open_alignment_file();			  // open files
 		this -> find_clusters();	  			  // find clusters
 		if (ignore_chr) { return; }
-		this -> find_transcripts();	  		  // dbscan clustering algorithm
+		// this -> find_transcripts();	  		  // dbscan clustering algorithm
 		this -> overlap_genes();  	  			  // overlap genes
 		this -> close_alignment_file();		  	  // close files
 	}
