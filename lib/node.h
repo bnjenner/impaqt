@@ -281,6 +281,14 @@ public:
 		}
 	}
 
+	// Transcript cluste Iniitialization
+	ClusterNode(std::vector<int> &temp_vec, int ref_num, int temp_strand, int temp_count) {
+		strand = temp_strand;
+		read_count = temp_count;
+		chrom_index = ref_num;
+		clust_vec = temp_vec;
+	}
+
 	void set_next(ClusterNode *node) { next = node; }
 	void set_prev(ClusterNode *node) { prev = node; }
 

@@ -14,6 +14,8 @@ public:
 
 	// Data Structures
 	ClusterList cluster_list;			  // List for clusters
+	ClusterList transcript_list;		  // List for Transcripts 
+
 	AnnotationList annotation;			  // Annotation 
 	std::string alignment_file_name;	  // alignment file
 	std::string index;				  	  // alignment index file
@@ -127,17 +129,43 @@ public:
 	void find_transcripts() {
 
 		ClusterNode *curr_clust = cluster_list.head;
+		ClusterNode *new_node;
+		transcript_list.initialize(chr_num, contig_map[chr_num], parameters);
 
 		while (curr_clust != NULL) {
 
 			if (curr_clust -> read_count >= parameters -> min_count) {
-				dbscan(curr_clust, 
+				dbscan(curr_clust, transcript_list,
 					   parameters -> count_percentage, 
 					   parameters -> epsilon);
+			} else {
+				new_node = new ClusterNode(curr_clust -> clust_vec, curr_clust-> chrom_index, curr_clust -> strand, curr_clust -> read_count);
+				if (transcript_list.hashead == false) {
+					transcript_list.head = new_node;
+					new_node -> ishead = true;
+					transcript_list.hashead = true;
+					transcript_list.tail = new_node;
+				
+				} else {
+					new_node -> set_prev(transcript_list.tail);
+					transcript_list.tail -> set_next(new_node);
+					transcript_list.tail = new_node;
+				}
 			}
+
+			// std::cerr << contig_map[chr_num] << " "
+			// 	      << transcript_list.tail -> read_count << " "
+			// 	      << transcript_list.tail -> clust_vec.at(0) << "\t";
+
+			// for (int i = 0; i < ((transcript_list.tail -> clust_vec.size()) / 2); i++) {
+			// 	std::cerr << transcript_list.tail -> clust_vec[(2*i)] << "-"
+			// 			  << transcript_list.tail -> clust_vec[(2*i) + 1] << "\t";
+			// }
+			// std::cerr << "\n";
 
 			curr_clust = curr_clust -> next;
 		}
+
 	}
 
 
@@ -366,7 +394,7 @@ public:
 		this -> open_alignment_file();			  // open files
 		this -> find_clusters();	  			  // find clusters
 		if (ignore_chr) { return; }
-		// this -> find_transcripts();	  		  // dbscan clustering algorithm
+		this -> find_transcripts();	  		  // dbscan clustering algorithm
 		this -> overlap_genes();  	  			  // overlap genes
 		this -> close_alignment_file();		  	  // close files
 	}

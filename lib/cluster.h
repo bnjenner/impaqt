@@ -15,6 +15,9 @@ public:
 	ClusterNode *tail;
 	ClusterNode temp;
 
+	// Checks
+	bool hashead = false;
+
 	// Summary
 	size_t multimapped_reads = 0;
 	size_t total_reads = 0;
@@ -77,6 +80,8 @@ public:
 		temp = ClusterNode(alignment, chr_num);
 		temp.ishead = true;
 		head = &temp;
+
+		hashead = true;
 
 		return 1;
 	}
