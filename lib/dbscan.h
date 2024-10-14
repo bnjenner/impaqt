@@ -105,15 +105,13 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 	ClusterNode *new_node;
 
 	/*
-	So here is the deal (and it is a shitty deal)
+	So here is the deal (and it is a bad deal)
 		Assigning clusters to genes is gonna require some decisions on lots of possible scenarios
 		To make this consistent, let's use some guiding principles. 
 
 		1. ASSIGNMENT TO GENES SHOULD ONLY BE DETERMINED BY THE CLUSTERS
 		2. CLUSTERS, IF SPANNING JUNCTIONS, SHOULD BE REPRESENTED AS SUBCLUSTERS
 		3
-
-		FUCK YOU I AM MAKING AN EXECUTIVE DECISION, IF I CAN'T RELIABLE ASSIGN IT TO A CLUSTER IT DOESNT FUCKING EXIST
 
 
 	*/
@@ -166,7 +164,6 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 			break;
 		}
 
-		// std::vector<int> &temp_vec, int ref_num, int temp_strand, int temp_count
 		new_node = new ClusterNode(temp_vec, cluster -> chrom_index, cluster -> strand, assignment[i].size());
 
 		if (transcript_list.hashead == false) {

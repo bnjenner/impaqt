@@ -111,17 +111,13 @@ public:
 		}
 
 		if (cluster_list.set_head(inFile, alignment)) {
-			// std::cerr << "head set!" << std::endl;
 			cluster_list.create_clusters(inFile, alignment);  
-			// std::cerr << "clusters found!" << std::endl;
 			cluster_list.collapse_clusters();
-			// std::cerr << "graph collaped!" << std::endl;
 
 			multimapped_reads = cluster_list.multimapped_reads;
 			total_reads = cluster_list.total_reads;
 		
 		} else {
-			// std::cerr << "ignoring chr" << "\n";
 			ignore_chr = true;
 		}
 	}
