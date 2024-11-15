@@ -9,43 +9,36 @@ public:
 	int clust_count = -1;				    // number of clusters
 	int chrom_index;					    // chromosome number in index
 	size_t read_count;					    // number of associated reads
+
 	bool ishead;						    // is node head
 	bool printed;						    // has node been printed
 
-	// Clusters (constant copying... minimizing can improve performance)
+	// Clusters
 	std::vector<int> count_vec{ -1 };       // vector of cluster read counts
 	std::vector<int> clust_vec{ -1, -1 };   // vector of cluster start and stops (evens are starts, odds are ends)
 
 
-	int get_start() { return clust_vec[0]; }
-	int get_stop() { return clust_vec[2 * (clust_count - 1) + 1]; }
-
-	int get_total_len() {
-		int len = 0;
-		for (int i = 0; i < clust_count; i++) {
-			len += (clust_vec[(2 * i) + 1] - clust_vec[(2 * i)]);
-		}
-		return len;
-	}
+	int get_start() { return clust_vec.at(0); }
+	int get_stop() { return clust_vec.at(2 * (clust_count - 1) + 1); }
 
 	// Check overlap
-	int check_overlap(int &temp_start, int &temp_stop, int &temp_strand) {
+	bool check_overlap(int &t_start, int &t_stop, int &t_strand) {
 
-		if (strand != temp_strand) { return 0; }
+		if (strand != t_strand) { return false; }
 
 		for (int i = 0; i < clust_count; i++) {
 
 			// check if beginning of read exists within a cluster
-			if ((temp_start >= clust_vec[i * 2]) && (temp_start <= clust_vec[(i * 2) + 1])) {
-				return 1;
+			if ((t_start >= clust_vec[i * 2]) && (t_start <= clust_vec[(i * 2) + 1])) {
+				return true;
 
 				// check if end of read exists within a cluster
-			} else if ((temp_stop >= clust_vec[i * 2]) && (temp_stop <= clust_vec[(i * 2) + 1])) {
-				return 1;
+			} else if ((t_stop >= clust_vec[i * 2]) && (t_stop <= clust_vec[(i * 2) + 1])) {
+				return true;
 
 				// in read spans cluster
-			} else if ((temp_start <= clust_vec[i * 2]) && (temp_stop >= clust_vec[(i * 2) + 1])) {
-				return 1;
+			} else if ((t_start <= clust_vec[i * 2]) && (t_stop >= clust_vec[(i * 2) + 1])) {
+				return true;
 			}
 		}
 
@@ -53,44 +46,52 @@ public:
 	}
 
 	// insert gap
-	void insert_gap(int int_start, int int_stop, int new_pos, int new_val) {
-		clust_vec.reserve(clust_vec.size() + 2);  // insert new start and stop
+	void insert_read(int int_start, int int_stop, int new_pos, int new_val) {
+
+		/*
+			This function is a tiny bit cursed. Like it works, but
+				also it's kind of the easiest way to do this. Insert new items
+				and then sort them. Given the conditions met by the other function,
+				it just works.
+		*/
+
+		// insert new start and stop
+		clust_vec.reserve(clust_vec.size() + 2);
 		clust_vec.emplace_back(int_start);
 		clust_vec.emplace_back(int_stop);
 		std::sort(clust_vec.begin(), clust_vec.end());
+
+		// insert new count
 		std::vector<int>::iterator it; // insert new position in count vector (probably not ideal)
 		it = count_vec.begin() + new_pos;
 		it = count_vec.insert(it, new_val);
 	}
 
 	// Delete gap
-	void delete_gap(int i, int int_start, int int_stop) {
+	void delete_gap(int t_index, int t_start, int t_stop) {
 
 		int close_stop = 0;
 
-		for (int j = i + 1; j < clust_count; j++) {
-			// Determine if clusters are joined by read
-			if (clust_vec[(j * 2)] > int_stop) {
-				break;
-			}
-
+		// Determine if clusters are joined by read
+		for (int j = t_index + 1; j < clust_count; j++) {
+			if (clust_vec[(j * 2)] > t_stop) { break; }
 			close_stop = j;
 		}
 
-		if (close_stop != 0 && close_stop != i) {
+		if (close_stop != 0 && close_stop != t_index) {
 
-			int start_index = (i * 2);
+			int start_index = (t_index * 2);
 			int stop_index = (2 * close_stop) + 1;
 
 			clust_vec.erase(clust_vec.begin() + start_index + 1, clust_vec.begin() + stop_index);
 
 			int new_sum = 0;
 			int offset = -1;
-			std::vector<int> temp_count_vec(clust_vec.size() / 2, -1);
+			std::vector<int> t_count_vec(clust_vec.size() / 2, -1);
 
 			for (int x = 0; x < count_vec.size(); x++) {
-				if (x < i || x > close_stop) {
-					temp_count_vec[x - std::max(offset, 0)] = count_vec[x];
+				if (x < t_index || x > close_stop) {
+					t_count_vec[x - std::max(offset, 0)] = count_vec[x];
 				} else {
 					new_sum += count_vec[x];
 					offset++;
@@ -98,57 +99,52 @@ public:
 
 			}
 
-			temp_count_vec[i] = new_sum;
-			count_vec = temp_count_vec;
+			t_count_vec[t_index] = new_sum;
+			count_vec = t_count_vec;
 		}
 	}
 
 
 
 	// check how read fits into clusters
-	void modify_cluster(const int &temp_start, const int &temp_stop, const int temp_count) {
-
-		if (temp_start == -1) { return; }
+	void modify_cluster(const int &t_start, const int &t_stop, const int t_count) {
 
 		for (int i = 0; i < clust_count; i++) {
 
-			// if read precedes cluster exit
-			if (temp_stop < clust_vec[(i * 2)]) {
-				insert_gap(temp_start, temp_stop, i, temp_count);
+			// if read precedes cluster
+			if (t_stop < clust_vec[(i * 2)]) {
+				insert_read(t_start, t_stop, i, t_count);
 				break;
 
-				// if read follows cluster, go to next cluster
-			} else if (temp_start > clust_vec[(i * 2) + 1]) {
+				// if read follows cluster, go to next cluster... unless...
+			} else if (t_start > clust_vec[(i * 2) + 1]) {
 
-				// if last cluster add
-				if (i == clust_count - 1) {
-					insert_gap(temp_start, temp_stop, i + 1, temp_count);
+				if (i == clust_count - 1) { // if last cluster add
+					insert_read(t_start, t_stop, i + 1, t_count);
 					break;
 				}
 
 			} else {
 
 				// Updates beginning of cluster to longest value betweeen end of cluster and end of read
-				clust_vec[(i * 2)] = (clust_vec[(i * 2)] < temp_start) ? clust_vec[(i * 2)] : temp_start;
+				clust_vec[(i * 2)] = (clust_vec[(i * 2)] < t_start) ? clust_vec[(i * 2)] : t_start;
 
-				// if end of read extends past than first chunk
-				if (temp_stop > clust_vec[(i * 2) + 1]) {
+				// if end of read extends past first chunk
+				if (t_stop > clust_vec[(i * 2) + 1]) {
 
-					if (i != clust_count - 1) { delete_gap(i, temp_start, temp_stop); }
+					if (i != clust_count - 1) { delete_gap(i, t_start, t_stop); }
 
 					// Updates end of cluster to longest value betweeen end of cluster and end of read
-					clust_vec[(i * 2) + 1] = (clust_vec[(i * 2) + 1] > temp_stop) ? clust_vec[(i * 2) + 1] : temp_stop;
+					clust_vec[(i * 2) + 1] = (clust_vec[(i * 2) + 1] > t_stop) ? clust_vec[(i * 2) + 1] : t_stop;
 				}
 
-				count_vec[i] += temp_count;
+				count_vec[i] += t_count;
 				break;
 			}
 		}
 
 		clust_count = clust_vec.size() / 2;
 	}
-
-
 
 };
 
@@ -183,7 +179,7 @@ public:
 	std::string get_chrom() { return chrom; }
 	std::string get_gene() { return gene_id; }
 
-	// Check genes
+	// Check genes and assigns overlap score (0 = no overlap, 1 = partial overlap, 2 = full overlap)
 	int check_gene_overlap(int &temp_start, int &temp_stop, int &temp_strand) {
 
 		if (strand != temp_strand) { return 0; } // is strand correct
@@ -207,7 +203,6 @@ public:
 				max_overlap = std::max(max_overlap, 1);
 			}
 		}
-
 		return max_overlap;
 	}
 };
@@ -281,7 +276,7 @@ public:
 		}
 	}
 
-	// Transcript cluste Iniitialization
+	// Transcript cluster Iniitialization
 	ClusterNode(std::vector<int> &temp_vec, int ref_num, int temp_strand, int temp_count) {
 		strand = temp_strand;
 		read_count = temp_count;
@@ -365,7 +360,7 @@ public:
 		        << "counts \"" << read_count << "\"; "
 		        << "assignment \"" << assignment << "\"; "
 		        << "gene \"" << assigned_gene << "\"; "
-				<< "counts \"" << read_count << "\";\n";
+		        << "counts \"" << read_count << "\";\n";
 
 		// Iterate through clusters
 		for (int i = 0; i < clust_count; i++) {

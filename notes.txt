@@ -1,0 +1,12 @@
+Density-Based Spatial Clustering as a Method of Gene Isoform Expression Quantification 
+
+Ok so here is the idea, basically just get the 5' end of every read in the genome, 
+	do a constrained DBSCAN algorithm with a moving window to set the epsilon paramter (min dist param is set by randomly sampling read lengths),
+	this will give us an assignment vector that can then be used to overlap genes. 
+
+	Now, how do we deal with noise... From the distribution of GC content, we can see that there are certain reads
+	that fall outside normal range. I think this needs to be considered for quantification purposes. 
+	Also, is the noise in noisier regions even valuable for quantification? How do we eliminate this?
+
+
+Trust yourself here, the code is actually not that confusing. 

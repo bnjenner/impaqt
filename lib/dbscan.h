@@ -3,16 +3,16 @@ std::vector<int> offset(ClusterNode *cluster) {
 	std::vector<int> adj_five_vec = cluster -> five_vec;
 
 	for (int i = 0; i < adj_five_vec.size(); i++) {
-			for (int j = 1; j < cluster -> clust_count; j++) {
-				if (adj_five_vec[i] >= cluster -> clust_vec[(2 * j)]) {
-					adj_five_vec[i] -= (cluster -> clust_vec[(2 * j)] - cluster -> clust_vec[(2 * j) - 1]);
-				} else {
-					break;
-				}
+		for (int j = 1; j < cluster -> clust_count; j++) {
+			if (adj_five_vec[i] >= cluster -> clust_vec[(2 * j)]) {
+				adj_five_vec[i] -= (cluster -> clust_vec[(2 * j)] - cluster -> clust_vec[(2 * j) - 1]);
+			} else {
+				break;
 			}
-			adj_five_vec[i] -= cluster -> clust_vec[0];
 		}
-		std::sort(adj_five_vec.begin(), adj_five_vec.end()); 
+		adj_five_vec[i] -= cluster -> clust_vec[0];
+	}
+	std::sort(adj_five_vec.begin(), adj_five_vec.end());
 
 	return adj_five_vec;
 }
@@ -23,7 +23,7 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 
 
 	int index;
-	int min_counts = std::min((int)((float)cluster -> read_count * ((float)count_percentage / 100)), 20); 
+	int min_counts = std::min((int)((float)cluster -> read_count * ((float)count_percentage / 100)), 20);
 	int points = cluster -> five_vec.size();
 	std::vector<bool> visted(points, false);
 	std::vector<std::vector<int>> assignment;
@@ -39,7 +39,7 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 	// 		  << "Cluster Counts: " << cluster -> count_vec.size() << "\n"
 	// 		  << "Read Counts: " << cluster -> read_count << "\n"
 	// 		  << "Min Count: " << min_counts << "\n"
-	// 		  << "Epsilon: " << epsilon; 
+	// 		  << "Epsilon: " << epsilon;
 
 
 	// std::cerr << "\n///////////////////////\n";
@@ -107,19 +107,30 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 	/*
 	So here is the deal (and it is a bad deal)
 		Assigning clusters to genes is gonna require some decisions on lots of possible scenarios
-		To make this consistent, let's use some guiding principles. 
+		To make this consistent, let's use some guiding principles.
 
 		1. ASSIGNMENT TO GENES SHOULD ONLY BE DETERMINED BY THE CLUSTERS
 		2. CLUSTERS, IF SPANNING JUNCTIONS, SHOULD BE REPRESENTED AS SUBCLUSTERS
 		3
 
 
+		I AM PRETTY SURE ASSIGNMENT VECTOR IS COUNTING CORE POINTS AND NOT ASSIGNMENT OF EACH READ
+		MAYBE, DOUBLE CHECK THIS.
+			- Ok maybe not but still check. Also, maybe doing some sort of statistical test for
+					signal detection and not just cluster identificaiton.
+
+		Also, regarding the span of the read cluster, how do we determine the bounds? what is appropriate?
+
+
+
+
+
 	*/
 
-	// std::cerr << "\t" << cluster -> chrom_index 
+	// std::cerr << "\t" << cluster -> chrom_index
 	// 		  << "\t" << cluster -> clust_vec[0]
 	// 		  << "\t" << cluster -> clust_vec[cluster -> clust_vec.size() - 1]
-			  // << "\n";
+	// << "\n";
 
 	for (int i = 0; i < assignment.size(); i++) {
 
@@ -127,9 +138,9 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 		// std::cerr << "    Core Points: " << assignment[i].size() << "\n\t";
 		// min_result = std::min_element(assignment[i].begin(), assignment[i].end());
 		// max_result = std::max_element(assignment[i].begin(), assignment[i].end());
-		// std::cerr << cluster -> five_vec.at(*min_result) + min_offset << "-" 
+		// std::cerr << cluster -> five_vec.at(*min_result) + min_offset << "-"
 		// 		  << cluster -> five_vec.at(*max_result) + max_offset << "\n\t";
-		// std::cerr << adj_five_vec.at(*min_result) << "-" 
+		// std::cerr << adj_five_vec.at(*min_result) << "-"
 		// 		  << adj_five_vec.at(*max_result) << "\n";
 
 		// std::cerr << "///////////////////////\n";
@@ -143,12 +154,12 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 
 			if (cluster -> five_vec.at(*min_result) <= cluster -> clust_vec.at(j)) {
 
-				// If transcript zone spans splice junction 
+				// If transcript zone spans splice junction
 				if ((cluster -> five_vec.at(*max_result) > cluster -> clust_vec.at(j + 1))) {
 					temp_vec.push_back(cluster -> clust_vec.at(j));
 					temp_vec.push_back(cluster -> clust_vec.at(j + 1));
-				
-				} else if (cluster -> five_vec.at(*max_result) <= cluster -> clust_vec.at(j + 1)){
+
+				} else if (cluster -> five_vec.at(*max_result) <= cluster -> clust_vec.at(j + 1)) {
 					temp_vec.push_back(cluster -> five_vec.at(*max_result));
 					break;
 				} else if (cluster -> five_vec.at(*max_result) <= cluster -> clust_vec.at(j)) {
@@ -156,7 +167,7 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 					break;
 				}
 
-			} 
+			}
 		}
 
 		if (temp_vec.size() == 1) {
@@ -171,7 +182,7 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 			new_node -> ishead = true;
 			transcript_list.hashead = true;
 			transcript_list.tail = new_node;
-		
+
 		} else {
 			new_node -> set_prev(transcript_list.tail);
 			transcript_list.tail -> set_next(new_node);

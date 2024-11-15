@@ -77,21 +77,21 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv, ImpaqtA
 
     // Define DBSCAN Options
     addOption(parser, seqan::ArgParseOption(
-        "m", "min-count",
-        "Minimum read count for DBSCAN transcript identification algorithm.",
-        seqan::ArgParseArgument::INTEGER, "INT"));
+                  "m", "min-count",
+                  "Minimum read count for DBSCAN transcript identification algorithm.",
+                  seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "min-count", "50");
 
     addOption(parser, seqan::ArgParseOption(
-        "p", "count-percentage",
-        "Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold until a max of 25 is reached.",
-        seqan::ArgParseArgument::INTEGER, "INT"));
+                  "p", "count-percentage",
+                  "Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold until a max of 25 is reached.",
+                  seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "count-percentage", "15");
 
     addOption(parser, seqan::ArgParseOption(
-        "e", "epsilon",
-        "Distance (in base pairs) for DBSCAN algorithm.",
-        seqan::ArgParseArgument::INTEGER, "INT"));
+                  "e", "epsilon",
+                  "Distance (in base pairs) for DBSCAN algorithm.",
+                  seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "epsilon", "50");
 
     // Define Annotation Options

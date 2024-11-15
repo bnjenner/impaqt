@@ -14,13 +14,13 @@ public:
 
 	// Data Structures
 	ClusterList cluster_list;			  // List for clusters
-	ClusterList transcript_list;		  // List for Transcripts 
+	ClusterList transcript_list;		  // List for Transcripts
 
-	AnnotationList annotation;			  // Annotation 
+	AnnotationList annotation;			  // Annotation
 	std::string alignment_file_name;	  // alignment file
 	std::string index;				  	  // alignment index file
 	int chr_num;						  // chromosome number
-	bool ignore_chr = false;			  // to ignore for downstream 
+	bool ignore_chr = false;			  // to ignore for downstream
 
 	std::unordered_map<int, std::string> contig_map;
 
@@ -111,17 +111,19 @@ public:
 		}
 
 		if (cluster_list.set_head(inFile, alignment)) {
-			cluster_list.create_clusters(inFile, alignment);  
+			cluster_list.create_clusters(inFile, alignment);
 			cluster_list.collapse_clusters();
 
 			multimapped_reads = cluster_list.multimapped_reads;
 			total_reads = cluster_list.total_reads;
-		
+
 		} else {
 			ignore_chr = true;
 		}
 	}
 
+
+	///////////////////////////////////////////////////////////////////////////
 	void find_transcripts() {
 
 		ClusterNode *curr_clust = cluster_list.head;
@@ -132,8 +134,8 @@ public:
 
 			if (curr_clust -> read_count >= parameters -> min_count) {
 				dbscan(curr_clust, transcript_list,
-					   parameters -> count_percentage, 
-					   parameters -> epsilon);
+				       parameters -> count_percentage,
+				       parameters -> epsilon);
 			} else {
 				new_node = new ClusterNode(curr_clust -> clust_vec, curr_clust-> chrom_index, curr_clust -> strand, curr_clust -> read_count);
 				if (transcript_list.hashead == false) {
@@ -141,7 +143,7 @@ public:
 					new_node -> ishead = true;
 					transcript_list.hashead = true;
 					transcript_list.tail = new_node;
-				
+
 				} else {
 					new_node -> set_prev(transcript_list.tail);
 					transcript_list.tail -> set_next(new_node);
@@ -161,8 +163,8 @@ public:
 
 			curr_clust = curr_clust -> next;
 		}
-
 	}
+	///////////////////////////////////////////////////////////////////////////
 
 
 	// Overlap genes
@@ -260,8 +262,8 @@ public:
 						for (int x = 0; x < curr_clust -> clust_count; x++) {
 
 							temp_overlap = curr_gene -> check_gene_overlap(curr_clust -> clust_vec[(2 * x)],
-							                                        	   curr_clust -> clust_vec[(2 * x) + 1],
-							                                        	   curr_clust -> strand);
+							               curr_clust -> clust_vec[(2 * x) + 1],
+							               curr_clust -> strand);
 
 							// if subcluster overlaps, add number of reads to total overlapping reads
 							if (temp_overlap != 0) {
@@ -293,8 +295,8 @@ public:
 									for (int x = 0; x < curr_clust -> clust_count; x++) {
 
 										temp_overlap = temp_gene -> check_gene_overlap(curr_clust -> clust_vec[(2 * x)],
-										                                        	   curr_clust -> clust_vec[(2 * x) + 1],
-										                                        	   curr_clust -> strand);
+										               curr_clust -> clust_vec[(2 * x) + 1],
+										               curr_clust -> strand);
 
 										// if overlap, add to overlapping read accumulator
 										if (temp_overlap > 0) {
@@ -390,7 +392,7 @@ public:
 		this -> open_alignment_file();			  // open files
 		this -> find_clusters();	  			  // find clusters
 		if (ignore_chr) { return; }
-		this -> find_transcripts();	  		  // dbscan clustering algorithm
+		// this -> find_transcripts();	  		  	  // dbscan clustering algorithm
 		this -> overlap_genes();  	  			  // overlap genes
 		this -> close_alignment_file();		  	  // close files
 	}
