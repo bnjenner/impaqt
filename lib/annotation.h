@@ -80,7 +80,6 @@ public:
 
 				while (std::getline(iss2, subtag, sep)) {
 					if (i % 2 == 1) {
-						subtag.resize(tag.size() - 2);
 						return subtag;
 					}
 					i++;
