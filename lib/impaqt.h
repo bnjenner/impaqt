@@ -57,8 +57,7 @@ public:
 
 	void close_alignment_file() { inFile.Close(); }
 	void print_counts() { annotation.print_genes(); }
-	void print_gtf() { cluster_list.print_clusters(); }
-
+	void print_gtf() { if (!ignore_chr) { cluster_list.print_clusters(); } }
 
 	// parse input file for contig order and jump position
 	void set_chrom_order() {
@@ -136,20 +135,22 @@ public:
 				dbscan(curr_clust, transcript_list,
 				       parameters -> count_percentage,
 				       parameters -> epsilon);
-			} else {
-				new_node = new ClusterNode(curr_clust -> clust_vec, curr_clust-> chrom_index, curr_clust -> strand, curr_clust -> read_count);
-				if (transcript_list.hashead == false) {
-					transcript_list.head = new_node;
-					new_node -> ishead = true;
-					transcript_list.hashead = true;
-					transcript_list.tail = new_node;
-
-				} else {
-					new_node -> set_prev(transcript_list.tail);
-					transcript_list.tail -> set_next(new_node);
-					transcript_list.tail = new_node;
-				}
 			}
+
+			//  else {
+			// 	new_node = new ClusterNode(curr_clust -> clust_vec, curr_clust-> chrom_index, curr_clust -> strand, curr_clust -> read_count);
+			// 	if (transcript_list.hashead == false) {
+			// 		transcript_list.head = new_node;
+			// 		new_node -> ishead = true;
+			// 		transcript_list.hashead = true;
+			// 		transcript_list.tail = new_node;
+
+			// 	} else {
+			// 		new_node -> set_prev(transcript_list.tail);
+			// 		transcript_list.tail -> set_next(new_node);
+			// 		transcript_list.tail = new_node;
+			// 	}
+			// }
 
 			// std::cerr << contig_map[chr_num] << " "
 			// 	      << transcript_list.tail -> read_count << " "

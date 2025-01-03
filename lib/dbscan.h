@@ -126,68 +126,75 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 
 
 	*/
+	std::cerr << "//////////////////////////////////////////////\n";
+	std::cerr << "Clusters Identified: " << assignment.size() << "\n";
+	std::cerr << "Regions: " << cluster -> get_start() << "-" << cluster -> get_stop() << "\n";
+	std::cerr << "///////////////////////\n";
 
-	// std::cerr << "\t" << cluster -> chrom_index
-	// 		  << "\t" << cluster -> clust_vec[0]
-	// 		  << "\t" << cluster -> clust_vec[cluster -> clust_vec.size() - 1]
-	// << "\n";
+
+	if (cluster -> get_start() == 69684342) {
+		for (const auto &i : cluster -> clust_vec) {
+			std::cerr << i << "\t";
+		}
+		std::cerr << "\n";
+	}
 
 	for (int i = 0; i < assignment.size(); i++) {
 
-		// std::cerr << "Cluster: " << i << "\n";
-		// std::cerr << "    Core Points: " << assignment[i].size() << "\n\t";
-		// min_result = std::min_element(assignment[i].begin(), assignment[i].end());
-		// max_result = std::max_element(assignment[i].begin(), assignment[i].end());
-		// std::cerr << cluster -> five_vec.at(*min_result) + min_offset << "-"
-		// 		  << cluster -> five_vec.at(*max_result) + max_offset << "\n\t";
-		// std::cerr << adj_five_vec.at(*min_result) << "-"
-		// 		  << adj_five_vec.at(*max_result) << "\n";
-
-		// std::cerr << "///////////////////////\n";
-
+		std::cerr << "Cluster: " << i << "\n";
+		std::cerr << "    Core Points: " << assignment[i].size() << "\n\t";
 		min_result = std::min_element(assignment[i].begin(), assignment[i].end());
 		max_result = std::max_element(assignment[i].begin(), assignment[i].end());
+		std::cerr << cluster -> five_vec.at(*min_result) + min_offset << "-"
+				  << cluster -> five_vec.at(*max_result) + max_offset << "\n\t";
+		std::cerr << adj_five_vec.at(*min_result) << "-"
+				  << adj_five_vec.at(*max_result) << "\n";
 
-		temp_vec = {cluster -> five_vec.at(*min_result)};
+		std::cerr << "///////////////////////\n";
 
-		for (int j = 1; j < (cluster -> clust_vec.size()) - 1; j += 2) {
+		// min_result = std::min_element(assignment[i].begin(), assignment[i].end());
+		// max_result = std::max_element(assignment[i].begin(), assignment[i].end());
 
-			if (cluster -> five_vec.at(*min_result) <= cluster -> clust_vec.at(j)) {
+		// temp_vec = {cluster -> five_vec.at(*min_result)};
 
-				// If transcript zone spans splice junction
-				if ((cluster -> five_vec.at(*max_result) > cluster -> clust_vec.at(j + 1))) {
-					temp_vec.push_back(cluster -> clust_vec.at(j));
-					temp_vec.push_back(cluster -> clust_vec.at(j + 1));
+		// for (int j = 1; j < (cluster -> clust_vec.size()) - 1; j += 2) {
 
-				} else if (cluster -> five_vec.at(*max_result) <= cluster -> clust_vec.at(j + 1)) {
-					temp_vec.push_back(cluster -> five_vec.at(*max_result));
-					break;
-				} else if (cluster -> five_vec.at(*max_result) <= cluster -> clust_vec.at(j)) {
-					temp_vec.push_back(cluster -> five_vec.at(*max_result));
-					break;
-				}
+		// 	if (cluster -> five_vec.at(*min_result) <= cluster -> clust_vec.at(j)) {
 
-			}
-		}
+		// 		// If transcript zone spans splice junction
+		// 		if ((cluster -> five_vec.at(*max_result) > cluster -> clust_vec.at(j + 1))) {
+		// 			temp_vec.push_back(cluster -> clust_vec.at(j));
+		// 			temp_vec.push_back(cluster -> clust_vec.at(j + 1));
 
-		if (temp_vec.size() == 1) {
-			temp_vec.push_back(cluster -> five_vec.at(*max_result));
-			break;
-		}
+		// 		} else if (cluster -> five_vec.at(*max_result) <= cluster -> clust_vec.at(j + 1)) {
+		// 			temp_vec.push_back(cluster -> five_vec.at(*max_result));
+		// 			break;
+		// 		} else if (cluster -> five_vec.at(*max_result) <= cluster -> clust_vec.at(j)) {
+		// 			temp_vec.push_back(cluster -> five_vec.at(*max_result));
+		// 			break;
+		// 		}
 
-		new_node = new ClusterNode(temp_vec, cluster -> chrom_index, cluster -> strand, assignment[i].size());
+		// 	}
+		// }
 
-		if (transcript_list.hashead == false) {
-			transcript_list.head = new_node;
-			new_node -> ishead = true;
-			transcript_list.hashead = true;
-			transcript_list.tail = new_node;
+		// if (temp_vec.size() == 1) {
+		// 	temp_vec.push_back(cluster -> five_vec.at(*max_result));
+		// 	break;
+		// }
 
-		} else {
-			new_node -> set_prev(transcript_list.tail);
-			transcript_list.tail -> set_next(new_node);
-			transcript_list.tail = new_node;
-		}
+		// new_node = new ClusterNode(temp_vec, cluster -> chrom_index, cluster -> strand, assignment[i].size());
+
+		// if (transcript_list.hashead == false) {
+		// 	transcript_list.head = new_node;
+		// 	new_node -> ishead = true;
+		// 	transcript_list.hashead = true;
+		// 	transcript_list.tail = new_node;
+
+		// } else {
+		// 	new_node -> set_prev(transcript_list.tail);
+		// 	transcript_list.tail -> set_next(new_node);
+		// 	transcript_list.tail = new_node;
+		// }
 
 	}
 

@@ -309,8 +309,8 @@ public:
 				inc = 0;
 
 				// If not gapped, add to start position
-			} else if ((alignment.CigarData[i].Type) != 'S' && (alignment.CigarData[i].Type) != 'H' &&
-			           (alignment.CigarData[i].Type) != 'I') {
+			} else if ((alignment.CigarData[i].Type != 'S') && (alignment.CigarData[i].Type != 'H') &&
+			           (alignment.CigarData[i].Type != 'I')) {
 				inc += alignment.CigarData[i].Length;
 			}
 
@@ -319,6 +319,7 @@ public:
 				temp_vec[pos] = temp_vec[pos - 1] + inc - 1;
 			}
 		}
+
 	}
 
 
@@ -359,8 +360,7 @@ public:
 		        << "subclusters \"" << clust_count << "\"; "
 		        << "counts \"" << read_count << "\"; "
 		        << "assignment \"" << assignment << "\"; "
-		        << "gene \"" << assigned_gene << "\"; "
-		        << "counts \"" << read_count << "\";\n";
+		        << "gene \"" << assigned_gene << "\";\n";
 
 		// Iterate through clusters
 		for (int i = 0; i < clust_count; i++) {

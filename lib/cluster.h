@@ -66,24 +66,24 @@ public:
 
 		while (true) {
 
-			if (!inFile.GetNextAlignment(alignment)) { return 0; }
-			if (alignment.RefID > chr_num) { return 0; }
+			if (!inFile.GetNextAlignment(alignment)) { break; }
+			if (alignment.RefID > chr_num) { break; }
 
 			total_reads ++;
 
 			if (read_check(alignment) == false) { continue; }
 
-			break;
+			// Add alignment to head node
+			temp = ClusterNode(alignment, chr_num);
+			temp.ishead = true;
+			head = &temp;
+
+			hashead = true;
+
+			return 1;
 		}
 
-		// Add alignment to head node
-		temp = ClusterNode(alignment, chr_num);
-		temp.ishead = true;
-		head = &temp;
-
-		hashead = true;
-
-		return 1;
+		return 0;
 	}
 
 	// Create clusters of overlapping reads
@@ -274,9 +274,10 @@ public:
 
 			printed = curr_node -> print(contig_name, parameters, gene_count);
 			curr_node -> printed = true;
+			if (printed == 1) { gene_count++; }
+
 			curr_node = curr_node -> next;
 
-			if (printed == 1) { gene_count++; }
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////
