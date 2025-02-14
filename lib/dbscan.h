@@ -127,17 +127,19 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 
 	*/
 	std::cerr << "//////////////////////////////////////////////\n";
+	std::cerr << "Chrom: " << cluster -> chrom_index << "\n";
 	std::cerr << "Clusters Identified: " << assignment.size() << "\n";
 	std::cerr << "Regions: " << cluster -> get_start() << "-" << cluster -> get_stop() << "\n";
+	std::cerr << "Head ID: " << cluster -> headID << "\n";
 	std::cerr << "///////////////////////\n";
 
 
-	if (cluster -> get_start() == 69684342) {
-		for (const auto &i : cluster -> clust_vec) {
-			std::cerr << i << "\t";
-		}
-		std::cerr << "\n";
-	}
+	// if (cluster -> get_start() == 69684342) {
+	// 	for (const auto &i : cluster -> clust_vec) {
+	// 		std::cerr << i << "\t";
+	// 	}
+	// 	std::cerr << "\n";
+	// }
 
 	for (int i = 0; i < assignment.size(); i++) {
 
@@ -146,9 +148,9 @@ void dbscan(ClusterNode *cluster, ClusterList &transcript_list, const int &count
 		min_result = std::min_element(assignment[i].begin(), assignment[i].end());
 		max_result = std::max_element(assignment[i].begin(), assignment[i].end());
 		std::cerr << cluster -> five_vec.at(*min_result) + min_offset << "-"
-				  << cluster -> five_vec.at(*max_result) + max_offset << "\n\t";
+		          << cluster -> five_vec.at(*max_result) + max_offset << "\n\t";
 		std::cerr << adj_five_vec.at(*min_result) << "-"
-				  << adj_five_vec.at(*max_result) << "\n";
+		          << adj_five_vec.at(*max_result) << "\n";
 
 		std::cerr << "///////////////////////\n";
 

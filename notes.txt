@@ -1,3 +1,14 @@
+Here is the plan:
+	- window quant and merge approach to find hotzones
+	- take hot zones, get 5' positions, adjust for introns
+	- DBSCAN, peak detection
+	- bayes quant:
+		- core point prior (adjusted for GC content)
+		- likelihood of this position given prior (inversly proportional to the length)
+		- noramlized by likelihood of position (will think about this one),  
+
+
+
 Density-Based Spatial Clustering as a Method of Gene Isoform Expression Quantification 
 
 Ok so here is the idea, basically just get the 5' end of every read in the genome, 

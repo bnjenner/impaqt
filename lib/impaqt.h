@@ -93,6 +93,8 @@ public:
 		/*
 			Believe it or not, copying this is faster and the memory usage difference
 				is negligible. I have no idea why this is the case.
+
+				TO DO: Double check this
 		*/
 		annotation = init_annotation;
 		annotation.chrom = contig_map[temp_chr_num];
@@ -137,8 +139,12 @@ public:
 				       parameters -> epsilon);
 			}
 
-			//  else {
-			// 	new_node = new ClusterNode(curr_clust -> clust_vec, curr_clust-> chrom_index, curr_clust -> strand, curr_clust -> read_count);
+			 // else {
+			// 	new_node = new ClusterNode(curr_clust -> clust_vec, 
+			// 							   curr_clust-> chrom_index,
+			// 							   curr_clust -> strand, 
+			// 							   curr_clust -> read_count,
+			// 							   curr_clust -> headID);
 			// 	if (transcript_list.hashead == false) {
 			// 		transcript_list.head = new_node;
 			// 		new_node -> ishead = true;
@@ -393,7 +399,7 @@ public:
 		this -> open_alignment_file();			  // open files
 		this -> find_clusters();	  			  // find clusters
 		if (ignore_chr) { return; }
-		// this -> find_transcripts();	  		  	  // dbscan clustering algorithm
+		this -> find_transcripts();	  		  	  // dbscan clustering algorithm
 		this -> overlap_genes();  	  			  // overlap genes
 		this -> close_alignment_file();		  	  // close files
 	}

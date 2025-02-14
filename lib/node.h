@@ -212,6 +212,9 @@ class ClusterNode : public Node {
 
 public:
 
+	std::string headID = "";
+
+
 	// Links
 	ClusterNode *next = NULL;
 	ClusterNode *prev = NULL;
@@ -250,6 +253,8 @@ public:
 			five_vec.push_back(clust_vec[1]);
 		}
 
+		headID = alignment.Name;
+
 	}
 
 
@@ -274,14 +279,17 @@ public:
 		} else {
 			five_vec.push_back(clust_vec[1]);
 		}
+
+		headID = alignment.Name;
 	}
 
 	// Transcript cluster Iniitialization
-	ClusterNode(std::vector<int> &temp_vec, int ref_num, int temp_strand, int temp_count) {
+	ClusterNode(std::vector<int> &temp_vec, int ref_num, int temp_strand, int temp_count, std::string temp_id) {
 		strand = temp_strand;
 		read_count = temp_count;
 		chrom_index = ref_num;
 		clust_vec = temp_vec;
+		headID = temp_id;
 	}
 
 	void set_next(ClusterNode *node) { next = node; }

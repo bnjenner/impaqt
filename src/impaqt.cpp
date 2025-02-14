@@ -53,8 +53,8 @@ int main(int argc, char const ** argv) {
 
 
     // Number of contigs for subdividing work across multiple threads
-    const int n = init_process.contig_map.size();
-    // const int n = 1; // only do first chromosome
+    // const int n = init_process.contig_map.size();
+    const int n = 1; // only do first chromosome
 
     // Multithreading init
     std::vector<Impaqt*> processes;
