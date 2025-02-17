@@ -83,7 +83,6 @@ public:
 	int t_strand;
 	int left_pos;
 	int right_pos;
-	ClusterNode temp;
 
 	// Empty
 	ClusterList() {}
@@ -120,13 +119,14 @@ public:
 		chrom_length = t_chrom_length;
 		parameters = args;
 
+		ClusterNode *temp;
 		int temp_pos = 0;
-		int zones = (chrom_length / window_size) + 1; // Extent past length of chrom
+		int zones = (chrom_length / window_size) + 1; // Extend past length of chrom
 
 		// Create Positive list
-		temp = ClusterNode(temp_pos, window_size, 0, chrom_index);
-		pos_head = &temp;
-		pos_tail = &temp;
+		temp = new ClusterNode(temp_pos, window_size, 0, chrom_index);
+		pos_head = temp;
+		pos_tail = temp;
 		for (int i = 1; i < zones; i++) {
 			temp_pos += window_size;
 			pos_tail -> set_next(new ClusterNode(temp_pos, window_size, 0, chrom_index));
@@ -136,9 +136,9 @@ public:
 
 		// Create Negative list
 		temp_pos = 0;
-		temp = ClusterNode(temp_pos, window_size, 1, chrom_index);
-		neg_head = &temp;
-		neg_tail = &temp;
+		temp = new ClusterNode(temp_pos, window_size, 1, chrom_index);
+		neg_head = temp;
+		neg_tail = temp;
 		for (int i = 1; i < zones + 1; i++) {
 			temp_pos += window_size;
 			neg_tail -> set_next(new ClusterNode(temp_pos, window_size, 1, chrom_index));
@@ -227,107 +227,53 @@ public:
 	}
 
 
-	// combines overlapping clusters in graph
-	void collapse_clusters() {}
+	// combines clusters with nonzero neighbors
+	void collapse_clusters() {
 
-	// 	/*
-	// 		The reason this function exists is that clusters can be created
-	// 			and then expaned upon later if they have massively gapped alignments.
-	// 			This means that they can end up overlapping with new clusters downstream.
-	// 			Potentially we stop tolerating this nonsense.
-	// 	*/
-
-	// 	ClusterNode *curr_node = head;
-	// 	ClusterNode *next_node = NULL;
-	// 	ClusterNode *temp_node = NULL;
-	// 	ClusterNode *inter_node = NULL;
-
-	// 	// throw away variables, function only takes references :( will work on this
-	// 	int t_start;
-	// 	int t_stop;
-	// 	int t_strand;
-
-	// 	bool t_overlap;
-	// 	bool t_restart;
-
-	// 	while (curr_node != NULL) {
-
-	// 		t_restart = false;
-
-	// 		next_node = curr_node -> next;
-	// 		temp_node = curr_node -> next;
-
-	// 		while (true) {
-
-	// 			// find possible overlapping node
-	// 			if ((temp_node == NULL) || (temp_node -> get_start() > curr_node -> get_stop())) {
-
-	// 				if (!t_restart) { break; }
-
-	// 				t_restart = false;
-	// 				temp_node = curr_node;
-
-	// 				// confirm overlap
-	// 			} else {
-
-	// 				t_strand = temp_node -> strand;
-	// 				t_overlap = false;
-
-					// for (int x = 0; x < temp_node -> clust_count; x++) {
-
-					// 	t_start = temp_node -> clust_vec[(x * 2)];
-					// 	t_stop = temp_node -> clust_vec[(x * 2) + 1];
-
-					// 	t_overlap = curr_node -> check_overlap(t_start, t_stop, t_strand);
-					// 	if (t_overlap) { break; }
-					// }
-
-					// if (t_overlap) {
-
-					// 	t_restart = true;
-
-					// 	// modify clusters
-					// 	for (int x = 0; x < temp_node -> clust_count; x++) {
-					// 		t_start = temp_node -> clust_vec[(x * 2)];
-					// 		t_stop = temp_node -> clust_vec[(x * 2) + 1];
-					// 		curr_node -> modify_cluster(t_start, t_stop, temp_node -> count_vec[x]);
-					// 	}
-
-					// 	// increase read count
-					// 	curr_node -> read_count += temp_node -> read_count;
-
-					// 	// add 5' ends to vector (order doesn't matter here cause of DBSCAN)
-					// 	if (!(temp_node -> five_vec.empty())) {
-					// 		curr_node -> five_vec.reserve(curr_node -> five_vec.size() + temp_node -> five_vec.size());
-					// 		curr_node -> five_vec.insert(std::end(curr_node -> five_vec),
-					// 		                             std::begin(temp_node -> five_vec),
-					// 		                             std::end(temp_node -> five_vec));
-					// 	}
+		ClusterNode *curr_node = get_head(0);
+		ClusterNode *temp_node;
 
 
-					// 	// properly link modified node
-					// 	if ((temp_node -> next) != NULL) {
-					// 		(temp_node -> next) -> set_prev(temp_node -> prev);
-					// 	}
-					// 	(temp_node -> prev) -> set_next(temp_node -> next);
+		while (curr_node != NULL) {
+			
+			if (curr_node -> get_read_count() == 0) {
 
-					// 	inter_node = temp_node -> prev;
+				// If first node
+				if (curr_node -> get_prev() == NULL) {
+					temp_node = curr_node;
+					curr_node = curr_node -> get_next();
+					curr_node -> set_prev(NULL);
+					delete temp_node;
 
-					// 	if (temp_node == next_node) {
-					// 		next_node = temp_node -> next;
-	// 					}
+					pos_head = curr_node;
 
-	// 					delete temp_node;
-	// 					temp_node = inter_node;
-	// 				}
-	// 			}
+				// If last node
+				} else if (curr_node -> get_next() == NULL) {
+					temp_node = curr_node -> get_prev();
+					temp_node -> set_next(NULL);
+					delete curr_node;
 
-	// 			temp_node = temp_node -> next;
-	// 		}
+					curr_node = NULL;
 
-	// 		curr_node = next_node;
-	// 	}
-	// }
+					pos_tail = temp_node;
+
+				// else 
+				} else {
+					temp_node = curr_node -> get_prev();
+					temp_node -> set_next(curr_node -> get_next());
+					curr_node -> get_next() -> set_prev(temp_node);
+
+					delete curr_node;
+					curr_node = temp_node -> get_next();
+				}
+
+			} else {
+
+				curr_node = curr_node -> get_next();
+			}
+		}
+	}
+
 
 	// print clusters
 	void print_clusters(int t_strand) {

@@ -45,25 +45,29 @@ int main(int argc, char const ** argv) {
     AnnotationList init_annotation(&args);
     // init_annotation.create_gene_graph();
 
-    std::cerr << "[...Alignment File...]\n";
-    Impaqt init_process(&args, 0);
-    init_process.open_alignment_file();
-    init_process.set_chrom_order();
-    init_process.close_alignment_file();
-
 
     // Number of contigs for subdividing work across multiple threads
-    // const int n = init_process.contig_map.size();
     const int n = 1; // only do first chromosome
 
-    // Multithreading init
     std::vector<Impaqt*> processes;
-    processes.reserve(n);
+    {
+        std::cerr << "[...Alignment File...]\n";
+        Impaqt init_process(&args, 0);
+        init_process.open_alignment_file();
+        init_process.set_chrom_order();
+        init_process.close_alignment_file();
 
-    for (int i = 0; i < n; i++) {
-        processes.emplace_back(new Impaqt(&args, i));
-        processes[i] -> copy_order(init_process.contig_map, init_process.contig_lengths);
-        processes[i] -> copy_annotation(init_annotation, i);
+
+        // Number of contigs for subdividing work across multiple threads
+        // n = init_process.contig_map.size();
+
+        // Multithreading init
+        processes.reserve(n);
+        for (int i = 0; i < n; i++) {
+            processes.emplace_back(new Impaqt(&args, i));
+            processes[i] -> copy_order(init_process.contig_map, init_process.contig_lengths);
+            processes[i] -> copy_annotation(init_annotation, i);
+        }
     }
 
 
