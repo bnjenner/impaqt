@@ -1,3 +1,6 @@
+Reminders:
+	please destroy things when done, memory usage is ridiculous
+
 Here is the plan:
 	- window quant and merge approach to find hotzones
 	- take hot zones, get 5' positions, adjust for introns

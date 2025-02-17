@@ -646,7 +646,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
   ../lib/annotation.h \
   ../lib/cluster.h \
   ../lib/impaqt.h \
-  ../lib/dbscan.h \
   ../lib/queue.h \
   /usr/include/c++/11/queue \
   /usr/include/c++/11/bits/stl_queue.h
@@ -655,8 +654,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 /usr/include/c++/11/bits/stl_queue.h:
 
 ../lib/queue.h:
-
-../lib/dbscan.h:
 
 ../lib/annotation.h:
 

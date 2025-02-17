@@ -43,7 +43,7 @@ int main(int argc, char const ** argv) {
 
     std::cerr << "[...Annotation File...]\n";
     AnnotationList init_annotation(&args);
-    init_annotation.create_gene_graph();
+    // init_annotation.create_gene_graph();
 
     std::cerr << "[...Alignment File...]\n";
     Impaqt init_process(&args, 0);
@@ -62,7 +62,7 @@ int main(int argc, char const ** argv) {
 
     for (int i = 0; i < n; i++) {
         processes.emplace_back(new Impaqt(&args, i));
-        processes[i] -> copy_order(init_process.contig_map);
+        processes[i] -> copy_order(init_process.contig_map, init_process.contig_lengths);
         processes[i] -> copy_annotation(init_annotation, i);
     }
 
@@ -86,48 +86,48 @@ int main(int argc, char const ** argv) {
         } while (!call_queue.finished());
     }
 
-    std::unique_lock<std::mutex> main_lock(main_mut);   // lock main thread
-    main_cv.wait(main_lock, [] {return MAIN_THREAD;});  // wait for thread_queue destructor to let go
-    main_lock.unlock();                                 // unlock thread
+    // std::unique_lock<std::mutex> main_lock(main_mut);   // lock main thread
+    // main_cv.wait(main_lock, [] {return MAIN_THREAD;});  // wait for thread_queue destructor to let go
+    // main_lock.unlock();                                 // unlock thread
 
 
-    // Summary Statistics
-    size_t total_ambiguous = 0;
-    size_t total_multimapping = 0;
-    size_t total_no_feature = 0;
-    size_t total_low_quality = 0;
-    size_t total_unique = 0;
-    size_t total_reads = 0;
+    // // Summary Statistics
+    // size_t total_ambiguous = 0;
+    // size_t total_multimapping = 0;
+    // size_t total_no_feature = 0;
+    // size_t total_low_quality = 0;
+    // size_t total_unique = 0;
+    // size_t total_reads = 0;
 
 
-    // Write Results
-    std::cerr << "[Writing Results...]\n";
-    std::cerr << "[...Counts Data...]\n";
+    // // Write Results
+    // std::cerr << "[Writing Results...]\n";
+    // std::cerr << "[...Counts Data...]\n";
 
 
-    for (int i = 0; i < n; i++) {
-        processes[i] -> print_counts();
-        total_ambiguous += processes[i] -> ambiguous_reads;
-        total_unique += processes[i] -> unique_reads;
-        total_multimapping += processes[i] -> multimapped_reads;
-        total_no_feature += processes[i] -> unassigned_reads;
-        total_reads += processes[i] -> total_reads;
-    }
+    // for (int i = 0; i < n; i++) {
+    //     processes[i] -> print_counts();
+    //     total_ambiguous += processes[i] -> ambiguous_reads;
+    //     total_unique += processes[i] -> unique_reads;
+    //     total_multimapping += processes[i] -> multimapped_reads;
+    //     total_no_feature += processes[i] -> unassigned_reads;
+    //     total_reads += processes[i] -> total_reads;
+    // }
 
-    std::cout << "__unique\t" << total_unique << "\n";
-    std::cout << "__ambiguous\t" << total_ambiguous << "\n";
-    std::cout << "__multimapping\t" << total_multimapping << "\n";
-    std::cout << "__unassigned\t" << total_no_feature << "\n";
-    std::cout << "__total\t" << total_reads << std::endl;
+    // std::cout << "__unique\t" << total_unique << "\n";
+    // std::cout << "__ambiguous\t" << total_ambiguous << "\n";
+    // std::cout << "__multimapping\t" << total_multimapping << "\n";
+    // std::cout << "__unassigned\t" << total_no_feature << "\n";
+    // std::cout << "__total\t" << total_reads << std::endl;
 
-    // Output read cluster gtf if specified
-    if (args.gtf_output != "") {
-        std::cerr << "[...Output GTFs...]\n";
-        std::ofstream newFile;
-        newFile.open(args.gtf_output);
-        for (const auto &p : processes) { p -> print_gtf(); }
-        newFile.close();
-    }
+    // // Output read cluster gtf if specified
+    // if (args.gtf_output != "") {
+    //     std::cerr << "[...Output GTFs...]\n";
+    //     std::ofstream newFile;
+    //     newFile.open(args.gtf_output);
+    //     for (const auto &p : processes) { p -> print_gtf(); }
+    //     newFile.close();
+    // }
 
 
     // The longest line of "get the time" I have ever seen.
