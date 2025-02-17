@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/home/bnjenner/bnjenner_software/impaqt/lib -I/home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src -I/home/bnjenner/bnjenner_software/impaqt/ext/seqan/include -I/home/bnjenner/bnjenner_software/impaqt/ext/googletest-release-1.12.1/googletest/include
 
-CXX_FLAGS =   -pthread -std=c++14 -std=gnu++14
+CXX_FLAGS =   -pthread -std=c++14 -ggdb3 -std=gnu++14
 

@@ -55,8 +55,6 @@ int main(int argc, char const ** argv) {
         Impaqt init_process(&args, 0);
         init_process.open_alignment_file();
         init_process.set_chrom_order();
-        init_process.close_alignment_file();
-
 
         // Number of contigs for subdividing work across multiple threads
         // n = init_process.contig_map.size();
@@ -66,7 +64,7 @@ int main(int argc, char const ** argv) {
         for (int i = 0; i < n; i++) {
             processes.emplace_back(new Impaqt(&args, i));
             processes[i] -> copy_order(init_process.contig_map, init_process.contig_lengths);
-            processes[i] -> copy_annotation(init_annotation, i);
+            // processes[i] -> copy_annotation(init_annotation, i);
         }
     }
 
@@ -90,9 +88,9 @@ int main(int argc, char const ** argv) {
         } while (!call_queue.finished());
     }
 
-    // std::unique_lock<std::mutex> main_lock(main_mut);   // lock main thread
-    // main_cv.wait(main_lock, [] {return MAIN_THREAD;});  // wait for thread_queue destructor to let go
-    // main_lock.unlock();                                 // unlock thread
+    std::unique_lock<std::mutex> main_lock(main_mut);   // lock main thread
+    main_cv.wait(main_lock, [] {return MAIN_THREAD;});  // wait for thread_queue destructor to let go
+    main_lock.unlock();                                 // unlock thread
 
 
     // // Summary Statistics
@@ -109,14 +107,15 @@ int main(int argc, char const ** argv) {
     // std::cerr << "[...Counts Data...]\n";
 
 
-    // for (int i = 0; i < n; i++) {
-    //     processes[i] -> print_counts();
-    //     total_ambiguous += processes[i] -> ambiguous_reads;
-    //     total_unique += processes[i] -> unique_reads;
-    //     total_multimapping += processes[i] -> multimapped_reads;
-    //     total_no_feature += processes[i] -> unassigned_reads;
-    //     total_reads += processes[i] -> total_reads;
-    // }
+    for (int i = 0; i < n; i++) {
+        // processes[i] -> print_counts();
+        // total_ambiguous += processes[i] -> ambiguous_reads;
+        // total_unique += processes[i] -> unique_reads;
+        // total_multimapping += processes[i] -> multimapped_reads;
+        // total_no_feature += processes[i] -> unassigned_reads;
+        // total_reads += processes[i] -> total_reads;
+        delete processes[i];
+    }
 
     // std::cout << "__unique\t" << total_unique << "\n";
     // std::cout << "__ambiguous\t" << total_ambiguous << "\n";

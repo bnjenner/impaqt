@@ -14,7 +14,7 @@ public:
 
 	// Data Structures
 	ClusterList cluster_list;			  // List for clusters
-	ClusterList transcript_list;		  // List for Transcripts
+	// ClusterList transcript_list;		  // List for Transcripts
 
 	AnnotationList annotation;			  // Annotation
 	std::string alignment_file_name;	  // alignment file
@@ -41,6 +41,13 @@ public:
 		parameters = args;
 		chrom_index = ref;
 	}
+
+	// Empty
+	~Impaqt() {
+		contig_map.clear();
+		contig_lengths.clear();
+		close_alignment_file();
+	};
 
 
 	void open_alignment_file() {
@@ -92,17 +99,17 @@ public:
 		contig_lengths = t_contig_lengths;
 	}
 
-	// Copy annotation
-	void copy_annotation(AnnotationList &t_annotation, const int &t_chrom_index) {
-		/*
-			Believe it or not, copying this is faster and the memory usage difference
-				is negligible. I have no idea why this is the case.
+	// // Copy annotation
+	// void copy_annotation(AnnotationList &t_annotation, const int &t_chrom_index) {
+	// 	/*
+	// 		Believe it or not, copying this is faster and the memory usage difference
+	// 			is negligible. I have no idea why this is the case.
 
-				TO DO: Double check this
-		*/
-		annotation = t_annotation;
-		annotation.chrom = contig_map[t_chrom_index];
-	}
+	// 			TO DO: Double check this
+	// 	*/
+	// 	annotation = t_annotation;
+	// 	annotation.chrom = contig_map[t_chrom_index];
+	// }
 
 
 	// Grab Alignments within Interval Using Bam Index
@@ -405,7 +412,6 @@ public:
 		// if (ignore_chr) { return; }
 		// this -> find_transcripts();	  		  	  // dbscan clustering algorithm
 		// this -> overlap_genes();  	  			  // overlap genes
-		// this -> close_alignment_file();		  	  // close files
 	}
 };
 

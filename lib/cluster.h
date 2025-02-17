@@ -20,8 +20,7 @@ private:
 	ClusterNode *neg_tail;					// last negative ClusterNode
 
 	// For Checks
-	bool pos_hashead = false;
-	bool neg_hashead = false;
+	bool initialized = false;
 
 	// Summary
 	size_t total_reads = 0;
@@ -87,6 +86,33 @@ public:
 	// Empty
 	ClusterList() {}
 
+	// Destroy
+	~ClusterList() {
+
+		if (initialized) {
+
+			ClusterNode *curr_node = pos_head;
+			ClusterNode *temp_node = NULL;
+			
+			while (curr_node != NULL) {
+				temp_node = curr_node;
+				curr_node = curr_node -> get_next();
+				delete temp_node;
+			}
+
+			curr_node = neg_head;
+			temp_node = NULL;
+			
+			while (curr_node != NULL) {
+				temp_node = curr_node;
+				curr_node = curr_node -> get_next();
+				delete temp_node;
+			}
+
+		}
+	}
+
+
 	std::string get_contig_name() { return contig_name; }
 
 	// Get Head Node
@@ -146,6 +172,7 @@ public:
 			neg_tail = neg_tail -> get_next();
 		}
 
+		initialized = true;
 	}
 
 	// Create read clusters
@@ -170,6 +197,7 @@ public:
 			found_reads = true;
 
 			if (alignment.IsReverseStrand()) {
+
 				t_5end = calculate_splice(alignment);
 
 				// Advance to correct node based on left position
@@ -243,19 +271,19 @@ public:
 					temp_node = curr_node;
 					curr_node = curr_node -> get_next();
 					curr_node -> set_prev(NULL);
-					delete temp_node;
-
 					pos_head = curr_node;
+					
+					delete temp_node;
 
 				// If last node
 				} else if (curr_node -> get_next() == NULL) {
 					temp_node = curr_node -> get_prev();
 					temp_node -> set_next(NULL);
-					delete curr_node;
+					pos_tail = temp_node;
 
+					delete curr_node;
 					curr_node = NULL;
 
-					pos_tail = temp_node;
 
 				// else 
 				} else {

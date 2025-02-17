@@ -38,6 +38,12 @@ public:
 
 	}
 
+	// Destroy
+	~ClusterNode() {
+		next = NULL;
+		prev = NULL;
+	}
+
 	// Get Details
 	void set_chrom_index(int t_chrom_index) { chrom_index = t_chrom_index; }
 	int get_chrom_index() { return chrom_index; }
