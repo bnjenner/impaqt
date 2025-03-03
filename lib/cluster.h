@@ -1,3 +1,7 @@
+#include "node.h"
+#include "api/BamAux.h"
+#include "api/BamReader.h"
+
 //////////////////////////////////////
 // Cluster Class (really just a doubly linked list)
 class ClusterList {
@@ -165,7 +169,7 @@ public:
 		temp = new ClusterNode(temp_pos, window_size, 1, chrom_index);
 		neg_head = temp;
 		neg_tail = temp;
-		for (int i = 1; i < zones + 1; i++) {
+		for (int i = 1; i < zones; i++) {
 			temp_pos += window_size;
 			neg_tail -> set_next(new ClusterNode(temp_pos, window_size, 1, chrom_index));
 			neg_tail -> get_next() -> set_prev(neg_tail);
@@ -256,49 +260,111 @@ public:
 
 
 	// combines clusters with nonzero neighbors
-	void collapse_clusters() {
+	void collapse_clusters(int t_strand) {
 
-		ClusterNode *curr_node = get_head(0);
+		ClusterNode *curr_node = get_head(t_strand);
 		ClusterNode *temp_node;
-
+		ClusterNode *temp_head = NULL;
+		ClusterNode *temp_tail = NULL;
 
 		while (curr_node != NULL) {
 			
+			// Empty Node
 			if (curr_node -> get_read_count() == 0) {
 
-				// If first node
-				if (curr_node -> get_prev() == NULL) {
-					temp_node = curr_node;
-					curr_node = curr_node -> get_next();
-					curr_node -> set_prev(NULL);
-					pos_head = curr_node;
-					
-					delete temp_node;
-
 				// If last node
-				} else if (curr_node -> get_next() == NULL) {
+				if (curr_node -> get_next() == NULL) {
+
 					temp_node = curr_node -> get_prev();
-					temp_node -> set_next(NULL);
-					pos_tail = temp_node;
+
+					if (temp_node != NULL) { 
+						temp_node -> set_next(NULL);
+					} else {
+						temp_head = NULL;
+					}
+					
+					temp_tail = temp_node;
 
 					delete curr_node;
 					curr_node = NULL;
+
+
+				// If first node
+				} else if (curr_node -> get_prev() == NULL) {
+					temp_node = curr_node;
+					curr_node = curr_node -> get_next();
+					curr_node -> set_prev(NULL);
+					temp_head = curr_node;
+					
+					delete temp_node;
 
 
 				// else 
 				} else {
 					temp_node = curr_node -> get_prev();
 					temp_node -> set_next(curr_node -> get_next());
-					curr_node -> get_next() -> set_prev(temp_node);
+					temp_node -> get_next() -> set_prev(temp_node);
 
 					delete curr_node;
 					curr_node = temp_node -> get_next();
 				}
 
+			// Not empty
 			} else {
+
+				while (true) {
+
+					if (curr_node -> get_next() == NULL) { break; }
+
+					if (curr_node -> get_next() -> get_read_count() != 0) {
+
+						temp_node = new ClusterNode(curr_node -> get_start(),
+			                                        curr_node -> get_next() -> get_stop(),
+			                                        curr_node -> get_strand(),
+			                                        curr_node -> get_chrom_index(),
+			                                        curr_node -> get_read_count() + curr_node -> get_next() -> get_read_count(),
+			                                        curr_node -> get_five_vec(),
+			                                        curr_node -> get_next() -> get_five_vec());
+
+						temp_node -> set_prev(curr_node -> get_prev());
+
+						// If not first node
+						if (curr_node -> get_prev() != NULL) {
+							curr_node -> get_prev() -> set_next(temp_node);
+						} else {
+							temp_head = temp_node; 
+						}
+
+						// If not last node
+						if (curr_node -> get_next() -> get_next() != NULL) {
+							temp_node -> set_next(curr_node -> get_next() -> get_next());
+							temp_node -> get_next() -> set_prev(temp_node);
+						} else { 
+							temp_tail = temp_node;
+						}
+
+
+						delete curr_node -> get_next();
+						delete curr_node;
+
+						curr_node = temp_node;
+
+					} else {
+						break;
+					}
+
+				}
 
 				curr_node = curr_node -> get_next();
 			}
+		}
+
+		if (t_strand == 0) {
+			pos_head = temp_head;
+			pos_tail = temp_tail;
+		} else {
+			neg_head = temp_head;
+			neg_tail = temp_tail;
 		}
 	}
 

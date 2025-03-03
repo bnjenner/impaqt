@@ -6,12 +6,8 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
-#include "api/BamReader.h"
-#include "api/BamAux.h"
 #include "parser.h"
-#include "node.h"
 #include "annotation.h"
-#include "cluster.h"
 #include "impaqt.h"
 #include "queue.h"
 
@@ -47,7 +43,7 @@ int main(int argc, char const ** argv) {
 
 
     // Number of contigs for subdividing work across multiple threads
-    const int n = 1; // only do first chromosome
+    int n; 
 
     std::vector<Impaqt*> processes;
     {
@@ -57,6 +53,7 @@ int main(int argc, char const ** argv) {
         init_process.set_chrom_order();
 
         // Number of contigs for subdividing work across multiple threads
+        n = 1; 
         // n = init_process.contig_map.size();
 
         // Multithreading init

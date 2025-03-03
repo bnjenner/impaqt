@@ -38,6 +38,23 @@ public:
 
 	}
 
+	// For combined Nodes
+	ClusterNode(int t_start, int t_stop, int t_strand, int t_chrom_index, int t_read_count,
+					 std::vector<int> a_five_vec, std::vector<int> b_five_vec) {
+
+		start = t_start;
+		stop = t_stop;
+		strand = t_strand;
+		chrom_index = t_chrom_index;
+
+		five_vec.resize(a_five_vec.size() + b_five_vec.size());
+		five_vec.insert(five_vec.end(), a_five_vec.begin(), a_five_vec.end());
+		five_vec.insert(five_vec.end(), b_five_vec.begin(), b_five_vec.end());
+
+		read_count = t_read_count;
+
+	}
+
 	// Destroy
 	~ClusterNode() {
 		next = NULL;
@@ -49,6 +66,7 @@ public:
 	int get_chrom_index() { return chrom_index; }
 
 	bool isReverse() { return !strand; }
+	int get_strand() { return strand; }
 
 	int get_start() { return start; }
 	int get_stop() { return stop; }

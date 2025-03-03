@@ -92,6 +92,8 @@ impaqt_test_EXTERNAL_OBJECTS =
 
 impaqt_test: CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o
 impaqt_test: CMakeFiles/impaqt_test.dir/build.make
+impaqt_test: ext/bamtools/src/api/libbamtools.a
+impaqt_test: /usr/lib/x86_64-linux-gnu/libz.so
 impaqt_test: CMakeFiles/impaqt_test.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/bnjenner/bnjenner_software/impaqt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable impaqt_test"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/impaqt_test.dir/link.txt --verbose=$(VERBOSE)

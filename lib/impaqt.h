@@ -1,4 +1,7 @@
 // #include "dbscan.h"
+#include "cluster.h"
+#include "api/BamAux.h"
+#include "api/BamReader.h"
 
 //////////////////////////////////////
 // Impaqt Process Class
@@ -95,6 +98,7 @@ public:
 	// Copy contig cache
 	void copy_order(const std::unordered_map<int, std::string> &t_contig_map,
 					const std::unordered_map<int, int> &t_contig_lengths) {
+		// potentially needless copy, will address
 		contig_map = t_contig_map;
 		contig_lengths = t_contig_lengths;
 	}
@@ -123,11 +127,10 @@ public:
 		}
 
 		if (cluster_list.create_clusters(inFile, alignment)) {
-			cluster_list.collapse_clusters();
+			cluster_list.collapse_clusters(0); // Forward
+			cluster_list.collapse_clusters(1); // Reverse
 			multimapped_reads = cluster_list.get_multimapped_reads();
 			total_reads = cluster_list.get_total_reads();
-
-			cluster_list.print_clusters(0);
 
 		} else {
 			ignore_chr = true;

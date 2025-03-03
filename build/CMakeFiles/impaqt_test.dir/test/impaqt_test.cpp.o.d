@@ -260,25 +260,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: \
  /home/bnjenner/bnjenner_software/impaqt/ext/googletest-release-1.12.1/googletest/include/gtest/gtest-typed-test.h \
  /home/bnjenner/bnjenner_software/impaqt/ext/googletest-release-1.12.1/googletest/include/gtest/gtest_pred_impl.h \
  /home/bnjenner/bnjenner_software/impaqt/ext/googletest-release-1.12.1/googletest/include/gtest/gtest_prod.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/BamReader.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/BamAlignment.h \
- /usr/include/c++/11/cstring \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/BamAux.h \
- /usr/include/c++/11/fstream \
- /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
- /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
- /usr/include/c++/11/bits/fstream.tcc \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/api_global.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/shared/bamtools_global.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/BamConstants.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/BamIndex.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamHeader.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamProgramChain.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamProgram.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamReadGroupDictionary.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamReadGroup.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamSequenceDictionary.h \
- /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamSequence.h \
  /home/bnjenner/bnjenner_software/impaqt/lib/parser.h \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/arg_parse.h \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/basic.h \
@@ -287,8 +268,8 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: \
  /usr/include/c++/11/ciso646 \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/basic/basic_debug.h \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/basic/debug_test_system.h \
- /usr/include/c++/11/cstdarg /usr/include/c++/11/algorithm \
- /usr/include/c++/11/bits/stl_algo.h \
+ /usr/include/c++/11/cstring /usr/include/c++/11/cstdarg \
+ /usr/include/c++/11/algorithm /usr/include/c++/11/bits/stl_algo.h \
  /usr/include/c++/11/bits/algorithmfwd.h \
  /usr/include/c++/11/bits/stl_heap.h \
  /usr/include/c++/11/bits/uniform_int_dist.h /usr/include/dirent.h \
@@ -298,6 +279,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: \
  /usr/include/linux/limits.h \
  /usr/include/x86_64-linux-gnu/bits/dirent_ext.h /usr/include/execinfo.h \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/basic/debug_helper.h \
+ /usr/include/c++/11/fstream \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
+ /usr/include/c++/11/bits/fstream.tcc \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/basic/profiling.h \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/basic/basic_metaprogramming.h \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/basic/metaprogramming_logic.h \
@@ -561,9 +546,21 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/arg_parse/arg_parse_doc.h \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/arg_parse/arg_parse_ctd_support.h \
  /home/bnjenner/bnjenner_software/impaqt/ext/seqan/include/seqan/arg_parse/arg_parse_parse.h \
- /home/bnjenner/bnjenner_software/impaqt/lib/node.h \
  /home/bnjenner/bnjenner_software/impaqt/lib/annotation.h \
- /home/bnjenner/bnjenner_software/impaqt/lib/cluster.h \
  /home/bnjenner/bnjenner_software/impaqt/lib/impaqt.h \
- /home/bnjenner/bnjenner_software/impaqt/lib/queue.h \
- /usr/include/c++/11/queue /usr/include/c++/11/bits/stl_queue.h
+ /home/bnjenner/bnjenner_software/impaqt/lib/cluster.h \
+ /home/bnjenner/bnjenner_software/impaqt/lib/node.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/BamAux.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/api_global.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/shared/bamtools_global.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/BamReader.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/BamAlignment.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/BamConstants.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/BamIndex.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamHeader.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamProgramChain.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamProgram.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamReadGroupDictionary.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamReadGroup.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamSequenceDictionary.h \
+ /home/bnjenner/bnjenner_software/impaqt/ext/bamtools/src/api/SamSequence.h

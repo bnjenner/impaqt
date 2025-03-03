@@ -320,25 +320,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
   ../ext/googletest-release-1.12.1/googletest/include/gtest/gtest-typed-test.h \
   ../ext/googletest-release-1.12.1/googletest/include/gtest/gtest_pred_impl.h \
   ../ext/googletest-release-1.12.1/googletest/include/gtest/gtest_prod.h \
-  ../ext/bamtools/src/api/BamReader.h \
-  ../ext/bamtools/src/api/BamAlignment.h \
-  /usr/include/c++/11/cstring \
-  ../ext/bamtools/src/api/BamAux.h \
-  /usr/include/c++/11/fstream \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
-  /usr/include/c++/11/bits/fstream.tcc \
-  ../ext/bamtools/src/api/api_global.h \
-  ../ext/bamtools/src/shared/bamtools_global.h \
-  ../ext/bamtools/src/api/BamConstants.h \
-  ../ext/bamtools/src/api/BamIndex.h \
-  ../ext/bamtools/src/api/SamHeader.h \
-  ../ext/bamtools/src/api/SamProgramChain.h \
-  ../ext/bamtools/src/api/SamProgram.h \
-  ../ext/bamtools/src/api/SamReadGroupDictionary.h \
-  ../ext/bamtools/src/api/SamReadGroup.h \
-  ../ext/bamtools/src/api/SamSequenceDictionary.h \
-  ../ext/bamtools/src/api/SamSequence.h \
   ../lib/parser.h \
   ../ext/seqan/include/seqan/arg_parse.h \
   ../ext/seqan/include/seqan/basic.h \
@@ -348,6 +329,7 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
   /usr/include/c++/11/ciso646 \
   ../ext/seqan/include/seqan/basic/basic_debug.h \
   ../ext/seqan/include/seqan/basic/debug_test_system.h \
+  /usr/include/c++/11/cstring \
   /usr/include/c++/11/cstdarg \
   /usr/include/c++/11/algorithm \
   /usr/include/c++/11/bits/stl_algo.h \
@@ -362,6 +344,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
   /usr/include/x86_64-linux-gnu/bits/dirent_ext.h \
   /usr/include/execinfo.h \
   ../ext/seqan/include/seqan/basic/debug_helper.h \
+  /usr/include/c++/11/fstream \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
+  /usr/include/c++/11/bits/fstream.tcc \
   ../ext/seqan/include/seqan/basic/profiling.h \
   ../ext/seqan/include/seqan/basic/basic_metaprogramming.h \
   ../ext/seqan/include/seqan/basic/metaprogramming_logic.h \
@@ -642,18 +628,39 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
   ../ext/seqan/include/seqan/arg_parse/arg_parse_doc.h \
   ../ext/seqan/include/seqan/arg_parse/arg_parse_ctd_support.h \
   ../ext/seqan/include/seqan/arg_parse/arg_parse_parse.h \
-  ../lib/node.h \
   ../lib/annotation.h \
-  ../lib/cluster.h \
   ../lib/impaqt.h \
-  ../lib/queue.h \
-  /usr/include/c++/11/queue \
-  /usr/include/c++/11/bits/stl_queue.h
+  ../lib/cluster.h \
+  ../lib/node.h \
+  ../ext/bamtools/src/api/BamAux.h \
+  ../ext/bamtools/src/api/api_global.h \
+  ../ext/bamtools/src/shared/bamtools_global.h \
+  ../ext/bamtools/src/api/BamReader.h \
+  ../ext/bamtools/src/api/BamAlignment.h \
+  ../ext/bamtools/src/api/BamConstants.h \
+  ../ext/bamtools/src/api/BamIndex.h \
+  ../ext/bamtools/src/api/SamHeader.h \
+  ../ext/bamtools/src/api/SamProgramChain.h \
+  ../ext/bamtools/src/api/SamProgram.h \
+  ../ext/bamtools/src/api/SamReadGroupDictionary.h \
+  ../ext/bamtools/src/api/SamReadGroup.h \
+  ../ext/bamtools/src/api/SamSequenceDictionary.h \
+  ../ext/bamtools/src/api/SamSequence.h
 
 
-/usr/include/c++/11/bits/stl_queue.h:
+../ext/bamtools/src/api/SamReadGroupDictionary.h:
 
-../lib/queue.h:
+../ext/bamtools/src/api/SamProgram.h:
+
+../ext/bamtools/src/api/SamHeader.h:
+
+../ext/bamtools/src/api/BamAlignment.h:
+
+../ext/bamtools/src/api/BamReader.h:
+
+../ext/bamtools/src/shared/bamtools_global.h:
+
+../ext/bamtools/src/api/api_global.h:
 
 ../lib/annotation.h:
 
@@ -771,25 +778,9 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 ../ext/seqan/include/seqan/file/file_base.h:
 
-../ext/seqan/include/seqan/file/file_forwards.h:
+../ext/bamtools/src/api/BamConstants.h:
 
-../ext/seqan/include/seqan/modifier/modifier_position.h:
-
-../ext/seqan/include/seqan/modifier/modifier_shortcuts.h:
-
-../ext/seqan/include/seqan/map/map_vector.h:
-
-../ext/seqan/include/seqan/modifier/modifier_reverse.h:
-
-../ext/seqan/include/seqan/modifier/modifier_view.h:
-
-../ext/seqan/include/seqan/modifier/modifier_functors.h:
-
-../ext/seqan/include/seqan/index/shape_gapped.h:
-
-../ext/seqan/include/seqan/modifier/cyclic_shape.h:
-
-../ext/seqan/include/seqan/modifier/modifier_string.h:
+../ext/seqan/include/seqan/file/file_interface.h:
 
 /usr/include/c++/11/ratio:
 
@@ -803,6 +794,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/environments.h:
 
+../ext/bamtools/src/api/BamAux.h:
+
+/usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h:
+
 /usr/include/c++/11/bits/exception_defines.h:
 
 /usr/include/c++/11/bits/hashtable_policy.h:
@@ -812,6 +807,8 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 /usr/include/c++/11/cwctype:
 
 /usr/include/linux/posix_types.h:
+
+../ext/seqan/include/seqan/modifier/modifier_string.h:
 
 /usr/include/asm-generic/types.h:
 
@@ -847,13 +844,7 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h:
 
-../ext/bamtools/src/api/api_global.h:
-
 ../ext/googletest-release-1.12.1/googletest/include/gtest/gtest-assertion-result.h:
-
-../ext/seqan/include/seqan/modifier/modifier_cyclic_shape.h:
-
-../ext/seqan/include/seqan/parallel/parallel_tags.h:
 
 /usr/include/c++/11/bits/stl_bvector.h:
 
@@ -870,6 +861,8 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:
 
 /usr/include/c++/11/bits/this_thread_sleep.h:
+
+../ext/seqan/include/seqan/modifier/cyclic_shape.h:
 
 /usr/include/x86_64-linux-gnu/asm/types.h:
 
@@ -888,6 +881,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 /usr/include/c++/11/stdexcept:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/error_constants.h:
+
+../ext/bamtools/src/api/SamSequence.h:
+
+/usr/include/c++/11/utility:
 
 /usr/include/c++/11/ios:
 
@@ -989,6 +986,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 /usr/include/c++/11/locale:
 
+../ext/seqan/include/seqan/map/map_vector.h:
+
+../ext/seqan/include/seqan/modifier/modifier_reverse.h:
+
 /usr/include/c++/11/cctype:
 
 /usr/include/c++/11/iomanip:
@@ -1006,6 +1007,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 /usr/include/c++/11/condition_variable:
 
 /usr/include/x86_64-linux-gnu/bits/sigstksz.h:
+
+../ext/bamtools/src/api/SamReadGroup.h:
+
+/usr/include/c++/11/cstdint:
 
 /usr/include/x86_64-linux-gnu/bits/stat.h:
 
@@ -1173,10 +1178,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 /usr/include/c++/11/bit:
 
-../ext/seqan/include/seqan/modifier/modifier_iterator.h:
-
-/usr/include/c++/11/bits/stl_iterator_base_types.h:
-
 /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
 
 /usr/include/c++/11/bits/range_access.h:
@@ -1194,8 +1195,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 /usr/include/c++/11/ext/type_traits.h:
 
 /usr/include/x86_64-linux-gnu/bits/confname.h:
-
-../ext/bamtools/src/api/SamReadGroupDictionary.h:
 
 ../ext/seqan/include/seqan/sequence/string_set_dependent_generous.h:
 
@@ -1277,6 +1276,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 /usr/include/strings.h:
 
+/usr/include/c++/11/bits/stl_iterator_base_types.h:
+
+../ext/seqan/include/seqan/modifier/modifier_iterator.h:
+
 ../ext/seqan/include/seqan/file/file_page.h:
 
 /usr/include/x86_64-linux-gnu/bits/semaphore.h:
@@ -1284,10 +1287,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 ../ext/seqan/include/seqan/parallel/parallel_lock.h:
 
 /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
-
-/usr/include/c++/11/utility:
-
-../ext/bamtools/src/api/SamSequence.h:
 
 ../ext/seqan/include/seqan/basic/alphabet_concept.h:
 
@@ -1327,10 +1326,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 /usr/include/c++/11/iostream:
 
-/usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h:
-
-../ext/bamtools/src/api/BamAux.h:
-
 /usr/include/x86_64-linux-gnu/bits/fp-fast.h:
 
 ../ext/seqan/include/seqan/arg_parse/arg_parse_parse.h:
@@ -1354,6 +1349,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 /usr/include/x86_64-linux-gnu/bits/timex.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdio_lim.h:
+
+../ext/bamtools/src/api/SamProgramChain.h:
+
+/usr/include/c++/11/bits/cxxabi_init_exception.h:
 
 ../ext/seqan/include/seqan/basic/basic_iterator.h:
 
@@ -1509,8 +1508,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/ss_flags.h:
 
-../ext/bamtools/src/shared/bamtools_global.h:
-
 /usr/include/c++/11/bits/streambuf_iterator.h:
 
 ../ext/seqan/include/seqan/basic/metaprogramming_type_algebra.h:
@@ -1619,39 +1616,7 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 ../ext/googletest-release-1.12.1/googletest/include/gtest/gtest_prod.h:
 
-../ext/bamtools/src/api/BamReader.h:
-
-../ext/bamtools/src/api/BamAlignment.h:
-
-/usr/include/c++/11/fstream:
-
-/usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h:
-
-../ext/seqan/include/seqan/file/file_interface.h:
-
-../ext/bamtools/src/api/BamConstants.h:
-
-../ext/bamtools/src/api/SamHeader.h:
-
-/usr/include/c++/11/bits/cxxabi_init_exception.h:
-
-../ext/bamtools/src/api/SamProgramChain.h:
-
-../ext/bamtools/src/api/SamProgram.h:
-
-/usr/include/c++/11/cstdint:
-
-../ext/bamtools/src/api/SamReadGroup.h:
-
-../ext/seqan/include/seqan/modifier/modifier_alphabet_expansion.h:
-
-../ext/seqan/include/seqan/basic/holder_tristate.h:
-
 ../ext/seqan/include/seqan/platform.h:
-
-../ext/seqan/include/seqan/modifier/modifier_padding.h:
-
-/usr/include/c++/11/cinttypes:
 
 /usr/include/inttypes.h:
 
@@ -1673,9 +1638,13 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/local_lim.h:
 
-/usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h:
+/usr/include/c++/11/fstream:
+
+/usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h:
 
 ../ext/seqan/include/seqan/basic/debug_helper.h:
+
+/usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h:
 
 ../ext/seqan/include/seqan/basic/profiling.h:
 
@@ -1712,6 +1681,8 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 ../ext/seqan/include/seqan/basic/basic_parallelism.h:
 
 ../ext/seqan/include/seqan/misc/bit_twiddling_functors.h:
+
+../ext/seqan/include/seqan/modifier/modifier_position.h:
 
 /usr/include/x86_64-linux-gnu/bits/setjmp.h:
 
@@ -1776,8 +1747,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 ../ext/seqan/include/seqan/basic/holder_simple.h:
 
 ../ext/seqan/include/seqan/basic/allocator_singlepool.h:
-
-/usr/include/c++/11/queue:
 
 ../ext/seqan/include/seqan/basic/allocator_multipool.h:
 
@@ -1917,6 +1886,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 ../ext/seqan/include/seqan/parallel/parallel_thread_pool.h:
 
+/usr/include/c++/11/cinttypes:
+
+../ext/seqan/include/seqan/modifier/modifier_padding.h:
+
 /usr/include/c++/11/unordered_map:
 
 ../lib/impaqt.h:
@@ -1946,3 +1919,21 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 ../ext/seqan/include/seqan/parallel/parallel_queue_suspendable.h:
 
 ../ext/seqan/include/seqan/parallel/parallel_resource_pool.h:
+
+../ext/seqan/include/seqan/basic/holder_tristate.h:
+
+../ext/seqan/include/seqan/modifier/modifier_alphabet_expansion.h:
+
+../ext/seqan/include/seqan/index/shape_gapped.h:
+
+../ext/seqan/include/seqan/modifier/modifier_functors.h:
+
+../ext/seqan/include/seqan/modifier/modifier_view.h:
+
+../ext/seqan/include/seqan/modifier/modifier_shortcuts.h:
+
+../ext/seqan/include/seqan/parallel/parallel_tags.h:
+
+../ext/seqan/include/seqan/modifier/modifier_cyclic_shape.h:
+
+../ext/seqan/include/seqan/file/file_forwards.h:

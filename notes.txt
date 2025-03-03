@@ -1,3 +1,8 @@
+Tests:
+	- create clusters
+	- collapse clusters
+	- DBSCAN
+
 Reminders:
 	please destroy things when done, memory usage is ridiculous
 
