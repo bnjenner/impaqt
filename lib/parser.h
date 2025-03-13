@@ -84,9 +84,9 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv, ImpaqtA
 
     addOption(parser, seqan::ArgParseOption(
                   "p", "count-percentage",
-                  "Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold until a max of 25 is reached.",
+                  "Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold unless percentage is less than 20.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "count-percentage", "15");
+    seqan::setDefaultValue(parser, "count-percentage", "20");
 
     addOption(parser, seqan::ArgParseOption(
                   "e", "epsilon",

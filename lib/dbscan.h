@@ -1,7 +1,11 @@
 // inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
 void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &epsilon) {
 
-	int min_counts = std::min((int)((float)curr_node -> get_read_count() * ((float)count_percentage / 100)), 20);
+	/*
+	We are going to need to adjust for known splice sites. 
+	*/
+
+	int min_counts = std::max((int)((float)curr_node -> get_read_count() * ((float)count_percentage / 100)), 20);
 	int points = curr_node -> get_read_count();
 
 	int index;
@@ -13,8 +17,8 @@ void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &
 	std::vector<int>::iterator min_result;
 	std::vector<int>::iterator max_result;	
 
-	std::cerr << "////////////////////////////////////////////////\n";
-	std::cerr << "Region: " << curr_node -> get_chrom_index() << ":"
+	std::cout << "////////////////////////////////////////////////\n";
+	std::cout << "Region: " << curr_node -> get_chrom_index() << ":"
 			  << curr_node -> get_start() << "-"
 			  << curr_node -> get_stop() << "\n"
 			  << "Read Counts: " << curr_node -> get_read_count() << "\n"
@@ -73,23 +77,23 @@ void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &
 
 
 
-	std::cerr << "//////////////////////////////////////////////\n";
-	std::cerr << "Chrom: " << curr_node -> get_chrom_index() << "\n";
-	std::cerr << "Clusters Identified: " << assignment.size() << "\n";
-	std::cerr << "Regions: " << curr_node -> get_start() << "-" << curr_node -> get_stop() << "\n";
-	std::cerr << "///////////////////////\n";
+	std::cout << "//////////////////////////////////////////////\n";
+	std::cout << "Chrom: " << curr_node -> get_chrom_index() << "\n";
+	std::cout << "Clusters Identified: " << assignment.size() << "\n";
+	std::cout << "Regions: " << curr_node -> get_start() << "-" << curr_node -> get_stop() << "\n";
+	std::cout << "///////////////////////\n";
 
 
 	for (int i = 0; i < assignment.size(); i++) {
 
-		std::cerr << "Cluster: " << i << "\n";
-		std::cerr << "    Core Points: " << assignment[i].size() << "\n\t";
+		std::cout << "Cluster: " << i << "\n";
+		std::cout << "    Core Points: " << assignment[i].size() << "\n\t";
 		min_result = std::min_element(assignment[i].begin(), assignment[i].end());
 		max_result = std::max_element(assignment[i].begin(), assignment[i].end());
-		std::cerr << curr_node -> get_five_vec().at(*min_result) << "-"
+		std::cout << curr_node -> get_five_vec().at(*min_result) << "-"
 		          << curr_node -> get_five_vec().at(*max_result) << "\n";
 
-		std::cerr << "///////////////////////\n";
+		std::cout << "///////////////////////\n";
 	}
 
 }
@@ -105,7 +109,7 @@ void dbscan(ClusterList &cluster,  const int &strand, const int &count_percentag
 		if (curr_node -> get_read_count() >= min_count) {
 			dbscan_aux(curr_node, count_percentage, epsilon);
 		}
-		
+
 		curr_node = curr_node -> get_next();
 	}
 }
