@@ -12,7 +12,7 @@ private:
 
 	// Read Details
 	std::string headID;				   		// read ID of first read in cluster
-	size_t read_count;					    // number of associated reads
+	size_t read_count = 0;					// number of associated reads
 	std::vector<int> five_vec;				// vector for 5' ends
 
 	// Links
@@ -32,10 +32,8 @@ public:
 		stop = t_start + t_window_size;
 		strand = t_strand;
 		chrom_index = t_chrom_index;
-
 		five_vec.resize(1000, 0);
-		read_count = 0;
-
+		
 	}
 
 	// For combined Nodes
@@ -47,12 +45,10 @@ public:
 		strand = t_strand;
 		chrom_index = t_chrom_index;
 
-		five_vec.resize(a_five_vec.size() + b_five_vec.size());
-		five_vec.insert(five_vec.end(), a_five_vec.begin(), a_five_vec.end());
+		five_vec = a_five_vec;
 		five_vec.insert(five_vec.end(), b_five_vec.begin(), b_five_vec.end());
 
 		read_count = t_read_count;
-
 	}
 
 	// Destroy
@@ -88,6 +84,11 @@ public:
 		if (read_count % 1000 == 0) {
 			five_vec.resize(five_vec.size() + 1000, 0);
 		}
+	}
+
+	void shrink_five_vec() {
+		five_vec.resize(read_count);
+	    five_vec.shrink_to_fit();
 	}
 };
 

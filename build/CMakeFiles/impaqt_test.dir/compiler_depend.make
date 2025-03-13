@@ -320,6 +320,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
   ../ext/googletest-release-1.12.1/googletest/include/gtest/gtest-typed-test.h \
   ../ext/googletest-release-1.12.1/googletest/include/gtest/gtest_pred_impl.h \
   ../ext/googletest-release-1.12.1/googletest/include/gtest/gtest_prod.h \
+  /usr/include/c++/11/fstream \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
+  /usr/include/c++/11/bits/fstream.tcc \
   ../lib/parser.h \
   ../ext/seqan/include/seqan/arg_parse.h \
   ../ext/seqan/include/seqan/basic.h \
@@ -344,10 +348,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
   /usr/include/x86_64-linux-gnu/bits/dirent_ext.h \
   /usr/include/execinfo.h \
   ../ext/seqan/include/seqan/basic/debug_helper.h \
-  /usr/include/c++/11/fstream \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
-  /usr/include/c++/11/bits/fstream.tcc \
   ../ext/seqan/include/seqan/basic/profiling.h \
   ../ext/seqan/include/seqan/basic/basic_metaprogramming.h \
   ../ext/seqan/include/seqan/basic/metaprogramming_logic.h \
@@ -645,8 +645,11 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
   ../ext/bamtools/src/api/SamReadGroupDictionary.h \
   ../ext/bamtools/src/api/SamReadGroup.h \
   ../ext/bamtools/src/api/SamSequenceDictionary.h \
-  ../ext/bamtools/src/api/SamSequence.h
+  ../ext/bamtools/src/api/SamSequence.h \
+  ../lib/dbscan.h
 
+
+../lib/dbscan.h:
 
 ../ext/bamtools/src/api/SamReadGroupDictionary.h:
 
@@ -1616,6 +1619,10 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 ../ext/googletest-release-1.12.1/googletest/include/gtest/gtest_prod.h:
 
+/usr/include/c++/11/fstream:
+
+/usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h:
+
 ../ext/seqan/include/seqan/platform.h:
 
 /usr/include/inttypes.h:
@@ -1638,13 +1645,9 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/local_lim.h:
 
-/usr/include/c++/11/fstream:
-
-/usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h:
+/usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h:
 
 ../ext/seqan/include/seqan/basic/debug_helper.h:
-
-/usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h:
 
 ../ext/seqan/include/seqan/basic/profiling.h:
 

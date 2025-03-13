@@ -1,3 +1,4 @@
+#include <sstream>
 #include "node.h"
 #include "api/BamAux.h"
 #include "api/BamReader.h"
@@ -269,6 +270,9 @@ public:
 
 		while (curr_node != NULL) {
 			
+			// Shrink current node
+			curr_node -> shrink_five_vec();
+
 			// Empty Node
 			if (curr_node -> get_read_count() == 0) {
 
@@ -317,6 +321,9 @@ public:
 					if (curr_node -> get_next() == NULL) { break; }
 
 					if (curr_node -> get_next() -> get_read_count() != 0) {
+
+						// Shrink merging node
+						curr_node -> get_next() -> shrink_five_vec();
 
 						temp_node = new ClusterNode(curr_node -> get_start(),
 			                                        curr_node -> get_next() -> get_stop(),
@@ -383,5 +390,25 @@ public:
 
 			curr_node = curr_node -> get_next();
 		}
+	}
+
+	// stringify
+	std::string string_clusters(int t_strand) {
+
+		std::stringstream ss;
+		ClusterNode *curr_node = get_head(t_strand);
+
+		while (curr_node != NULL) {
+
+			ss << get_contig_name() << "\t"
+		       << curr_node -> get_start() << "\t"
+	           << curr_node -> get_stop() << "\t"
+	           << curr_node -> get_read_count() << "\n";
+
+			curr_node = curr_node -> get_next();
+		}
+
+
+		return ss.str();
 	}
 };

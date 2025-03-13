@@ -623,6 +623,7 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
   ../ext/bamtools/src/api/SamReadGroup.h \
   ../ext/bamtools/src/api/SamSequenceDictionary.h \
   ../ext/bamtools/src/api/SamSequence.h \
+  ../lib/dbscan.h \
   ../lib/queue.h \
   /usr/include/c++/11/queue \
   /usr/include/c++/11/bits/stl_queue.h
@@ -631,6 +632,8 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
 /usr/include/c++/11/bits/stl_queue.h:
 
 ../lib/queue.h:
+
+../lib/dbscan.h:
 
 ../ext/bamtools/src/api/SamReadGroupDictionary.h:
 
