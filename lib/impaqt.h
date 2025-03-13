@@ -148,10 +148,12 @@ public:
 		if (!ignore_chr) {
 			dbscan(cluster_list, 0,
 		       parameters -> count_percentage,
-		       parameters -> epsilon);
+		       parameters -> epsilon,
+		       parameters -> min_count);
 			dbscan(cluster_list, 1,
 		       parameters -> count_percentage,
-		       parameters -> epsilon);
+		       parameters -> epsilon,
+		       parameters -> min_count);
 		}
 	}
 

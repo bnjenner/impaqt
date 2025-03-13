@@ -95,12 +95,17 @@ void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &
 }
 
 
-void dbscan(ClusterList &cluster,  const int &strand, const int &count_percentage, const int &epsilon) {
+void dbscan(ClusterList &cluster,  const int &strand, const int &count_percentage, 
+			const int &epsilon,  const int &min_count) {
 
 	ClusterNode *curr_node = cluster.get_head(strand);
 
 	while (curr_node != NULL) {
-		dbscan_aux(curr_node, count_percentage, epsilon);
+
+		if (curr_node -> get_read_count() >= min_count) {
+			dbscan_aux(curr_node, count_percentage, epsilon);
+		}
+		
 		curr_node = curr_node -> get_next();
 	}
 }
