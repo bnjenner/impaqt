@@ -7,17 +7,13 @@
 // Impaqt Process Class
 class Impaqt {
 
-public:
+private:
 
 	const ImpaqtArguments *parameters; 	  // parameters struct (found in parser.h)
 
 	// Alignment file Readers
 	BamTools::BamReader inFile;		   	  // Bam File Object
 	BamTools::BamAlignment alignment;	  // BamAlignmentRecord record;
-
-	// Data Structures
-	ClusterList cluster_list;			  // List for clusters
-	// ClusterList transcript_list;		  // List for Transcripts
 
 	AnnotationList annotation;			  // Annotation
 	std::string alignment_file_name;	  // alignment file
@@ -33,6 +29,13 @@ public:
 	size_t unique_reads = 0;
 	size_t multimapped_reads = 0;
 	size_t unassigned_reads = 0;
+
+
+public:
+
+	// Data Structures
+	ClusterList cluster_list;			  // List for clusters
+	// ClusterList transcript_list;		  // List for Transcripts
 
 	// Empty
 	Impaqt() {};
@@ -53,6 +56,13 @@ public:
 	};
 
 
+	// Get Reads Stats
+	size_t get_total_reads() { return total_reads; }
+	size_t get_multimapped_reads() { return multimapped_reads; }
+	std::unordered_map<int, std::string> get_contig_map() { return contig_map; }
+	std::unordered_map<int, int> get_contig_lengths() { return contig_lengths; }
+
+	// Open BAM file
 	void open_alignment_file() {
 		// Open alignment file
 		if (!inFile.Open(alignment_file_name)) {
@@ -66,6 +76,7 @@ public:
 		}
 	}
 
+	// Close Bam File
 	void close_alignment_file() { inFile.Close(); }
 	// void print_counts() { annotation.print_genes(); }
 	// void print_gtf() { if (!ignore_chr) { cluster_list.print_clusters(); } }

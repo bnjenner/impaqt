@@ -49,43 +49,44 @@ public:
 	// 	}
 	// }
 
-	// // Parse lines of annotation file
-	// void parse_annotation_line(const std::string &line, std::vector<std::string> &columns) {
-	// 	size_t i = 0;
-	// 	std::istringstream iss(line);
-	// 	std::string column;
-	// 	while (std::getline(iss, column, '\t')) {
-	// 		columns.at(i) = column;
-	// 		i++;
-	// 	}
-	// }
+	// Parse lines of annotation file
+	void parse_annotation_line(const std::string &line, std::vector<std::string> &columns) {
+		size_t i = 0;
+		std::istringstream iss(line);
+		std::string column;
+		while (std::getline(iss, column, '\t')) {
+			columns.at(i) = column;
+			i++;
+		}
+	}
 
-	// // Get feature ID
-	// std::string get_feature_id(const std::string &anno_column, const bool &isGFF) {
+	// Get feature ID
+	std::string get_feature_id(const std::string &anno_column, const bool &isGFF) {
 
-	// 	std::string tag;
-	// 	std::string subtag;
+		std::string tag;
+		std::string subtag;
 
-	// 	char sep = '"';
-	// 	size_t i = 0;
+		char sep = '"';
+		size_t i = 0;
 
-	// 	std::istringstream iss(anno_column);
+		std::istringstream iss(anno_column);
 
-	// 	if (isGFF) { sep = '='; }
+		if (isGFF) { sep = '='; }
 
-	// 	while (std::getline(iss, tag, ';')) {
+		while (std::getline(iss, tag, ';')) {
 
-	// 		if (tag.find(feature_id) != std::string::npos) {
-	// 			std::istringstream iss2(tag);
+			if (tag.find(feature_id) != std::string::npos) {
+				std::istringstream iss2(tag);
 
-	// 			while (std::getline(iss2, subtag, sep)) {
-	// 				if (i % 2 == 1) {
-	// 					return subtag;
-	// 				}
-	// 				i++;
-	// 			}
-	// 		}
-	// 	}
+				while (std::getline(iss2, subtag, sep)) {
+					if (i % 2 == 1) {
+						return subtag;
+					}
+					i++;
+				}
+			}
+		}
+	}
 
 	// 	throw "ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.";
 	// }

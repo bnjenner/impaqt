@@ -1,12 +1,14 @@
 // inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
-void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &epsilon) {
+void dbscan_aux(ClusterNode *curr_node, const int &points, const int &min_counts, const int &epsilon, bool five) {
 
 	/*
-	We are going to need to adjust for known splice sites. 
+	So here is what we are going to do:
+		Cluster by 5' ends and then cluster by 3' ends
+		See what clusters overlap within an readlength between 5 and 3 clusters
+		
+			- If 1 cluster is identified and they overlap within the read length, they are one simple clust
+			- If N clusters are identified each, and their overlap with their other end counterpart, we have N simple clusters
 	*/
-
-	int min_counts = std::max((int)((float)curr_node -> get_read_count() * ((float)count_percentage / 100)), 20);
-	int points = curr_node -> get_read_count();
 
 	int index;
 	std::vector<bool> visted(points, false);
@@ -17,16 +19,14 @@ void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &
 	std::vector<int>::iterator min_result;
 	std::vector<int>::iterator max_result;	
 
-	std::cout << "////////////////////////////////////////////////\n";
-	std::cout << "Region: " << curr_node -> get_chrom_index() << ":"
-			  << curr_node -> get_start() << "-"
-			  << curr_node -> get_stop() << "\n"
-			  << "Read Counts: " << curr_node -> get_read_count() << "\n"
-			  << "Min Count: " << min_counts << "\n"
-			  << "Epsilon: " << epsilon 
-			  << "\n///////////////////////////////////////////////\n";
+	std::vector<int> adj_vec;
 
-	std::vector<int> adj_five_vec = curr_node -> get_five_vec();
+	if (five) {
+		adj_vec = curr_node -> get_five_vec();
+	} else {
+		adj_vec = curr_node -> get_three_vec();
+	}
+
 
 	for (int i = 0; i < points; i++) {
 
@@ -35,7 +35,7 @@ void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &
 		if (visted[i] == false) {
 
 			for (int j = 0; j < points; j++) {
-				if ((i != j) && (std::abs(adj_five_vec[j] - adj_five_vec[i]) <= epsilon)) {
+				if ((i != j) && (std::abs(adj_vec[j] - adj_vec[i]) <= epsilon)) {
 					neighbors.push_back(j);
 				}
 			}
@@ -56,7 +56,7 @@ void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &
 						visted[index] = true;
 
 						for (int k = 0; k < points; k++) {
-							if (std::abs(adj_five_vec[index] - adj_five_vec[k]) <= epsilon) {
+							if (std::abs(adj_vec[index] - adj_vec[k]) <= epsilon) {
 								sub_neighbors.push_back(k);
 							}
 						}
@@ -77,11 +77,12 @@ void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &
 
 
 
-	std::cout << "//////////////////////////////////////////////\n";
+	std::cout << "/////////////////////\n";
 	std::cout << "Chrom: " << curr_node -> get_chrom_index() << "\n";
+	std::cout << "Five: " << five << "\n";
 	std::cout << "Clusters Identified: " << assignment.size() << "\n";
 	std::cout << "Regions: " << curr_node -> get_start() << "-" << curr_node -> get_stop() << "\n";
-	std::cout << "///////////////////////\n";
+	std::cout << "//////////////////////\n";
 
 
 	for (int i = 0; i < assignment.size(); i++) {
@@ -90,8 +91,8 @@ void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &
 		std::cout << "    Core Points: " << assignment[i].size() << "\n\t";
 		min_result = std::min_element(assignment[i].begin(), assignment[i].end());
 		max_result = std::max_element(assignment[i].begin(), assignment[i].end());
-		std::cout << curr_node -> get_five_vec().at(*min_result) << "-"
-		          << curr_node -> get_five_vec().at(*max_result) << "\n";
+		std::cout << adj_vec.at(*min_result) << "-"
+		          << adj_vec.at(*max_result) << "\n";
 
 		std::cout << "///////////////////////\n";
 	}
@@ -102,12 +103,31 @@ void dbscan_aux(ClusterNode *curr_node, const int &count_percentage, const int &
 void dbscan(ClusterList &cluster,  const int &strand, const int &count_percentage, 
 			const int &epsilon,  const int &min_count) {
 
+	int points;
+	int min_counts;
+
 	ClusterNode *curr_node = cluster.get_head(strand);
 
 	while (curr_node != NULL) {
 
 		if (curr_node -> get_read_count() >= min_count) {
-			dbscan_aux(curr_node, count_percentage, epsilon);
+
+			points = curr_node -> get_read_count();
+			min_counts = std::max((int)((float)curr_node -> get_read_count() * ((float)count_percentage / 100)), 20);
+
+			std::cout << "////////////////////////////////////////////////\n";
+			std::cout << "Region: " << curr_node -> get_chrom_index() << ":"
+					  << curr_node -> get_start() << "-"
+					  << curr_node -> get_stop() << "\n"
+					  << "Read Counts: " << curr_node -> get_read_count() << "\n"
+					  << "Min Count: " << min_counts << "\n"
+					  << "Epsilon: " << epsilon 
+					  << "\n///////////////////////////////////////////////\n";
+
+
+			dbscan_aux(curr_node, points, min_counts, epsilon, true);
+			dbscan_aux(curr_node, points, min_counts, epsilon, false);
+
 		}
 
 		curr_node = curr_node -> get_next();

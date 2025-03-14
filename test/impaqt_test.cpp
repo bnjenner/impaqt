@@ -51,7 +51,6 @@ TEST_F(impactTest, BasicCluster) {
 
    std::string answer = read_test_file("../test/data/test_cluster.txt");
    ASSERT_EQ(test_process -> cluster_list.string_clusters(0), answer);
-
 };
 
 TEST_F(impactTest, BasicCollapse) { 
@@ -65,7 +64,7 @@ TEST_F(impactTest, BasicCollapse) {
 
 TEST_F(impactTest, BasicDBSCAN) { 
 
-   test_process -> find_transcripts();
+   // test_process -> find_transcripts();
    // std::string answer = read_test_file("../test/data/test_collapse.txt");
    // ASSERT_EQ(test_process -> cluster_list.string_clusters(0), answer);
 

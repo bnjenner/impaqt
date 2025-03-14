@@ -23,7 +23,7 @@ int main(int argc, char const ** argv) {
     auto start = std::chrono::high_resolution_clock::now();
 
     // Welcome!
-    std::cerr << "[IMPAQT]\n";
+    std::cerr << "// IMPAQT\n";
 
     // Parse arguments
     ImpaqtArguments args;
@@ -35,9 +35,9 @@ int main(int argc, char const ** argv) {
 
 
     // Begin Parsing Files
-    std::cerr << "[Parsing Input Files...]\n";
+    std::cerr << "// Parsing Input Files...\n";
 
-    std::cerr << "[...Annotation File...]\n";
+    std::cerr << "//     Annotation File...\n";
     AnnotationList init_annotation(&args);
     // init_annotation.create_gene_graph();
 
@@ -47,7 +47,7 @@ int main(int argc, char const ** argv) {
 
     std::vector<Impaqt*> processes;
     {
-        std::cerr << "[...Alignment File...]\n";
+        std::cerr << "//     Alignment File....\n";
         Impaqt init_process(&args, 0);
         init_process.open_alignment_file();
         init_process.set_chrom_order();
@@ -60,14 +60,14 @@ int main(int argc, char const ** argv) {
         processes.reserve(n);
         for (int i = 0; i < n; i++) {
             processes.emplace_back(new Impaqt(&args, i));
-            processes[i] -> copy_order(init_process.contig_map, init_process.contig_lengths);
+            processes[i] -> copy_order(init_process.get_contig_map(), init_process.get_contig_lengths());
             // processes[i] -> copy_annotation(init_annotation, i);
         }
     }
 
 
     // Send it
-    std::cerr << "[Processing Data...]\n";
+    std::cerr << "// Processing Data.......\n";
 
     int i = 0;
     const int proc = std::max(args.threads - 1, 1);
@@ -92,35 +92,35 @@ int main(int argc, char const ** argv) {
 
     // // Summary Statistics
     // size_t total_ambiguous = 0;
-    // size_t total_multimapping = 0;
+    size_t total_multimapping = 0;
     // size_t total_no_feature = 0;
     // size_t total_low_quality = 0;
     // size_t total_unique = 0;
-    // size_t total_reads = 0;
+    size_t total_reads = 0;
 
 
-    // // Write Results
-    // std::cerr << "[Writing Results...]\n";
-    // std::cerr << "[...Counts Data...]\n";
+    // Write Results
+    std::cerr << "// Writing Results.......\n";
+    std::cerr << "//     Counts Data.......\n";
 
 
     for (int i = 0; i < n; i++) {
         // processes[i] -> print_counts();
         // total_ambiguous += processes[i] -> ambiguous_reads;
         // total_unique += processes[i] -> unique_reads;
-        // total_multimapping += processes[i] -> multimapped_reads;
+        total_multimapping += processes[i] -> get_multimapped_reads();
         // total_no_feature += processes[i] -> unassigned_reads;
-        // total_reads += processes[i] -> total_reads;
+        total_reads += processes[i] -> get_total_reads();
         delete processes[i];
     }
 
     // std::cout << "__unique\t" << total_unique << "\n";
     // std::cout << "__ambiguous\t" << total_ambiguous << "\n";
-    // std::cout << "__multimapping\t" << total_multimapping << "\n";
+    std::cout << "//multimapping\t" << total_multimapping << "\n";
     // std::cout << "__unassigned\t" << total_no_feature << "\n";
-    // std::cout << "__total\t" << total_reads << std::endl;
+    std::cout << "//total\t" << total_reads << std::endl;
 
-    // // Output read cluster gtf if specified
+    // // Output read cluster gtf if specifiedq
     // if (args.gtf_output != "") {
     //     std::cerr << "[...Output GTFs...]\n";
     //     std::ofstream newFile;
@@ -135,8 +135,8 @@ int main(int argc, char const ** argv) {
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
 
     // Say goodbye :)
-    std::cerr << "[Program Complete!]\n";
-    std::cerr << "[Runtime: " << duration.count() << " seconds]" << std::endl;
+    std::cerr << "// Program Complete!\n";
+    std::cerr << "// Runtime: " << duration.count() << " seconds" << std::endl;
 
     return 0;
 }

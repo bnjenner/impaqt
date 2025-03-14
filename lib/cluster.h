@@ -184,6 +184,7 @@ public:
 	bool create_clusters(BamTools::BamReader &inFile, BamTools::BamAlignment &alignment) {
 
 		int t_5end;
+		int t_3end;
 		int t_strand;
 		bool found_reads = false;
 		ClusterNode *pos_curr_node = get_head(0);
@@ -204,6 +205,7 @@ public:
 			if (alignment.IsReverseStrand()) {
 
 				t_5end = calculate_splice(alignment);
+				t_3end = alignment.Position;
 
 				// Advance to correct node based on left position
 				while (neg_curr_node -> get_next() != NULL) {
@@ -230,11 +232,13 @@ public:
 					std::cerr << "ERROR: Alignment is not in a cluster. This should not happen.\n";
 					throw "ERROR: Alignment is not in a cluster. This should not happen.";
 				} else {
-					neg_temp_node -> add_alignment(t_5end);
+					neg_temp_node -> add_alignment(t_5end, t_3end);
 				}
 
 			} else {
+
 				t_5end = alignment.Position;
+				t_3end = calculate_splice(alignment);
 
 				// Get Correct node
 				while (pos_curr_node -> get_next() != NULL) {
@@ -250,7 +254,7 @@ public:
 					std::cerr << "ERROR: Alignment is not in a cluster. This should not happen.\n";
 					throw "ERROR: Alignment is not in a cluster. This should not happen.";
 				} else {
-					pos_curr_node -> add_alignment(t_5end);
+					pos_curr_node -> add_alignment(t_5end, t_3end);
 				}
 			}
 
@@ -271,7 +275,7 @@ public:
 		while (curr_node != NULL) {
 			
 			// Shrink current node
-			curr_node -> shrink_five_vec();
+			curr_node -> shrink_vectors();
 
 			// Empty Node
 			if (curr_node -> get_read_count() == 0) {
@@ -281,6 +285,7 @@ public:
 
 					temp_node = curr_node -> get_prev();
 
+					// If curr_node is also not first node
 					if (temp_node != NULL) { 
 						temp_node -> set_next(NULL);
 					} else {
@@ -323,7 +328,7 @@ public:
 					if (curr_node -> get_next() -> get_read_count() != 0) {
 
 						// Shrink merging node
-						curr_node -> get_next() -> shrink_five_vec();
+						curr_node -> get_next() -> shrink_vectors();
 
 						temp_node = new ClusterNode(curr_node -> get_start(),
 			                                        curr_node -> get_next() -> get_stop(),
@@ -331,7 +336,9 @@ public:
 			                                        curr_node -> get_chrom_index(),
 			                                        curr_node -> get_read_count() + curr_node -> get_next() -> get_read_count(),
 			                                        curr_node -> get_five_vec(),
-			                                        curr_node -> get_next() -> get_five_vec());
+			                                        curr_node -> get_next() -> get_five_vec(),
+			                                        curr_node -> get_three_vec(),
+			                                        curr_node -> get_next() -> get_three_vec());
 
 						temp_node -> set_prev(curr_node -> get_prev());
 
