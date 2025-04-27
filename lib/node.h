@@ -5,20 +5,23 @@ class ClusterNode {
 private:
 
 	// Node Details
-	int chrom_index;					    // chromosome number in index
-	int strand = -1;					    // standedness
-	int start;								// beginning of window
-	int stop;								// end of window
+	int chrom_index;					   				// chromosome number in index
+	int strand = -1;					    			// standedness
+	int start;											// beginning of window
+	int stop;											// end of window
 
 	// Read Details
-	std::string headID;				   		// read ID of first read in cluster
-	size_t read_count = 0;					// number of associated reads
-	std::vector<int> five_vec;				// vector for 5' ends
-	std::vector<int> three_vec;				// vector for 3' ends
+	std::string headID;				   					// read ID of first read in cluster
+	size_t read_count = 0;								// number of associated reads
+	std::vector<int> five_vec;							// vector for 5' ends
+	std::vector<int> three_vec;							// vector for 3' ends
 
 	// Links
-	ClusterNode *next = NULL;				// next ClusterNode
-	ClusterNode *prev = NULL;				// pevsious ClusterNode
+	ClusterNode *next = NULL;							// next ClusterNode
+	ClusterNode *prev = NULL;							// pevsious ClusterNode
+
+	// Transcript Results
+	std::vector<std::vector<int>> transcript_vec;		// vector of transcript regions
 
 
 public:
@@ -76,6 +79,9 @@ public:
 	size_t get_read_count() { return read_count; }
 	std::vector<int> get_five_vec() { return five_vec; }
 	std::vector<int> get_three_vec() { return three_vec; }
+	std::vector<int>* get_five_ref() { return &five_vec; }
+	std::vector<int>* get_three_ref() { return &three_vec; }
+	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
 
 	// Linking functions
 	void set_next(ClusterNode *node) { next = node; }
@@ -84,6 +90,7 @@ public:
 	ClusterNode* get_prev() { return prev; }
 
 	void add_alignment(int t_5end, int t_3end) {
+
 		five_vec.at(read_count) = t_5end;
 		three_vec.at(read_count) = t_3end;
 		read_count += 1;

@@ -46,12 +46,14 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv, ImpaqtA
     seqan::addArgument(parser, seqan::ArgParseArgument(
                            seqan::ArgParseArgument::INPUT_FILE, "GTF"));
 
+
     // Define Program Options
     seqan::addOption(parser, seqan::ArgParseOption(
                          "t", "threads",
                          "Number of processers for multithreading.",
                          seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "threads", "1");
+
 
     // Define Read Options
     seqan::addOption(parser, seqan::ArgParseOption(
@@ -75,6 +77,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv, ImpaqtA
                          seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "mapq-min", "1");
 
+
     // Define DBSCAN Options
     addOption(parser, seqan::ArgParseOption(
                   "m", "min-count",
@@ -92,7 +95,8 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv, ImpaqtA
                   "e", "epsilon",
                   "Distance (in base pairs) for DBSCAN algorithm.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "epsilon", "100");
+    seqan::setDefaultValue(parser, "epsilon", "150");
+
 
     // Define Annotation Options
     seqan::addOption(parser, seqan::ArgParseOption(
@@ -108,6 +112,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv, ImpaqtA
     seqan::addOption(parser, seqan::ArgParseOption(
                          "o", "output-gtf", "Output read cluster GTF file and specify name.",
                          seqan::ArgParseArgument::STRING, "STRING"));
+
 
     seqan::addUsageLine(parser, "input.sorted.bam annotation.gtf [options]");
     seqan::setDefaultValue(parser, "version-check", "OFF");

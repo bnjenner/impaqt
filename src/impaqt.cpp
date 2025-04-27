@@ -22,9 +22,6 @@ int main(int argc, char const ** argv) {
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    // Welcome!
-    std::cerr << "// IMPAQT\n";
-
     // Parse arguments
     ImpaqtArguments args;
     seqan::ArgumentParser::ParseResult res = argparse(argc, argv, args);
@@ -33,9 +30,11 @@ int main(int argc, char const ** argv) {
         return res;
     }
 
-
-    // Begin Parsing Files
+    
+    // Welcome!
+    std::cerr << "// IMPAQT\n";
     std::cerr << "// Parsing Input Files...\n";
+
 
     std::cerr << "//     Annotation File...\n";
     AnnotationList init_annotation(&args);
@@ -54,7 +53,7 @@ int main(int argc, char const ** argv) {
 
         // Number of contigs for subdividing work across multiple threads
         n = 1; 
-        // n = init_process.contig_map.size();
+        // n = init_process.get_contig_map().size();
 
         // Multithreading init
         processes.reserve(n);
@@ -66,9 +65,7 @@ int main(int argc, char const ** argv) {
     }
 
 
-    // Send it
     std::cerr << "// Processing Data.......\n";
-
     int i = 0;
     const int proc = std::max(args.threads - 1, 1);
     {
@@ -116,9 +113,9 @@ int main(int argc, char const ** argv) {
 
     // std::cout << "__unique\t" << total_unique << "\n";
     // std::cout << "__ambiguous\t" << total_ambiguous << "\n";
-    std::cout << "//multimapping\t" << total_multimapping << "\n";
+    std::cout << "// multimapping\t" << total_multimapping << "\n";
     // std::cout << "__unassigned\t" << total_no_feature << "\n";
-    std::cout << "//total\t" << total_reads << std::endl;
+    std::cout << "// total\t" << total_reads << std::endl;
 
     // // Output read cluster gtf if specifiedq
     // if (args.gtf_output != "") {

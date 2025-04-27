@@ -1,3 +1,11 @@
+Collapsing core clusters:
+	1. check if 5 core 1 overlaps with 3 core 1,
+		if yes, combine
+		if no, point to 3 core 1
+	2. does 3 core 1 overlap with 5 core 2,
+		if yes, combine,
+		if no, point to 5 core 2
+	repeat
 Tests:
 	- create clusters
 	- collapse clusters
