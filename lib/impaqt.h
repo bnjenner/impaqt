@@ -10,14 +10,14 @@ class Impaqt {
 private:
 
 	// Alignment file Readers
-	BamTools::BamReader inFile;		   	  // Bam File Object
-	BamTools::BamAlignment alignment;	  // BamAlignmentRecord record;
+	BamTools::BamReader inFile;		   	 				 // Bam File Object
+	BamTools::BamAlignment alignment;	  				 // BamAlignmentRecord record;
 
-	// AnnotationList annotation;			  // Annotation
-	std::string alignment_file_name;	  // alignment file
-	std::string index;				  	  // alignment index file
-	int chrom_index;					  // chromosome number
-	bool ignore_chr = false;			  // to ignore for downstream
+	// AnnotationList annotation;			  			 // Annotation
+	static std::string alignment_file_name;	     		 // alignment file
+	static std::string index;				  	     	 // alignment index file
+	int chrom_index;					  				 // chromosome number
+	bool ignore_chr = false;			  				 // to ignore for downstream
 
 	static std::unordered_map<int, std::string> contig_map;
 	static std::unordered_map<int, int> contig_lengths;
@@ -137,24 +137,21 @@ public:
 
 	// Merge neighboring clusters and remove zeroes
 	void collapse_clusters() {
-		if (!ignore_chr) {
-			cluster_list.collapse_clusters(0); // Forward
-			cluster_list.collapse_clusters(1); // Reverse
-		}
-	}
+		cluster_list.collapse_clusters(0); // Forward
+		cluster_list.collapse_clusters(1); // Reverse
+}
 
 	// Differentiate Transcriptes
 	void find_transcripts() {
-		if (!ignore_chr) {
-			dbscan(cluster_list, 0);
-			dbscan(cluster_list, 1);
-		}
+		dbscan(cluster_list, 0);
+		dbscan(cluster_list, 1);
 	}
 
 
 	void launch() {
 		this -> open_alignment_file();			  // open files
 		this -> find_clusters();	  			  // find clusters
+		if (ignore_chr) { return; }
 		this -> collapse_clusters();	  		  // collapse clusters
 		this -> find_transcripts();	  		  	  // dbscan clustering algorithm
 		// this -> overlap_genes();  	  			  // overlap genes

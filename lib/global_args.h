@@ -10,6 +10,13 @@
     1.) Not hot on the cache, as it's infrequently accessed (slow relative to stack allocation)
     2.) ?
 
+
+    I ultimately think splitting hairs over a few seconds is not necessarily optimal. If anything, readability
+        and maintainability should be prioritized. 
+
+    ChatGPT suggested locally caching the reference... we will see.
+
+        ```auto& s = MyApp::getGlobalStruct();  // Local reference```
 */
 namespace ImpaqtArguments {
 struct GlobalArgs {

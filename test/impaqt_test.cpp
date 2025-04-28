@@ -22,11 +22,13 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/test.bam",   
                                                      false,                        // isGFF
                                                      "exon",                       // feature_tag
                                                      "gene_id",                    // feature_id
-                                                     ""
-                                                    };                          // gtf_output
+                                                     ""                            // gtf_output
+                                                    }; 
 
 
 // Static Member Defintions
+std::string Impaqt::alignment_file_name;
+std::string Impaqt::index;
 std::unordered_map<int, std::string> Impaqt::contig_map;
 std::unordered_map<int, int> Impaqt::contig_lengths;
 

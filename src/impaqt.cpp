@@ -17,6 +17,8 @@
 ImpaqtArguments::GlobalArgs ImpaqtArguments::Args;
 
 // Static Member Defintions
+std::string Impaqt::alignment_file_name;
+std::string Impaqt::index;
 std::unordered_map<int, std::string> Impaqt::contig_map;
 std::unordered_map<int, int> Impaqt::contig_lengths;
 

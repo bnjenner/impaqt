@@ -21,9 +21,6 @@ private:
 	ClusterNode *neg_head;					// first negative ClusterNode
 	ClusterNode *neg_tail;					// last negative ClusterNode
 
-	// For Checks
-	bool initialized = false;
-
 	// Summary
 	size_t total_reads = 0;
 	size_t multimapped_reads = 0;
@@ -91,26 +88,22 @@ public:
 	// Destroy
 	~ClusterList() {
 
-		if (initialized) {
+		ClusterNode *curr_node = pos_head;
+		ClusterNode *temp_node = NULL;
 
-			ClusterNode *curr_node = pos_head;
-			ClusterNode *temp_node = NULL;
+		while (curr_node != NULL) {
+			temp_node = curr_node;
+			curr_node = curr_node -> get_next();
+			delete temp_node;
+		}
 
-			while (curr_node != NULL) {
-				temp_node = curr_node;
-				curr_node = curr_node -> get_next();
-				delete temp_node;
-			}
+		curr_node = neg_head;
+		temp_node = NULL;
 
-			curr_node = neg_head;
-			temp_node = NULL;
-
-			while (curr_node != NULL) {
-				temp_node = curr_node;
-				curr_node = curr_node -> get_next();
-				delete temp_node;
-			}
-
+		while (curr_node != NULL) {
+			temp_node = curr_node;
+			curr_node = curr_node -> get_next();
+			delete temp_node;
 		}
 	}
 
@@ -152,8 +145,7 @@ public:
 
 		// Create Positive list
 		temp = new ClusterNode(temp_pos, window_size, 0, chrom_index);
-		pos_head = temp;
-		pos_tail = temp;
+		pos_head = temp; pos_tail = temp;
 		for (int i = 1; i < zones; i++) {
 			temp_pos += window_size;
 			pos_tail -> set_next(new ClusterNode(temp_pos, window_size, 0, chrom_index));
@@ -164,16 +156,13 @@ public:
 		// Create Negative list
 		temp_pos = 0;
 		temp = new ClusterNode(temp_pos, window_size, 1, chrom_index);
-		neg_head = temp;
-		neg_tail = temp;
+		neg_head = temp; neg_tail = temp;
 		for (int i = 1; i < zones; i++) {
 			temp_pos += window_size;
 			neg_tail -> set_next(new ClusterNode(temp_pos, window_size, 1, chrom_index));
 			neg_tail -> get_next() -> set_prev(neg_tail);
 			neg_tail = neg_tail -> get_next();
 		}
-
-		initialized = true;
 	}
 
 	// Create read clusters
@@ -270,7 +259,6 @@ public:
 
 		while (curr_node != NULL) {
 
-			// Shrink current node
 			curr_node -> shrink_vectors();
 
 			// Empty Node
@@ -278,7 +266,6 @@ public:
 
 				// If last node
 				if (curr_node -> get_next() == NULL) {
-
 					temp_node = curr_node -> get_prev();
 
 					// If curr_node is also not first node
@@ -300,7 +287,6 @@ public:
 					curr_node = curr_node -> get_next();
 					curr_node -> set_prev(NULL);
 					temp_head = curr_node;
-
 					delete temp_node;
 
 
@@ -323,7 +309,6 @@ public:
 
 					if (curr_node -> get_next() -> get_read_count() != 0) {
 
-						// Shrink merging node
 						curr_node -> get_next() -> shrink_vectors();
 
 						temp_node = new ClusterNode(curr_node -> get_start(),
@@ -353,16 +338,13 @@ public:
 							temp_tail = temp_node;
 						}
 
-
 						delete curr_node -> get_next();
 						delete curr_node;
-
 						curr_node = temp_node;
 
 					} else {
 						break;
 					}
-
 				}
 
 				curr_node = curr_node -> get_next();
@@ -370,11 +352,9 @@ public:
 		}
 
 		if (t_strand == 0) {
-			pos_head = temp_head;
-			pos_tail = temp_tail;
+			pos_head = temp_head; pos_tail = temp_tail;
 		} else {
-			neg_head = temp_head;
-			neg_tail = temp_tail;
+			neg_head = temp_head; neg_tail = temp_tail;
 		}
 	}
 

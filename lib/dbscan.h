@@ -41,8 +41,7 @@ void reduce_transcripts(ClusterNode *curr_node, const std::vector<std::string> &
 			}
 
 			// if clusters within read length
-			if (!tmp_vec.empty() &&
-			        ImpaqtArguments::Args.epsilon >= ((curr_node -> get_three_vec().at(*min_result)) - tmp_vec.back())) {
+			if (!tmp_vec.empty() && ImpaqtArguments::Args.epsilon >= (min_pos - tmp_vec.back())) {
 				tmp_vec[1] = max_pos;
 
 			} else {
@@ -117,7 +116,6 @@ void trace_transcripts(ClusterNode *curr_node, std::vector<std::string> &path_ve
 	std::vector<std::string> tmp_vec;
 
 	for (int i = 0; i < curr_node -> get_read_count(); i++) {
-
 		path = "";
 
 		// assigned in 5' DBSCAN
@@ -137,9 +135,7 @@ void trace_transcripts(ClusterNode *curr_node, std::vector<std::string> &path_ve
 
 		// add to paths vector if path is not empty
 		auto it = std::find(tmp_vec.begin(), tmp_vec.end(), path);
-		if (path != "" && it == tmp_vec.end()) {
-			tmp_vec.push_back(path);
-		}
+		if (path != "" && it == tmp_vec.end()) { tmp_vec.push_back(path); }
 	}
 
 
@@ -180,12 +176,11 @@ std::vector<int> dbscan_aux(ClusterNode *curr_node, const int &points, const int
 
 	int index;
 	int clust_num = 0;
-	std::vector<bool> visted(points, false);
-	std::vector<int> assign_vec(points, -1);
+	std::vector<int> *adj_vec;
 	std::vector<int> neighbors;
 	std::vector<int> sub_neighbors;
-	std::vector<int> *adj_vec;
-
+	std::vector<int> assign_vec(points, -1);
+	std::vector<bool> visted(points, false);
 
 	// avoid copy
 	if (five) {
@@ -239,7 +234,6 @@ std::vector<int> dbscan_aux(ClusterNode *curr_node, const int &points, const int
 						if (sub_neighbors.size() >= min_counts) {
 							std::copy(sub_neighbors.begin(), sub_neighbors.end(), std::back_inserter(neighbors));
 						}
-
 						cluster_indexes.push_back(index);
 					}
 				}

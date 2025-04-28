@@ -48,19 +48,19 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 
 
     // Define DBSCAN Options
-    addOption(parser, seqan::ArgParseOption(
+    seqan::addOption(parser, seqan::ArgParseOption(
                   "m", "min-count",
                   "Minimum read count for DBSCAN transcript identification algorithm.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "min-count", "50");
 
-    addOption(parser, seqan::ArgParseOption(
+    seqan::addOption(parser, seqan::ArgParseOption(
                   "p", "count-percentage",
                   "Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold unless percentage is less than 20.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "count-percentage", "20");
 
-    addOption(parser, seqan::ArgParseOption(
+    seqan::addOption(parser, seqan::ArgParseOption(
                   "e", "epsilon",
                   "Distance (in base pairs) for DBSCAN algorithm.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
@@ -109,6 +109,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     }
 
     if (input_file_ext == "gff") { ImpaqtArguments::Args.isGFF = true; }
+
 
     // Get arguments
     seqan::getArgumentValue(ImpaqtArguments::Args.alignment_file, parser, 0);
