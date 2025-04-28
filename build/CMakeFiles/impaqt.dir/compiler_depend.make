@@ -213,6 +213,7 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
   /usr/include/c++/11/ext/aligned_buffer.h \
   /usr/include/c++/11/ext/concurrence.h \
   /usr/include/c++/11/mutex \
+  ../lib/global_args.h \
   ../lib/parser.h \
   ../ext/seqan/include/seqan/arg_parse.h \
   ../ext/seqan/include/seqan/basic.h \
@@ -605,7 +606,6 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
   ../ext/seqan/include/seqan/arg_parse/arg_parse_doc.h \
   ../ext/seqan/include/seqan/arg_parse/arg_parse_ctd_support.h \
   ../ext/seqan/include/seqan/arg_parse/arg_parse_parse.h \
-  ../lib/annotation.h \
   ../lib/impaqt.h \
   ../lib/cluster.h \
   ../lib/node.h \
@@ -648,8 +648,6 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
 ../ext/bamtools/src/shared/bamtools_global.h:
 
 ../ext/bamtools/src/api/api_global.h:
-
-../lib/annotation.h:
 
 ../ext/seqan/include/seqan/arg_parse/arg_parse_ctd_support.h:
 
@@ -738,6 +736,10 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
 ../ext/seqan/include/seqan/file/string_external.h:
 
 ../ext/seqan/include/seqan/file/string_mmap.h:
+
+/usr/include/c++/11/iterator:
+
+../ext/seqan/include/seqan/file/file_mapping.h:
 
 /usr/include/x86_64-linux-gnu/bits/getopt_posix.h:
 
@@ -870,6 +872,8 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
 /usr/include/c++/11/bits/locale_facets.h:
 
 /usr/include/c++/11/bits/exception.h:
+
+/usr/include/x86_64-linux-gnu/c++/11/bits/cpu_defines.h:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h:
 
@@ -1121,10 +1125,6 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/timex.h:
 
-/usr/include/c++/11/iterator:
-
-../ext/seqan/include/seqan/file/file_mapping.h:
-
 /usr/include/features.h:
 
 /usr/include/x86_64-linux-gnu/bits/sigstack.h:
@@ -1151,11 +1151,11 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
 
 ../ext/seqan/include/seqan/sequence.h:
 
-/usr/include/x86_64-linux-gnu/sys/stat.h:
-
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
 
 /usr/include/c++/11/bits/stl_function.h:
+
+../lib/global_args.h:
 
 /usr/include/c++/11/bits/memoryfwd.h:
 
@@ -1200,8 +1200,6 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
 /usr/include/c++/11/bits/atomic_futex.h:
 
 /usr/include/c++/11/exception:
-
-/usr/include/x86_64-linux-gnu/c++/11/bits/cpu_defines.h:
 
 ../ext/seqan/include/seqan/sequence/string_set_view.h:
 
@@ -1372,6 +1370,8 @@ CMakeFiles/impaqt.dir/src/impaqt.cpp.o: ../src/impaqt.cpp \
 /usr/include/c++/11/bits/algorithmfwd.h:
 
 /usr/include/c++/11/bits/cxxabi_forced.h:
+
+/usr/include/x86_64-linux-gnu/sys/stat.h:
 
 /usr/include/x86_64-linux-gnu/bits/waitstatus.h:
 

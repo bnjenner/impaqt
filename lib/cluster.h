@@ -9,9 +9,6 @@ class ClusterList {
 
 private:
 
-	// Paramters
-	const ImpaqtArguments *parameters;	 	// parameters struct (found in parser.h)
-
 	// List Details
 	int chrom_index;					    // chromosome number in index
 	std::string contig_name;				// name of contig
@@ -40,7 +37,7 @@ private:
 		for (int i = 0; i < alignment.CigarData.size(); i++) {
 			// If not clipped and free of inserts, (may also need to check cigar string standards)
 			if ((alignment.CigarData[i].Type != 'S') && (alignment.CigarData[i].Type != 'H') &&
-			           (alignment.CigarData[i].Type != 'I')) {
+			        (alignment.CigarData[i].Type != 'I')) {
 				end_pos += alignment.CigarData[i].Length;
 			}
 		}
@@ -55,22 +52,22 @@ private:
 		if (!alignment.IsMapped()) { return false; }
 
 		alignment.GetTag("NH", NH_tag);
-		if ((NH_tag > 1) && (!(parameters -> nonunique_alignments))) {
+		if ((NH_tag > 1) && (!(ImpaqtArguments::Args.nonunique_alignments))) {
 			multimapped_reads++;
 			return false;
 		}
 
 		// Exclude secondary alignment
-		if (!alignment.IsPrimaryAlignment() && (!(parameters -> nonunique_alignments))) {
+		if (!alignment.IsPrimaryAlignment() && (!(ImpaqtArguments::Args.nonunique_alignments))) {
 			return false;
 		}
 
 		// If paired end, check propper pair
-		if (!alignment.IsProperPair() && ((parameters -> library_type).compare("paired") == 0)) {
+		if (!alignment.IsProperPair() && ((ImpaqtArguments::Args.library_type).compare("paired") == 0)) {
 			return false;
 		}
 
-		if (alignment.MapQuality < parameters -> mapq) {
+		if (alignment.MapQuality < ImpaqtArguments::Args.mapq) {
 			return false;
 		}
 
@@ -98,7 +95,7 @@ public:
 
 			ClusterNode *curr_node = pos_head;
 			ClusterNode *temp_node = NULL;
-			
+
 			while (curr_node != NULL) {
 				temp_node = curr_node;
 				curr_node = curr_node -> get_next();
@@ -107,7 +104,7 @@ public:
 
 			curr_node = neg_head;
 			temp_node = NULL;
-			
+
 			while (curr_node != NULL) {
 				temp_node = curr_node;
 				curr_node = curr_node -> get_next();
@@ -121,7 +118,7 @@ public:
 	std::string get_contig_name() { return contig_name; }
 
 	// Get Head Node
-	ClusterNode* get_head(int t_strand) { 
+	ClusterNode* get_head(int t_strand) {
 		if (t_strand == 0) {
 			return pos_head;
 		} else {
@@ -143,12 +140,11 @@ public:
 	size_t get_multimapped_reads() { return multimapped_reads; }
 
 	// Initialize empty object
-	void initialize(const int t_chrom_index, const std::string t_contig_name, const int t_chrom_length, const ImpaqtArguments *args) {
+	void initialize(const int t_chrom_index, const std::string t_contig_name, const int t_chrom_length) {
 
 		chrom_index = t_chrom_index;
 		contig_name = t_contig_name;
 		chrom_length = t_chrom_length;
-		parameters = args;
 
 		ClusterNode *temp;
 		int temp_pos = 0;
@@ -273,7 +269,7 @@ public:
 		ClusterNode *temp_tail = NULL;
 
 		while (curr_node != NULL) {
-			
+
 			// Shrink current node
 			curr_node -> shrink_vectors();
 
@@ -286,29 +282,29 @@ public:
 					temp_node = curr_node -> get_prev();
 
 					// If curr_node is also not first node
-					if (temp_node != NULL) { 
+					if (temp_node != NULL) {
 						temp_node -> set_next(NULL);
 					} else {
 						temp_head = NULL;
 					}
-					
+
 					temp_tail = temp_node;
 
 					delete curr_node;
 					curr_node = NULL;
 
 
-				// If first node
+					// If first node
 				} else if (curr_node -> get_prev() == NULL) {
 					temp_node = curr_node;
 					curr_node = curr_node -> get_next();
 					curr_node -> set_prev(NULL);
 					temp_head = curr_node;
-					
+
 					delete temp_node;
 
 
-				// else 
+					// else
 				} else {
 					temp_node = curr_node -> get_prev();
 					temp_node -> set_next(curr_node -> get_next());
@@ -318,7 +314,7 @@ public:
 					curr_node = temp_node -> get_next();
 				}
 
-			// Not empty
+				// Not empty
 			} else {
 
 				while (true) {
@@ -331,14 +327,14 @@ public:
 						curr_node -> get_next() -> shrink_vectors();
 
 						temp_node = new ClusterNode(curr_node -> get_start(),
-			                                        curr_node -> get_next() -> get_stop(),
-			                                        curr_node -> get_strand(),
-			                                        curr_node -> get_chrom_index(),
-			                                        curr_node -> get_read_count() + curr_node -> get_next() -> get_read_count(),
-			                                        curr_node -> get_five_vec(),
-			                                        curr_node -> get_next() -> get_five_vec(),
-			                                        curr_node -> get_three_vec(),
-			                                        curr_node -> get_next() -> get_three_vec());
+						                            curr_node -> get_next() -> get_stop(),
+						                            curr_node -> get_strand(),
+						                            curr_node -> get_chrom_index(),
+						                            curr_node -> get_read_count() + curr_node -> get_next() -> get_read_count(),
+						                            curr_node -> get_five_vec(),
+						                            curr_node -> get_next() -> get_five_vec(),
+						                            curr_node -> get_three_vec(),
+						                            curr_node -> get_next() -> get_three_vec());
 
 						temp_node -> set_prev(curr_node -> get_prev());
 
@@ -346,14 +342,14 @@ public:
 						if (curr_node -> get_prev() != NULL) {
 							curr_node -> get_prev() -> set_next(temp_node);
 						} else {
-							temp_head = temp_node; 
+							temp_head = temp_node;
 						}
 
 						// If not last node
 						if (curr_node -> get_next() -> get_next() != NULL) {
 							temp_node -> set_next(curr_node -> get_next() -> get_next());
 							temp_node -> get_next() -> set_prev(temp_node);
-						} else { 
+						} else {
 							temp_tail = temp_node;
 						}
 
@@ -408,9 +404,9 @@ public:
 		while (curr_node != NULL) {
 
 			ss << get_contig_name() << "\t"
-		       << curr_node -> get_start() << "\t"
-	           << curr_node -> get_stop() << "\t"
-	           << curr_node -> get_read_count() << "\n";
+			   << curr_node -> get_start() << "\t"
+			   << curr_node -> get_stop() << "\t"
+			   << curr_node -> get_read_count() << "\n";
 
 			curr_node = curr_node -> get_next();
 		}

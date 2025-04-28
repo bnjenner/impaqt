@@ -9,20 +9,18 @@ class Impaqt {
 
 private:
 
-	const ImpaqtArguments *parameters; 	  // parameters struct (found in parser.h)
-
 	// Alignment file Readers
 	BamTools::BamReader inFile;		   	  // Bam File Object
 	BamTools::BamAlignment alignment;	  // BamAlignmentRecord record;
 
-	AnnotationList annotation;			  // Annotation
+	// AnnotationList annotation;			  // Annotation
 	std::string alignment_file_name;	  // alignment file
 	std::string index;				  	  // alignment index file
 	int chrom_index;					  // chromosome number
 	bool ignore_chr = false;			  // to ignore for downstream
 
-	std::unordered_map<int, std::string> contig_map;
-	std::unordered_map<int, int> contig_lengths;
+	static std::unordered_map<int, std::string> contig_map;
+	static std::unordered_map<int, int> contig_lengths;
 
 	size_t total_reads = 0;
 	size_t ambiguous_reads = 0;
@@ -41,17 +39,14 @@ public:
 	Impaqt() {};
 
 	// Initialized
-	Impaqt(const ImpaqtArguments *args, int ref) {
-		alignment_file_name = args -> alignment_file;
-		index = args -> index_file;
-		parameters = args;
+	Impaqt(int ref) {
+		alignment_file_name = ImpaqtArguments::Args.alignment_file;
+		index = ImpaqtArguments::Args.index_file;
 		chrom_index = ref;
 	}
 
 	// Empty
 	~Impaqt() {
-		contig_map.clear();
-		contig_lengths.clear();
 		close_alignment_file();
 	};
 
@@ -60,6 +55,7 @@ public:
 	size_t get_total_reads() { return total_reads; }
 	size_t get_multimapped_reads() { return multimapped_reads; }
 	std::unordered_map<int, std::string> get_contig_map() { return contig_map; }
+	int get_chrom_num() { return contig_map.size(); }
 	std::unordered_map<int, int> get_contig_lengths() { return contig_lengths; }
 
 	// Open BAM file
@@ -106,13 +102,6 @@ public:
 		}
 	}
 
-	// Copy contig cache
-	void copy_order(const std::unordered_map<int, std::string> &t_contig_map,
-					const std::unordered_map<int, int> &t_contig_lengths) {
-		// potentially needless copy, will address
-		contig_map = t_contig_map;
-		contig_lengths = t_contig_lengths;
-	}
 
 	// // Copy annotation
 	// void copy_annotation(AnnotationList &t_annotation, const int &t_chrom_index) {
@@ -130,7 +119,7 @@ public:
 	// Grab Alignments within Interval Using Bam Index
 	void find_clusters() {
 
-		cluster_list.initialize(chrom_index, contig_map[chrom_index], contig_lengths[chrom_index], parameters);
+		cluster_list.initialize(chrom_index, contig_map[chrom_index], contig_lengths[chrom_index]);
 
 		if (!inFile.Jump(chrom_index)) {
 			std::cerr << "[ERROR: Could not jump to region: " << chrom_index << ".]\n";
@@ -150,21 +139,15 @@ public:
 	void collapse_clusters() {
 		if (!ignore_chr) {
 			cluster_list.collapse_clusters(0); // Forward
-			cluster_list.collapse_clusters(1); // Reverse		
+			cluster_list.collapse_clusters(1); // Reverse
 		}
 	}
 
 	// Differentiate Transcriptes
 	void find_transcripts() {
 		if (!ignore_chr) {
-			dbscan(cluster_list, 0,
-		       parameters -> count_percentage,
-		       parameters -> epsilon,
-		       parameters -> min_count);
-			dbscan(cluster_list, 1,
-		       parameters -> count_percentage,
-		       parameters -> epsilon,
-		       parameters -> min_count);
+			dbscan(cluster_list, 0);
+			dbscan(cluster_list, 1);
 		}
 	}
 

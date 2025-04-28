@@ -324,6 +324,7 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
   /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
   /usr/include/c++/11/bits/fstream.tcc \
+  ../lib/global_args.h \
   ../lib/parser.h \
   ../ext/seqan/include/seqan/arg_parse.h \
   ../ext/seqan/include/seqan/basic.h \
@@ -628,7 +629,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
   ../ext/seqan/include/seqan/arg_parse/arg_parse_doc.h \
   ../ext/seqan/include/seqan/arg_parse/arg_parse_ctd_support.h \
   ../ext/seqan/include/seqan/arg_parse/arg_parse_parse.h \
-  ../lib/annotation.h \
   ../lib/impaqt.h \
   ../lib/cluster.h \
   ../lib/node.h \
@@ -664,8 +664,6 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 ../ext/bamtools/src/shared/bamtools_global.h:
 
 ../ext/bamtools/src/api/api_global.h:
-
-../lib/annotation.h:
 
 ../ext/seqan/include/seqan/arg_parse/arg_parse_ctd_support.h:
 
@@ -784,6 +782,8 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 ../ext/bamtools/src/api/BamConstants.h:
 
 ../ext/seqan/include/seqan/file/file_interface.h:
+
+../ext/seqan/include/seqan/file/file_forwards.h:
 
 /usr/include/c++/11/ratio:
 
@@ -1322,6 +1322,8 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 /usr/include/c++/11/bits/fstream.tcc:
 
 /usr/include/c++/11/bits/stl_function.h:
+
+../lib/global_args.h:
 
 /usr/include/c++/11/bits/memoryfwd.h:
 
@@ -1938,5 +1940,3 @@ CMakeFiles/impaqt_test.dir/test/impaqt_test.cpp.o: ../test/impaqt_test.cpp \
 ../ext/seqan/include/seqan/parallel/parallel_tags.h:
 
 ../ext/seqan/include/seqan/modifier/modifier_cyclic_shape.h:
-
-../ext/seqan/include/seqan/file/file_forwards.h:

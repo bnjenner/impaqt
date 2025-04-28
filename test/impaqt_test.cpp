@@ -1,28 +1,39 @@
 #include "gtest/gtest.h"
 #include <iostream>
 #include <fstream>
+#include <global_args.h>
 #include "parser.h"
-#include "annotation.h"
+// #include "annotation.h"
 #include "impaqt.h"
 
+
+// Globals
+ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/test.bam",      // bam
+                                                     "../test/data/test.bam.bai",  // index
+                                                     "../test/data/test.gtf",      // annotation
+                                                     1,                            // threads
+                                                     "SE",                         // library type
+                                                     "forward",                    // stranded
+                                                     false,                        // nonunique
+                                                     0,                            // mapq
+                                                     1,                            // min_count
+                                                     25,                           // count_percentage
+                                                     50,                           // epsilon
+                                                     false,                        // isGFF
+                                                     "exon",                       // feature_tag
+                                                     "gene_id",                    // feature_id
+                                                     ""
+                                                    };                          // gtf_output
+
+
+// Static Member Defintions
+std::unordered_map<int, std::string> Impaqt::contig_map;
+std::unordered_map<int, int> Impaqt::contig_lengths;
+
+
+// Test Class
 class impactTest : public ::testing::Test {
 public:
-
-   ImpaqtArguments args = {"../test/data/test.bam",     // bam
-                           "../test/data/test.bam.bai", // index
-                           "../test/data/test.gtf",     // annotation
-                           1,                   // threads
-                           "SE",                // library type
-                           "forward",           // stranded
-                           false,               // nonunique
-                           0,                   // mapq
-                           1,                   // min_count
-                           25,                  // count_percentage
-                           50,                  // epsilon
-                           false,               // isGFF
-                           "exon",              // feature_tag
-                           "gene_id",           // feature_id
-                           ""};                 // gtf_output
 
    Impaqt *test_process;
 
@@ -41,9 +52,10 @@ std::string read_test_file(std::string filename) {
    return file_contents;
 }
 
-TEST_F(impactTest, BasicCluster) { 
+// Test 1
+TEST_F(impactTest, BasicCluster) {
 
-   test_process = new Impaqt(&args, 0);
+   test_process = new Impaqt(0);
 
    test_process -> open_alignment_file();
    test_process -> set_chrom_order();
@@ -53,7 +65,8 @@ TEST_F(impactTest, BasicCluster) {
    ASSERT_EQ(test_process -> cluster_list.string_clusters(0), answer);
 };
 
-TEST_F(impactTest, BasicCollapse) { 
+// Test 2
+TEST_F(impactTest, BasicCollapse) {
 
    test_process -> collapse_clusters();
    std::string answer = read_test_file("../test/data/test_collapse.txt");
@@ -61,8 +74,8 @@ TEST_F(impactTest, BasicCollapse) {
 
 };
 
-
-TEST_F(impactTest, BasicDBSCAN) { 
+// Test 3
+TEST_F(impactTest, BasicDBSCAN) {
 
    // test_process -> find_transcripts();
    // std::string answer = read_test_file("../test/data/test_collapse.txt");

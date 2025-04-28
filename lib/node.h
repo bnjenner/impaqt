@@ -42,8 +42,8 @@ public:
 
 	// For combined Nodes
 	ClusterNode(int t_start, int t_stop, int t_strand, int t_chrom_index, int t_read_count,
-					 std::vector<int> a_five_vec, std::vector<int> b_five_vec,
-					 std::vector<int> a_three_vec, std::vector<int> b_three_vec) {
+	            std::vector<int> a_five_vec, std::vector<int> b_five_vec,
+	            std::vector<int> a_three_vec, std::vector<int> b_three_vec) {
 
 		start = t_start;
 		stop = t_stop;
@@ -103,9 +103,9 @@ public:
 
 	void shrink_vectors() {
 		five_vec.resize(read_count);
-	    five_vec.shrink_to_fit();
-	    three_vec.resize(read_count);
-	    three_vec.shrink_to_fit();
+		five_vec.shrink_to_fit();
+		three_vec.resize(read_count);
+		three_vec.shrink_to_fit();
 	}
 };
 

@@ -1,38 +1,7 @@
 #include "seqan/arg_parse.h"
 
-///////////////////////////////////////
-// Arguments Data Structure
-struct ImpaqtArguments {
-
-    // Files
-    std::string alignment_file;         // sam or bam file
-    std::string index_file;             // index filed
-    std::string annotation_file;        // gff or gtf file
-
-    // Program
-    int threads;                        // threads
-
-    // Alignments
-    std::string library_type;           // library type (SE or PE)
-    std::string stranded;               // strandedness
-    bool nonunique_alignments;          // count primary and secondary alignments
-    int mapq;                           // minimum mapq score
-    int min_count;                      // min read count for dbscan
-    int count_percentage;                // read count percentage for core reads
-    int epsilon;                        // epsilon for dbscan
-
-    // Features
-    bool isGFF = false;                 // annotaiton file is gff
-    std::string feature_tag;            // name of feature tag
-    std::string feature_id;             // ID of feature
-
-    // Output
-    std::string gtf_output;             // name of output gtf file
-};
-
-
 // Argument Parser
-seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv, ImpaqtArguments &args) {
+seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 
     // Setup ArgumentParser.
     seqan::ArgumentParser parser("impaqt");
@@ -139,26 +108,26 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv, ImpaqtA
         return seqan::ArgumentParser::PARSE_ERROR;
     }
 
-    if (input_file_ext == "gff") { args.isGFF = true; }
+    if (input_file_ext == "gff") { ImpaqtArguments::Args.isGFF = true; }
 
     // Get arguments
-    seqan::getArgumentValue(args.alignment_file, parser, 0);
-    seqan::getArgumentValue(args.annotation_file, parser, 1);
-    seqan::getArgumentValue(args.index_file, parser, 0);
-    args.index_file = args.index_file + ".bai";
+    seqan::getArgumentValue(ImpaqtArguments::Args.alignment_file, parser, 0);
+    seqan::getArgumentValue(ImpaqtArguments::Args.annotation_file, parser, 1);
+    seqan::getArgumentValue(ImpaqtArguments::Args.index_file, parser, 0);
+    ImpaqtArguments::Args.index_file = ImpaqtArguments::Args.index_file + ".bai";
 
     // Populate options
-    seqan::getOptionValue(args.threads, parser, "threads");
-    seqan::getOptionValue(args.library_type, parser, "library-type");
-    seqan::getOptionValue(args.stranded, parser, "strandedness");
-    args.nonunique_alignments = seqan::isSet(parser, "nonunique-alignments");
-    seqan::getOptionValue(args.mapq, parser, "mapq-min");
-    seqan::getOptionValue(args.min_count, parser, "min-count");
-    seqan::getOptionValue(args.count_percentage, parser, "count-percentage");
-    seqan::getOptionValue(args.epsilon, parser, "epsilon");
-    seqan::getOptionValue(args.feature_tag, parser, "feature-tag");
-    seqan::getOptionValue(args.feature_id, parser, "feature-id");
-    seqan::getOptionValue(args.gtf_output, parser, "output-gtf");
+    seqan::getOptionValue(ImpaqtArguments::Args.threads, parser, "threads");
+    seqan::getOptionValue(ImpaqtArguments::Args.library_type, parser, "library-type");
+    seqan::getOptionValue(ImpaqtArguments::Args.stranded, parser, "strandedness");
+    ImpaqtArguments::Args.nonunique_alignments = seqan::isSet(parser, "nonunique-alignments");
+    seqan::getOptionValue(ImpaqtArguments::Args.mapq, parser, "mapq-min");
+    seqan::getOptionValue(ImpaqtArguments::Args.min_count, parser, "min-count");
+    seqan::getOptionValue(ImpaqtArguments::Args.count_percentage, parser, "count-percentage");
+    seqan::getOptionValue(ImpaqtArguments::Args.epsilon, parser, "epsilon");
+    seqan::getOptionValue(ImpaqtArguments::Args.feature_tag, parser, "feature-tag");
+    seqan::getOptionValue(ImpaqtArguments::Args.feature_id, parser, "feature-id");
+    seqan::getOptionValue(ImpaqtArguments::Args.gtf_output, parser, "output-gtf");
 
     return seqan::ArgumentParser::PARSE_OK;
 }

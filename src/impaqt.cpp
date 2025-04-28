@@ -6,15 +6,25 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <global_args.h>
 #include "parser.h"
-#include "annotation.h"
+// #include "annotation.h"
 #include "impaqt.h"
 #include "queue.h"
+
+
+// Globals
+ImpaqtArguments::GlobalArgs ImpaqtArguments::Args;
+
+// Static Member Defintions
+std::unordered_map<int, std::string> Impaqt::contig_map;
+std::unordered_map<int, int> Impaqt::contig_lengths;
 
 // Mutex and Conditinoal vars
 std::mutex main_mut;
 std::condition_variable main_cv;
 bool MAIN_THREAD = false;
+
 
 //////////////////////////////////////
 // Main
@@ -23,51 +33,43 @@ int main(int argc, char const ** argv) {
     auto start = std::chrono::high_resolution_clock::now();
 
     // Parse arguments
-    ImpaqtArguments args;
-    seqan::ArgumentParser::ParseResult res = argparse(argc, argv, args);
+    seqan::ArgumentParser::ParseResult res = argparse(argc, argv);
+    if (res != seqan::ArgumentParser::PARSE_OK) { return res; }
 
-    if (res != seqan::ArgumentParser::PARSE_OK) {
-        return res;
-    }
-
-    
     // Welcome!
     std::cerr << "// IMPAQT\n";
     std::cerr << "// Parsing Input Files...\n";
 
 
     std::cerr << "//     Annotation File...\n";
-    AnnotationList init_annotation(&args);
+    // AnnotationList init_annotation(&args);
     // init_annotation.create_gene_graph();
 
 
-    // Number of contigs for subdividing work across multiple threads
-    int n; 
-
+    std::cerr << "//     Alignment File....\n";
     std::vector<Impaqt*> processes;
-    {
-        std::cerr << "//     Alignment File....\n";
-        Impaqt init_process(&args, 0);
-        init_process.open_alignment_file();
-        init_process.set_chrom_order();
+    processes.emplace_back(new Impaqt(0));
+    processes[0] -> open_alignment_file();
+    processes[0] -> set_chrom_order();
 
-        // Number of contigs for subdividing work across multiple threads
-        n = 1; 
-        // n = init_process.get_contig_map().size();
+    // Number of contigs for subdividing work across multiple threads
+    // int n = 1;
+    int n = processes[0] -> get_chrom_num();
 
-        // Multithreading init
+    // Multithreading init
+    if (n > 1) {
         processes.reserve(n);
-        for (int i = 0; i < n; i++) {
-            processes.emplace_back(new Impaqt(&args, i));
-            processes[i] -> copy_order(init_process.get_contig_map(), init_process.get_contig_lengths());
+        for (int i = 1; i < n; i++) {
+            processes.emplace_back(new Impaqt(i));
             // processes[i] -> copy_annotation(init_annotation, i);
         }
     }
 
 
+
     std::cerr << "// Processing Data.......\n";
     int i = 0;
-    const int proc = std::max(args.threads - 1, 1);
+    const int proc = std::max(ImpaqtArguments::Args.threads - 1, 1);
     {
         // initialize dispatch queue with N threads
         thread_queue call_queue(proc);

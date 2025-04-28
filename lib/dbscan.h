@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <string>
 
-void reduce_transcripts(ClusterNode *curr_node, const std::vector<std::string> &paths, const int &epsilon,
-						std::vector<std::vector<int>> &core_5, std::vector<std::vector<int>> &core_3) {
+void reduce_transcripts(ClusterNode *curr_node, const std::vector<std::string> &paths,
+                        std::vector<std::vector<int>> &core_5, std::vector<std::vector<int>> &core_3) {
 
 	std::vector<std::vector<int>> tmp_transcripts;
 
@@ -40,12 +40,11 @@ void reduce_transcripts(ClusterNode *curr_node, const std::vector<std::string> &
 				max_pos = max_pos - min_pos;
 			}
 
+			// if clusters within read length
+			if (!tmp_vec.empty() &&
+			        ImpaqtArguments::Args.epsilon >= ((curr_node -> get_three_vec().at(*min_result)) - tmp_vec.back())) {
+				tmp_vec[1] = max_pos;
 
-			// if clusters within read length 
-			if (!tmp_vec.empty() && 
-				epsilon >= ((curr_node -> get_three_vec().at(*min_result)) - tmp_vec.back())) {
-					tmp_vec[1] = max_pos;
-			
 			} else {
 				tmp_vec.push_back(min_pos);
 				tmp_vec.push_back(max_pos);
@@ -55,13 +54,13 @@ void reduce_transcripts(ClusterNode *curr_node, const std::vector<std::string> &
 		tmp_transcripts.push_back(tmp_vec);
 	}
 
-	for (int i = 0; i < paths.size(); i++) {
-		std::cerr << paths[i] << "\t";
-		for (int j = 0; j < tmp_transcripts[i].size(); j++) {
-			std::cerr << tmp_transcripts[i][j] << " ";
-		}
-		std::cerr << "\n";
-	}
+	// for (int i = 0; i < paths.size(); i++) {
+	// 	std::cerr << paths[i] << "\t";
+	// 	for (int j = 0; j < tmp_transcripts[i].size(); j++) {
+	// 		std::cerr << tmp_transcripts[i][j] << " ";
+	// 	}
+	// 	std::cerr << "\n";
+	// }
 
 
 	/*
@@ -72,7 +71,7 @@ void reduce_transcripts(ClusterNode *curr_node, const std::vector<std::string> &
 
 	int pos;
 	for (int i = 0; i < tmp_transcripts.size() - 1; i++) {
-		
+
 		for (int j = i + 1; j < tmp_transcripts.size(); j++) {
 
 			pos = tmp_transcripts[i].back();
@@ -95,31 +94,31 @@ void reduce_transcripts(ClusterNode *curr_node, const std::vector<std::string> &
 	}
 
 
-	for (int i = 0; i < paths.size(); i++) {
-		std::cerr << paths[i] << "\t";
+	// for (int i = 0; i < paths.size(); i++) {
+	// 	std::cerr << paths[i] << "\t";
 
-		if (tmp_transcripts[i].empty()) {
-			std::cerr << "MERGED\n";
-			continue;
-		}
+	// 	if (tmp_transcripts[i].empty()) {
+	// 		std::cerr << "MERGED\n";
+	// 		continue;
+	// 	}
 
-		for (int j = 0; j < tmp_transcripts[i].size(); j++) {
-			std::cerr << tmp_transcripts[i][j] << " ";
-		}
-		std::cerr << "\n";
-	}
+	// 	for (int j = 0; j < tmp_transcripts[i].size(); j++) {
+	// 		std::cerr << tmp_transcripts[i][j] << " ";
+	// 	}
+	// 	std::cerr << "\n";
+	// }
 
 }
 
 void trace_transcripts(ClusterNode *curr_node, std::vector<std::string> &path_vec,
-					   const std::vector<int> &assign_5, const std::vector<int> &assign_3) {
+                       const std::vector<int> &assign_5, const std::vector<int> &assign_3) {
 
 	std::string path;
 	std::vector<std::string> tmp_vec;
 
 	for (int i = 0; i < curr_node -> get_read_count(); i++) {
 
-		path = "";	
+		path = "";
 
 		// assigned in 5' DBSCAN
 		if (assign_5.at(i) != -1) {
@@ -131,7 +130,7 @@ void trace_transcripts(ClusterNode *curr_node, std::vector<std::string> &path_ve
 				path = std::to_string(assign_5.at(i)) + "-";
 			}
 
-		// unassigned in 5' DBSCAN
+			// unassigned in 5' DBSCAN
 		} else if (assign_5.at(i) == -1 && assign_3.at(i) != -1) {
 			path = "-" + std::to_string(assign_3.at(i));
 		}
@@ -154,9 +153,9 @@ void trace_transcripts(ClusterNode *curr_node, std::vector<std::string> &path_ve
 
 		// if path is orphaned
 		if (pos != std::string::npos) {
-			
+
 			for (int j = 0; j < tmp_vec.size(); j++) {
-			
+
 				if (i == j) { continue; }
 
 				// Check if part of path (ft. tricky bit flip)
@@ -165,17 +164,19 @@ void trace_transcripts(ClusterNode *curr_node, std::vector<std::string> &path_ve
 					break;
 				}
 			}
-		} 
+		}
 
 		if (add) { path_vec.push_back(tmp_vec[i]); }
 	}
 
-}	
+}
 
 
 // inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
-std::vector<int> dbscan_aux(ClusterNode *curr_node, const int &points, const int &min_counts, 
-							const int &epsilon, std::vector<std::vector<int>> &assignment, const bool &five) {
+std::vector<int> dbscan_aux(ClusterNode *curr_node, const int &points, const int &min_counts,
+                            std::vector<std::vector<int>> &assignment, const bool &five) {
+
+
 
 	int index;
 	int clust_num = 0;
@@ -184,6 +185,7 @@ std::vector<int> dbscan_aux(ClusterNode *curr_node, const int &points, const int
 	std::vector<int> neighbors;
 	std::vector<int> sub_neighbors;
 	std::vector<int> *adj_vec;
+
 
 	// avoid copy
 	if (five) {
@@ -202,12 +204,12 @@ std::vector<int> dbscan_aux(ClusterNode *curr_node, const int &points, const int
 
 			// Get distance to all other points
 			for (int j = 0; j < points; j++) {
-				if ((i != j) && (std::abs((*adj_vec)[j] - (*adj_vec)[i]) <= epsilon)) {
+				if ((i != j) && (std::abs((*adj_vec)[j] - (*adj_vec)[i]) <= ImpaqtArguments::Args.epsilon)) {
 					neighbors.push_back(j);
 				}
 			}
 
-			// If core point 
+			// If core point
 			if (neighbors.size() >= min_counts) {
 
 				visted[i] = true;
@@ -216,7 +218,7 @@ std::vector<int> dbscan_aux(ClusterNode *curr_node, const int &points, const int
 
 				// Continously add points to "stack" and determine if they are core points
 				while (neighbors.empty() == false) {
-				
+
 					index = neighbors.back();
 					sub_neighbors.clear();
 					neighbors.pop_back();
@@ -227,7 +229,7 @@ std::vector<int> dbscan_aux(ClusterNode *curr_node, const int &points, const int
 
 						// Check if member of cluster
 						for (int k = 0; k < points; k++) {
-							if (std::abs((*adj_vec)[index] - (*adj_vec)[k]) <= epsilon) {
+							if (std::abs((*adj_vec)[index] - (*adj_vec)[k]) <= ImpaqtArguments::Args.epsilon) {
 								sub_neighbors.push_back(k);
 								assign_vec.at(k) = clust_num;
 							}
@@ -252,8 +254,7 @@ std::vector<int> dbscan_aux(ClusterNode *curr_node, const int &points, const int
 }
 
 
-void dbscan(ClusterList &cluster,  const int &strand, const int &count_percentage, 
-			const int &epsilon,  const int &min_count) {
+void dbscan(ClusterList &cluster,  const int &strand) {
 
 	int points;
 	int min_counts;
@@ -262,7 +263,9 @@ void dbscan(ClusterList &cluster,  const int &strand, const int &count_percentag
 
 	while (curr_node != NULL) {
 
-		if (curr_node -> get_read_count() >= min_count) {
+		points = curr_node -> get_read_count();
+
+		if (points >= ImpaqtArguments::Args.min_count) {
 
 			std::vector<std::string> paths;
 			std::vector<int> assign_vec_5;
@@ -270,30 +273,29 @@ void dbscan(ClusterList &cluster,  const int &strand, const int &count_percentag
 			std::vector<std::vector<int>> assignments_5;
 			std::vector<std::vector<int>> assignments_3;
 
-			points = curr_node -> get_read_count();
-			min_counts = std::max((int)((float)curr_node -> get_read_count() * ((float)count_percentage / 100)), 20);
+			min_counts = std::max((int)((float)curr_node -> get_read_count() * ((float)ImpaqtArguments::Args.count_percentage / 100)), 20);
 
-			std::cerr << "///////////////////////////////////////////////\n";
-			std::cerr << "Region: " << curr_node -> get_chrom_index() << ":"
-					  << curr_node -> get_start() << "-"
-					  << curr_node -> get_stop() << "\n"
-					  << "Read Counts: " << curr_node -> get_read_count() << "\n"
-					  << "Min Count: " << min_counts << "\n"
-					  << "Epsilon: " << epsilon 
-					  << "\n///////////////////////////////////////////////\n";
+			// std::cerr << "///////////////////////////////////////////////\n";
+			// std::cerr << "Region: " << curr_node -> get_chrom_index() << ":"
+			//           << curr_node -> get_start() << "-"
+			//           << curr_node -> get_stop() << "\n"
+			//           << "Read Counts: " << curr_node -> get_read_count() << "\n"
+			//           << "Min Count: " << min_counts << "\n"
+			//           << "Epsilon: " << ImpaqtArguments::Args.epsilon
+			//           << "\n///////////////////////////////////////////////\n";
 
 
-			assign_vec_5 = dbscan_aux(curr_node, points, min_counts, epsilon, assignments_5, true);
-			assign_vec_3 = dbscan_aux(curr_node, points, min_counts, epsilon, assignments_3, false);
+			assign_vec_5 = dbscan_aux(curr_node, points, min_counts, assignments_5, true);
+			assign_vec_3 = dbscan_aux(curr_node, points, min_counts, assignments_3, false);
 
 			// If clusters were not found
-			if (assignments_5.empty() && assignments_3.empty()) { 
+			if (assignments_5.empty() && assignments_3.empty()) {
 				curr_node = curr_node -> get_next();
-				continue; 
-			} 
+				continue;
+			}
 
 			trace_transcripts(curr_node, paths, assign_vec_5, assign_vec_3);
-			reduce_transcripts(curr_node, paths, epsilon, assignments_5, assignments_3);
+			reduce_transcripts(curr_node, paths, assignments_5, assignments_3);
 
 		}
 
