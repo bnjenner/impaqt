@@ -3,7 +3,7 @@
 #include <fstream>
 #include <global_args.h>
 #include "parser.h"
-// #include "annotation.h"
+#include "annotation.h"
 #include "impaqt.h"
 
 
@@ -53,6 +53,16 @@ std::string read_test_file(std::string filename) {
 
    return file_contents;
 }
+
+// Test 0
+TEST_F(impactTest, BasicAnnotation) {
+
+   AnnotationList annotation; // Initiliazed using global args object 
+   annotation.create_gene_graph();
+
+   std::string answer = annotation.string_genes();
+   ASSERT_EQ("chr1\tgene1\t49\t149\t174\t324\t374\t499\t524\t574\t599\t899\t\n", answer);
+};
 
 // Test 1
 TEST_F(impactTest, BasicCluster) {

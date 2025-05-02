@@ -8,7 +8,7 @@
 #include <mutex>
 #include <global_args.h>
 #include "parser.h"
-// #include "annotation.h"
+#include "annotation.h"
 #include "impaqt.h"
 #include "queue.h"
 
@@ -44,8 +44,8 @@ int main(int argc, char const ** argv) {
 
 
     std::cerr << "//     Annotation File...\n";
-    // AnnotationList init_annotation(&args);
-    // init_annotation.create_gene_graph();
+    AnnotationList annotation; // Initiliazed using global args object 
+    annotation.create_gene_graph();
 
 
     std::cerr << "//     Alignment File....\n";

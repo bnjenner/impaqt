@@ -149,9 +149,8 @@ void trace_transcripts(ClusterNode *curr_node, std::vector<std::string> &path_ve
 
 		// if path is orphaned
 		if (pos != std::string::npos) {
-
 			for (int j = 0; j < tmp_vec.size(); j++) {
-
+				
 				if (i == j) { continue; }
 
 				// Check if part of path (ft. tricky bit flip)
@@ -171,7 +170,6 @@ void trace_transcripts(ClusterNode *curr_node, std::vector<std::string> &path_ve
 // inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
 std::vector<int> dbscan_aux(ClusterNode *curr_node, const int &points, const int &min_counts,
                             std::vector<std::vector<int>> &assignment, const bool &five) {
-
 
 
 	int index;
