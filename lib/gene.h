@@ -22,11 +22,8 @@ private:
 	GeneNode *prev = NULL;								// pevsious ClusterNode
 
 	bool overlap(const int &e1, const int &e2, const int &t1, const int &t2) {
-		if (e1 > t2 || e2 < t1) {
-			return false;
-		} else {
-			return true;
-		}
+		if (e1 > t2 || e2 < t1) { return false; }
+		return true;
 	}
 
 	void append_exon(const int &t1, const int &t2) {
@@ -34,6 +31,7 @@ private:
 		exon_vec.resize(new_size);
 		exon_vec.at(new_size - 2) = t1;
 		exon_vec.at(new_size - 1) = t2;
+		exons += 1;
 	}
 
 	void insert_exon(const int &t1, const int &t2) {
@@ -44,6 +42,7 @@ private:
 	void close_gap(const int &pos) {
         std::swap(exon_vec[(pos * 2) + 1], exon_vec.back()); exon_vec.pop_back(); // Remove end of current exon
         std::swap(exon_vec[(pos * 2) + 2], exon_vec.back()); exon_vec.pop_back(); // Remove beginning of next exon
+        exons -= 1; // reduce number of exons
 	}
 
 
@@ -64,7 +63,8 @@ public:
 		// Set exons'
 		exon_vec[0] = std::stoi(t_start) - 1;
 		exon_vec[1] = std::stoi(t_stop) - 1;
-		start = exon_vec[0]; stop = exon_vec[1];
+		start = exon_vec[0]; 
+		stop = exon_vec[1];
 		exons += 1;
 	}
 
@@ -85,20 +85,25 @@ public:
 
 	std::string get_geneID() { return geneID; }
 	size_t get_read_count() { return read_count; }
+
 	std::vector<int> get_exon_vec() { return exon_vec; }
 	std::vector<int>* get_exon_ref() { return &exon_vec; }
 
 	// Linking functions
 	void set_next(GeneNode *node) { next = node; }
 	void set_prev(GeneNode *node) { prev = node; }
+
 	GeneNode* get_next() { return next; }
 	GeneNode* get_prev() { return prev; }
 
+
+	// Add exon to exon vector
 	void add_region(const std::string &str_start, const std::string &str_stop) {
 
 		const int n = exon_vec.size() / 2;
 		const int t_start = std::stoi(str_start) - 1;
 		const int t_stop = std::stoi(str_stop) - 1;
+
 		
 		// For all recorded exons
 		for (int i = 0; i < n; i++) {

@@ -26,6 +26,9 @@ private:
 	size_t multimapped_reads = 0;
 	size_t unassigned_reads = 0;
 
+	// For Checks
+	uint16_t NH_tag;						// NH tag to determine number of mappings
+
 	// Calculate splice
 	int calculate_splice(BamTools::BamAlignment &alignment) {
 
@@ -74,14 +77,6 @@ private:
 
 public:
 
-	// For Checks
-	uint16_t NH_tag;						// NH tag to determine number of mappings
-
-	// Temporary Variables
-	int t_strand;
-	int left_pos;
-	int right_pos;
-
 	// Empty
 	ClusterList() {}
 
@@ -112,20 +107,14 @@ public:
 
 	// Get Head Node
 	ClusterNode* get_head(int t_strand) {
-		if (t_strand == 0) {
-			return pos_head;
-		} else {
-			return neg_head;
-		}
+		if (t_strand == 0) { return pos_head; }
+		return neg_head;
 	}
 
 	// Get Tail Node
 	ClusterNode* get_tail(int t_strand) {
-		if (t_strand == 0) {
-			return pos_tail;
-		} else {
-			return neg_tail;
-		}
+		if (t_strand == 0) { return pos_tail; }
+		return neg_tail;
 	}
 
 	// Get Reads Stats
@@ -168,9 +157,7 @@ public:
 	// Create read clusters
 	bool create_clusters(BamTools::BamReader &inFile, BamTools::BamAlignment &alignment) {
 
-		int t_5end;
-		int t_3end;
-		int t_strand;
+		int t_5end, t_3end, t_strand;
 		bool found_reads = false;
 		ClusterNode *pos_curr_node = get_head(0);
 		ClusterNode *neg_curr_node = get_head(1);
@@ -251,6 +238,10 @@ public:
 
 	// combines clusters with nonzero neighbors
 	void collapse_clusters(int t_strand) {
+
+		/*
+		I super hate this function, will come back and clean up later. Thank god for valgrind.
+		*/
 
 		ClusterNode *curr_node = get_head(t_strand);
 		ClusterNode *temp_node;
@@ -358,40 +349,29 @@ public:
 		}
 	}
 
-
-	// print clusters
+	// Print Clusters
 	void print_clusters(int t_strand) {
-
 		ClusterNode *curr_node = get_head(t_strand);
-
 		while (curr_node != NULL) {
-
 			std::cout << get_contig_name() << "\t"
 			          << curr_node -> get_start() << "\t"
 			          << curr_node -> get_stop() << "\t"
 			          << curr_node -> get_read_count() << "\n";
-
 			curr_node = curr_node -> get_next();
 		}
 	}
 
-	// stringify
+	// Print clusters into strings for tests
 	std::string string_clusters(int t_strand) {
-
 		std::stringstream ss;
 		ClusterNode *curr_node = get_head(t_strand);
-
 		while (curr_node != NULL) {
-
 			ss << get_contig_name() << "\t"
 			   << curr_node -> get_start() << "\t"
 			   << curr_node -> get_stop() << "\t"
 			   << curr_node -> get_read_count() << "\n";
-
 			curr_node = curr_node -> get_next();
 		}
-
-
 		return ss.str();
 	}
 };

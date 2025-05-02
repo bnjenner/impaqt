@@ -22,47 +22,39 @@ private:
 	GeneNode *neg_tail = NULL;
 
 
-	void set_pos_head(std::vector<std::string> &columns) {
-		pos_head = new GeneNode(columns[8], 	// Feature ID
-								columns[0], 	// Chrom
-								columns[6],		// Strand
-								columns[3],		// Start
-								columns[4]);	// Stop
-		pos_tail = pos_head;
-	}
-
-	void set_neg_head(std::vector<std::string> &columns) {
-		neg_head = new GeneNode(columns[8], 	// Feature ID
-								columns[0], 	// Chrom
-								columns[6],		// Strand
-								columns[3],		// Start
-								columns[4]);	// Stop
-		neg_tail = neg_head;
-	}
-
-	void pos_extend(std::vector<std::string> &columns) {
-		// Create new gene node
+	GeneNode* create_new_node(std::vector<std::string> &columns) {
 		GeneNode *temp = new GeneNode(columns[8], 	// Feature ID
 									  columns[0], 	// Chrom
 									  columns[6],	// Strand
 									  columns[3],	// Start
 									  columns[4]);	// Stop
+		return temp;
+	}
+
+	void set_pos_head(std::vector<std::string> &columns) {
+		pos_head = create_new_node(columns);
+		pos_tail = pos_head;
+	}
+
+	void set_neg_head(std::vector<std::string> &columns) {
+		neg_head = create_new_node(columns);
+		neg_tail = neg_head;
+	}
+
+	void pos_extend(std::vector<std::string> &columns) {
+		// Create new gene node
+		GeneNode *temp = create_new_node(columns);
 		pos_tail -> set_next(temp);
 		temp -> set_prev(pos_tail);
 		pos_tail = temp;
 	}
 
 	void neg_extend(std::vector<std::string> &columns) {
-		GeneNode *temp = new GeneNode(columns[8], 	// Feature ID
-									  columns[0], 	// Chrom
-									  columns[6],	// Strand
-									  columns[3],	// Start
-									  columns[4]);	// Stop
+		GeneNode *temp = create_new_node(columns);
 		neg_tail -> set_next(temp);
 		temp -> set_prev(neg_tail);
 		neg_tail = temp;
 	}
-
 
 
 	// Get feature ID
@@ -96,7 +88,7 @@ private:
 
 public:
 
-	// Proper constructor
+	// Proper Constructor
 	AnnotationList() {
 		annotation_file = ImpaqtArguments::Args.annotation_file;
 		feature_id = ImpaqtArguments::Args.feature_id;
@@ -105,7 +97,7 @@ public:
 		isGFF = ImpaqtArguments::Args.isGFF;
 	}
 
-	// Destroy
+	// Proper Destructor
 	~AnnotationList() {
 
 		GeneNode *curr_node = pos_head;
@@ -154,23 +146,17 @@ public:
 
 	// Get Head Node
 	GeneNode* get_head(int t_strand) {
-		if (t_strand == 0) {
-			return pos_head;
-		} else {
-			return neg_head;
-		}
+		if (t_strand == 0) { return pos_head; }
+		return neg_head;
 	}
 
 	// Get Tail Node
 	GeneNode* get_tail(int t_strand) {
-		if (t_strand == 0) {
-			return pos_tail;
-		} else {
-			return neg_tail;
-		}
+		if (t_strand == 0) { return pos_tail; }
+		return neg_tail;
 	}
 
-	// Create graph structure
+	// Create Gene Graph Structure
 	void create_gene_graph() {
 
 		// Open file		

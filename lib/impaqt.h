@@ -1,5 +1,6 @@
 #include "cluster.h"
 #include "dbscan.h"
+#include "annotation.h"
 #include "api/BamAux.h"
 #include "api/BamReader.h"
 
@@ -13,7 +14,7 @@ private:
 	BamTools::BamReader inFile;		   	 				 // Bam File Object
 	BamTools::BamAlignment alignment;	  				 // BamAlignmentRecord record;
 
-	// AnnotationList annotation;			  			 // Annotation
+	static AnnotationList annotation;			  		 // Annotation
 	static std::string alignment_file_name;	     		 // alignment file
 	static std::string index;				  	     	 // alignment index file
 	int chrom_index;					  				 // chromosome number
@@ -23,8 +24,8 @@ private:
 	static std::unordered_map<int, int> contig_lengths;
 
 	size_t total_reads = 0;
-	size_t ambiguous_reads = 0;
 	size_t unique_reads = 0;
+	size_t ambiguous_reads = 0;
 	size_t multimapped_reads = 0;
 	size_t unassigned_reads = 0;
 
@@ -53,9 +54,17 @@ public:
 
 	// Get Reads Stats
 	size_t get_total_reads() { return total_reads; }
-	size_t get_multimapped_reads() { return multimapped_reads; }
-	std::unordered_map<int, std::string> get_contig_map() { return contig_map; }
+	size_t get_unique_reads() { return unique_reads; }
+    size_t get_ambiguous_reads() { return ambiguous_reads; }
+    size_t get_multimapped_reads() { return multimapped_reads; }
+    size_t get_unassigned_reads(){ return unassigned_reads; }
+
+	// Get annotation
+	AnnotationList* get_annotation() { return &annotation; }
+
+	// Get Chromosome Info
 	int get_chrom_num() { return contig_map.size(); }
+	std::unordered_map<int, std::string> get_contig_map() { return contig_map; }
 	std::unordered_map<int, int> get_contig_lengths() { return contig_lengths; }
 
 	// Open BAM file
@@ -74,8 +83,7 @@ public:
 
 	// Close Bam File
 	void close_alignment_file() { inFile.Close(); }
-	// void print_counts() { annotation.print_genes(); }
-	// void print_gtf() { if (!ignore_chr) { cluster_list.print_clusters(); } }
+
 
 	// parse input file for contig order and jump position
 	void set_chrom_order() {
@@ -102,19 +110,11 @@ public:
 		}
 	}
 
-
-	// // Copy annotation
-	// void copy_annotation(AnnotationList &t_annotation, const int &t_chrom_index) {
-	// 	/*
-	// 		Believe it or not, copying this is faster and the memory usage difference
-	// 			is negligible. I have no idea why this is the case.
-
-	// 			TO DO: Double check this
-	// 	*/
-	// 	annotation = t_annotation;
-	// 	annotation.chrom = contig_map[t_chrom_index];
-	// }
-
+	// Set Annotation (this might cause a memory leak)
+	void add_annotation() {
+		annotation = AnnotationList(); 
+		annotation.create_gene_graph();
+	}
 
 	// Grab Alignments within Interval Using Bam Index
 	void find_clusters() {
@@ -126,13 +126,8 @@ public:
 			return;
 		}
 
-		if (cluster_list.create_clusters(inFile, alignment)) {
-			multimapped_reads = cluster_list.get_multimapped_reads();
-			total_reads = cluster_list.get_total_reads();
-
-		} else {
-			ignore_chr = true;
-		}
+		// If failed to create clusters, flag to ignore
+		if (!cluster_list.create_clusters(inFile, alignment)) { ignore_chr = true; }
 	}
 
 	// Merge neighboring clusters and remove zeroes
@@ -141,10 +136,15 @@ public:
 		cluster_list.collapse_clusters(1); // Reverse
 }
 
-	// Differentiate Transcriptes
+	// Differentiate Transcripts
 	void find_transcripts() {
-		dbscan(cluster_list, 0);
-		dbscan(cluster_list, 1);
+		dbscan(cluster_list, 0); // Forward
+		dbscan(cluster_list, 1); // Reverse
+	}
+
+	// Assign Transcripts to Genes
+	void assign_transcripts() {
+		// The work just actually has to be done here I think...
 	}
 
 
@@ -154,7 +154,7 @@ public:
 		if (ignore_chr) { return; }
 		this -> collapse_clusters();	  		  // collapse clusters
 		this -> find_transcripts();	  		  	  // dbscan clustering algorithm
-		// this -> overlap_genes();  	  			  // overlap genes
+		// this -> assign_transcripts();  	  			  // overlap genes
 	}
 };
 

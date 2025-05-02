@@ -1,9 +1,8 @@
 #include "gtest/gtest.h"
 #include <iostream>
 #include <fstream>
-#include <global_args.h>
+#include "global_args.h"
 #include "parser.h"
-#include "annotation.h"
 #include "impaqt.h"
 
 
@@ -29,6 +28,7 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/test.bam",   
 // Static Member Defintions
 std::string Impaqt::alignment_file_name;
 std::string Impaqt::index;
+AnnotationList Impaqt::annotation;
 std::unordered_map<int, std::string> Impaqt::contig_map;
 std::unordered_map<int, int> Impaqt::contig_lengths;
 
@@ -55,35 +55,32 @@ std::string read_test_file(std::string filename) {
 }
 
 // Test 0
+TEST_F(impactTest, BasicConstruct) {
+   test_process = new Impaqt(0);
+   test_process -> open_alignment_file();
+   test_process -> set_chrom_order();
+};
+
+
+// Test 1
 TEST_F(impactTest, BasicAnnotation) {
-
-   AnnotationList annotation; // Initiliazed using global args object 
-   annotation.create_gene_graph();
-
-   std::string answer = annotation.string_genes();
+   test_process -> add_annotation();
+   std::string answer = test_process -> get_annotation() -> string_genes();
    ASSERT_EQ("chr1\tgene1\t49\t149\t174\t324\t374\t499\t524\t574\t599\t899\t\n", answer);
 };
 
-// Test 1
+// Test 2
 TEST_F(impactTest, BasicCluster) {
-
-   test_process = new Impaqt(0);
-
-   test_process -> open_alignment_file();
-   test_process -> set_chrom_order();
    test_process -> find_clusters();
-
    std::string answer = read_test_file("../test/data/test_cluster.txt");
    ASSERT_EQ(test_process -> cluster_list.string_clusters(0), answer);
 };
 
-// Test 2
+// Test 3
 TEST_F(impactTest, BasicCollapse) {
-
    test_process -> collapse_clusters();
    std::string answer = read_test_file("../test/data/test_collapse.txt");
    ASSERT_EQ(test_process -> cluster_list.string_clusters(0), answer);
-
 };
 
 // Test 3
