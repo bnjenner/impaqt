@@ -1,5 +1,6 @@
 #include "seqan/arg_parse.h"
 
+/////////////////////////////////////////////////////////////
 // Argument Parser
 seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 

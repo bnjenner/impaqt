@@ -28,7 +28,7 @@ std::condition_variable main_cv;
 bool MAIN_THREAD = false;
 
 
-//////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Main
 int main(int argc, char const ** argv) {
 
@@ -38,6 +38,8 @@ int main(int argc, char const ** argv) {
     seqan::ArgumentParser::ParseResult res = argparse(argc, argv);
     if (res != seqan::ArgumentParser::PARSE_OK) { return res; }
 
+
+    /////////////////////////////////////////////////////////////
     // Welcome!
     std::cerr << "// IMPAQT\n";
     std::cerr << "// Parsing Input Files...\n";
@@ -53,6 +55,8 @@ int main(int argc, char const ** argv) {
     std::cerr << "//     Annotation File...\n";
     processes[0] -> add_annotation();
 
+
+    /////////////////////////////////////////////////////////////
     // Multithreading Initialization
     int n = processes[0] -> get_chrom_num();
     if (n > 1) {
@@ -79,6 +83,7 @@ int main(int argc, char const ** argv) {
     main_lock.unlock();                                 // unlock thread
 
 
+    /////////////////////////////////////////////////////////////
     // Summary Statistics
     size_t total_ambiguous = 0;
     size_t total_multimapping = 0;
@@ -108,7 +113,11 @@ int main(int argc, char const ** argv) {
     std::cout << "// total\t" << total_reads << std::endl;
 
 
-    // // Output read cluster gtf if specifiedq
+    /////////////////////////////////////////////////////////////
+    /*
+        Might be better to multithread this
+    */
+    // Output read cluster gtf if specifiedq
     // if (args.gtf_output != "") {
     //     std::cerr << "[...Output GTFs...]\n";
     //     std::ofstream newFile;
@@ -118,6 +127,7 @@ int main(int argc, char const ** argv) {
     // }
 
 
+    /////////////////////////////////////////////////////////////
     // The longest line of "get the time" I have ever seen.
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);

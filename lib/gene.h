@@ -1,7 +1,7 @@
 #include <string>
 #include <algorithm>
 
-//////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Gene Node Class (node in a doubly linked list)
 class GeneNode {
 
@@ -21,11 +21,15 @@ private:
 	GeneNode *next = NULL;								// next ClusterNode
 	GeneNode *prev = NULL;								// pevsious ClusterNode
 
+	/////////////////////////////////////////////////////////////
+	// If two exons overlap
 	bool overlap(const int &e1, const int &e2, const int &t1, const int &t2) {
 		if (e1 > t2 || e2 < t1) { return false; }
 		return true;
 	}
 
+	/////////////////////////////////////////////////////////////
+	// Append exon
 	void append_exon(const int &t1, const int &t2) {
 		int new_size = exon_vec.size() + 2;
 		exon_vec.resize(new_size);
@@ -34,11 +38,13 @@ private:
 		exons += 1;
 	}
 
+	// Insert exon
 	void insert_exon(const int &t1, const int &t2) {
 		append_exon(t1, t2); // calls append (adds to end)
 		std::sort(exon_vec.begin(), exon_vec.end()); // sort in ascending order
 	}
 
+	// Join exons
 	void close_gap(const int &pos) {
         std::swap(exon_vec[(pos * 2) + 1], exon_vec.back()); exon_vec.pop_back(); // Remove end of current exon
         std::swap(exon_vec[(pos * 2) + 2], exon_vec.back()); exon_vec.pop_back(); // Remove beginning of next exon
@@ -48,7 +54,8 @@ private:
 
 public:
 
-	// // Empty
+	/////////////////////////////////////////////////////////////
+	// Empty
 	GeneNode() {}
 
 	// Initialize
@@ -74,6 +81,7 @@ public:
 		prev = NULL;
 	}
 
+	/////////////////////////////////////////////////////////////
 	// Get Details
 	std::string get_chrom() { return chrom; }
 
@@ -96,7 +104,7 @@ public:
 	GeneNode* get_next() { return next; }
 	GeneNode* get_prev() { return prev; }
 
-
+	/////////////////////////////////////////////////////////////
 	// Add exon to exon vector
 	void add_region(const std::string &str_start, const std::string &str_stop) {
 
@@ -138,5 +146,7 @@ public:
 
 		}
 	}
+	/////////////////////////////////////////////////////////////
 };
+
 

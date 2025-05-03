@@ -2,7 +2,7 @@
 #include <sstream>
 #include "gene.h"
 
-//////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Annotation Class (doubley linked list)
 class AnnotationList {
 
@@ -21,7 +21,8 @@ private:
 	GeneNode *neg_head = NULL;
 	GeneNode *neg_tail = NULL;
 
-
+	/////////////////////////////////////////////////////////////
+	// Create new gene node
 	GeneNode* create_new_node(std::vector<std::string> &columns) {
 		GeneNode *temp = new GeneNode(columns[8], 	// Feature ID
 									  columns[0], 	// Chrom
@@ -56,7 +57,7 @@ private:
 		neg_tail = temp;
 	}
 
-
+	/////////////////////////////////////////////////////////////
 	// Get feature ID
 	bool set_feature_id(std::vector<std::string> &t_columns) {
 
@@ -88,6 +89,7 @@ private:
 
 public:
 
+	/////////////////////////////////////////////////////////////
 	// Proper Constructor
 	AnnotationList() {
 		annotation_file = ImpaqtArguments::Args.annotation_file;
@@ -119,6 +121,7 @@ public:
 		}
 	}
 
+	/////////////////////////////////////////////////////////////
 	// Print genes and counts
 	void print_genes() {
 		GeneNode *curr_node = pos_head;
@@ -143,7 +146,7 @@ public:
 		return ss.str();
 	}
 
-
+	/////////////////////////////////////////////////////////////
 	// Get Head Node
 	GeneNode* get_head(int t_strand) {
 		if (t_strand == 0) { return pos_head; }
@@ -156,6 +159,7 @@ public:
 		return neg_tail;
 	}
 
+	/////////////////////////////////////////////////////////////
 	// Create Gene Graph Structure
 	void create_gene_graph() {
 
@@ -224,4 +228,5 @@ public:
 			}	
 		}
 	}
+	/////////////////////////////////////////////////////////////
 };

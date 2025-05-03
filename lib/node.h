@@ -1,4 +1,4 @@
-//////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Cluster Node Class (node in a doubly linked list)
 class ClusterNode {
 
@@ -26,6 +26,7 @@ private:
 
 public:
 
+	/////////////////////////////////////////////////////////////
 	// Empty
 	ClusterNode() {}
 
@@ -65,6 +66,7 @@ public:
 		prev = NULL;
 	}
 
+	/////////////////////////////////////////////////////////////
 	// Get Details
 	void set_chrom_index(int t_chrom_index) { chrom_index = t_chrom_index; }
 	int get_chrom_index() { return chrom_index; }
@@ -77,18 +79,23 @@ public:
 
 	std::string get_headID() { return headID; }
 	size_t get_read_count() { return read_count; }
+
 	std::vector<int> get_five_vec() { return five_vec; }
 	std::vector<int> get_three_vec() { return three_vec; }
 	std::vector<int>* get_five_ref() { return &five_vec; }
 	std::vector<int>* get_three_ref() { return &three_vec; }
+	
 	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
 
+	/////////////////////////////////////////////////////////////
 	// Linking functions
 	void set_next(ClusterNode *node) { next = node; }
 	void set_prev(ClusterNode *node) { prev = node; }
 	ClusterNode* get_next() { return next; }
 	ClusterNode* get_prev() { return prev; }
 
+	/////////////////////////////////////////////////////////////
+	// Add alignment to cluster
 	void add_alignment(int t_5end, int t_3end) {
 
 		five_vec.at(read_count) = t_5end;
@@ -101,11 +108,13 @@ public:
 		}
 	}
 
+	// Remove ends of vectors
 	void shrink_vectors() {
 		five_vec.resize(read_count);
 		five_vec.shrink_to_fit();
 		three_vec.resize(read_count);
 		three_vec.shrink_to_fit();
 	}
+	/////////////////////////////////////////////////////////////
 };
 

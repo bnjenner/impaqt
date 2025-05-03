@@ -3,7 +3,7 @@
 #include "api/BamAux.h"
 #include "api/BamReader.h"
 
-//////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Cluster Class (really just a doubly linked list)
 class ClusterList {
 
@@ -29,11 +29,10 @@ private:
 	// For Checks
 	uint16_t NH_tag;						// NH tag to determine number of mappings
 
+	/////////////////////////////////////////////////////////////
 	// Calculate splice
 	int calculate_splice(BamTools::BamAlignment &alignment) {
-
 		int end_pos = alignment.Position;
-
 		for (int i = 0; i < alignment.CigarData.size(); i++) {
 			// If not clipped and free of inserts, (may also need to check cigar string standards)
 			if ((alignment.CigarData[i].Type != 'S') && (alignment.CigarData[i].Type != 'H') &&
@@ -41,7 +40,6 @@ private:
 				end_pos += alignment.CigarData[i].Length;
 			}
 		}
-
 		return end_pos;
 	}
 
@@ -74,9 +72,83 @@ private:
 		return true;
 	}
 
+	/////////////////////////////////////////////////////////////
+	// Delete Empty Nodes
+	void delete_nodes(ClusterNode *&curr_node, ClusterNode *&temp_node,  ClusterNode *&temp_head, ClusterNode *&temp_tail) {
+	
+		// If last node
+		if (curr_node -> get_next() == NULL) {
+			temp_node = curr_node -> get_prev();
+
+			// If curr_node is also not first node
+			if (temp_node != NULL) {
+				temp_node -> set_next(NULL);
+			} else {
+				temp_head = NULL;
+			}
+
+			temp_tail = temp_node;
+			delete curr_node;
+			curr_node = NULL;
+
+			// If first node
+		} else if (curr_node -> get_prev() == NULL) {
+			temp_node = curr_node;
+			curr_node = curr_node -> get_next();
+			curr_node -> set_prev(NULL);
+			temp_head = curr_node;
+			delete temp_node;
+
+			// else
+		} else {
+			temp_node = curr_node -> get_prev();
+			temp_node -> set_next(curr_node -> get_next());
+			temp_node -> get_next() -> set_prev(temp_node);
+
+			delete curr_node;
+			curr_node = temp_node -> get_next();
+		}
+	}
+
+	// Merge Neighboring Non-Zero Nodes
+	void merge_nodes(ClusterNode *&curr_node, ClusterNode *&temp_node, ClusterNode *&temp_head, ClusterNode *&temp_tail) {
+
+		curr_node -> get_next() -> shrink_vectors();
+		temp_node = new ClusterNode(curr_node -> get_start(),
+		                            curr_node -> get_next() -> get_stop(),
+		                            curr_node -> get_strand(),
+		                            curr_node -> get_chrom_index(),
+		                            curr_node -> get_read_count() + curr_node -> get_next() -> get_read_count(),
+		                            curr_node -> get_five_vec(),
+		                            curr_node -> get_next() -> get_five_vec(),
+		                            curr_node -> get_three_vec(),
+		                            curr_node -> get_next() -> get_three_vec());
+		temp_node -> set_prev(curr_node -> get_prev());
+
+		// If not first node
+		if (curr_node -> get_prev() != NULL) {
+			curr_node -> get_prev() -> set_next(temp_node);
+		} else {
+			temp_head = temp_node;
+		}
+
+		// If not last node
+		if (curr_node -> get_next() -> get_next() != NULL) {
+			temp_node -> set_next(curr_node -> get_next() -> get_next());
+			temp_node -> get_next() -> set_prev(temp_node);
+		} else {
+			temp_tail = temp_node;
+		}
+
+		delete curr_node -> get_next();
+		delete curr_node;
+		curr_node = temp_node;
+	}
+
 
 public:
 
+	/////////////////////////////////////////////////////////////
 	// Empty
 	ClusterList() {}
 
@@ -102,7 +174,8 @@ public:
 		}
 	}
 
-
+	/////////////////////////////////////////////////////////////
+	// Get Chrom Name (should probably keep consistent with chrom)
 	std::string get_contig_name() { return contig_name; }
 
 	// Get Head Node
@@ -121,6 +194,7 @@ public:
 	size_t get_total_reads() { return total_reads; }
 	size_t get_multimapped_reads() { return multimapped_reads; }
 
+	/////////////////////////////////////////////////////////////
 	// Initialize empty object
 	void initialize(const int t_chrom_index, const std::string t_contig_name, const int t_chrom_length) {
 
@@ -154,8 +228,13 @@ public:
 		}
 	}
 
+	/////////////////////////////////////////////////////////////
 	// Create read clusters
 	bool create_clusters(BamTools::BamReader &inFile, BamTools::BamAlignment &alignment) {
+
+		/*
+		BNJ: 5/2/2025 - There's probably a better way to do this, will revisit...
+		*/
 
 		int t_5end, t_3end, t_strand;
 		bool found_reads = false;
@@ -235,113 +314,38 @@ public:
 		return found_reads;
 	}
 
-
+	/////////////////////////////////////////////////////////////
 	// combines clusters with nonzero neighbors
 	void collapse_clusters(int t_strand) {
 
-		/*
-		I super hate this function, will come back and clean up later. Thank god for valgrind.
-		*/
-
-		ClusterNode *curr_node = get_head(t_strand);
 		ClusterNode *temp_node;
 		ClusterNode *temp_head = NULL;
 		ClusterNode *temp_tail = NULL;
+		ClusterNode *curr_node = get_head(t_strand);
 
 		while (curr_node != NULL) {
 
 			curr_node -> shrink_vectors();
 
-			// Empty Node
-			if (curr_node -> get_read_count() == 0) {
-
-				// If last node
-				if (curr_node -> get_next() == NULL) {
-					temp_node = curr_node -> get_prev();
-
-					// If curr_node is also not first node
-					if (temp_node != NULL) {
-						temp_node -> set_next(NULL);
-					} else {
-						temp_head = NULL;
-					}
-
-					temp_tail = temp_node;
-
-					delete curr_node;
-					curr_node = NULL;
-
-
-					// If first node
-				} else if (curr_node -> get_prev() == NULL) {
-					temp_node = curr_node;
-					curr_node = curr_node -> get_next();
-					curr_node -> set_prev(NULL);
-					temp_head = curr_node;
-					delete temp_node;
-
-
-					// else
-				} else {
-					temp_node = curr_node -> get_prev();
-					temp_node -> set_next(curr_node -> get_next());
-					temp_node -> get_next() -> set_prev(temp_node);
-
-					delete curr_node;
-					curr_node = temp_node -> get_next();
-				}
-
-				// Not empty
-			} else {
-
+			// Not Empty Node
+			if (curr_node -> get_read_count() != 0) {
 				while (true) {
 
+					// If no merging needed
 					if (curr_node -> get_next() == NULL) { break; }
+					if (curr_node -> get_next() -> get_read_count() == 0) { break; }
 
-					if (curr_node -> get_next() -> get_read_count() != 0) {
-
-						curr_node -> get_next() -> shrink_vectors();
-
-						temp_node = new ClusterNode(curr_node -> get_start(),
-						                            curr_node -> get_next() -> get_stop(),
-						                            curr_node -> get_strand(),
-						                            curr_node -> get_chrom_index(),
-						                            curr_node -> get_read_count() + curr_node -> get_next() -> get_read_count(),
-						                            curr_node -> get_five_vec(),
-						                            curr_node -> get_next() -> get_five_vec(),
-						                            curr_node -> get_three_vec(),
-						                            curr_node -> get_next() -> get_three_vec());
-
-						temp_node -> set_prev(curr_node -> get_prev());
-
-						// If not first node
-						if (curr_node -> get_prev() != NULL) {
-							curr_node -> get_prev() -> set_next(temp_node);
-						} else {
-							temp_head = temp_node;
-						}
-
-						// If not last node
-						if (curr_node -> get_next() -> get_next() != NULL) {
-							temp_node -> set_next(curr_node -> get_next() -> get_next());
-							temp_node -> get_next() -> set_prev(temp_node);
-						} else {
-							temp_tail = temp_node;
-						}
-
-						delete curr_node -> get_next();
-						delete curr_node;
-						curr_node = temp_node;
-
-					} else {
-						break;
-					}
+					merge_nodes(curr_node, temp_node, temp_head, temp_tail);
 				}
-
 				curr_node = curr_node -> get_next();
+
+				// Empty
+			} else {
+				delete_nodes(curr_node, temp_node, temp_head, temp_tail);
 			}
 		}
 
+		// Adjust head and tail nodes by strand
 		if (t_strand == 0) {
 			pos_head = temp_head; pos_tail = temp_tail;
 		} else {
@@ -349,6 +353,7 @@ public:
 		}
 	}
 
+	/////////////////////////////////////////////////////////////
 	// Print Clusters
 	void print_clusters(int t_strand) {
 		ClusterNode *curr_node = get_head(t_strand);
@@ -374,4 +379,5 @@ public:
 		}
 		return ss.str();
 	}
+	/////////////////////////////////////////////////////////////
 };

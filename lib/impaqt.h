@@ -4,7 +4,7 @@
 #include "api/BamAux.h"
 #include "api/BamReader.h"
 
-//////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Impaqt Process Class
 class Impaqt {
 
@@ -34,8 +34,8 @@ public:
 
 	// Data Structures
 	ClusterList cluster_list;			  // List for clusters
-	// ClusterList transcript_list;		  // List for Transcripts
 
+	/////////////////////////////////////////////////////////////
 	// Empty
 	Impaqt() {};
 
@@ -51,7 +51,7 @@ public:
 		close_alignment_file();
 	};
 
-
+	/////////////////////////////////////////////////////////////
 	// Get Reads Stats
 	size_t get_total_reads() { return total_reads; }
 	size_t get_unique_reads() { return unique_reads; }
@@ -67,6 +67,7 @@ public:
 	std::unordered_map<int, std::string> get_contig_map() { return contig_map; }
 	std::unordered_map<int, int> get_contig_lengths() { return contig_lengths; }
 
+	/////////////////////////////////////////////////////////////
 	// Open BAM file
 	void open_alignment_file() {
 		// Open alignment file
@@ -84,7 +85,7 @@ public:
 	// Close Bam File
 	void close_alignment_file() { inFile.Close(); }
 
-
+	/////////////////////////////////////////////////////////////
 	// parse input file for contig order and jump position
 	void set_chrom_order() {
 
@@ -116,6 +117,7 @@ public:
 		annotation.create_gene_graph();
 	}
 
+	/////////////////////////////////////////////////////////////
 	// Grab Alignments within Interval Using Bam Index
 	void find_clusters() {
 
@@ -148,6 +150,8 @@ public:
 	}
 
 
+	/////////////////////////////////////////////////////////////
+	// Launch thread
 	void launch() {
 		this -> open_alignment_file();			  // open files
 		this -> find_clusters();	  			  // find clusters
@@ -156,5 +160,6 @@ public:
 		this -> find_transcripts();	  		  	  // dbscan clustering algorithm
 		// this -> assign_transcripts();  	  			  // overlap genes
 	}
+	/////////////////////////////////////////////////////////////
 };
 
