@@ -1,8 +1,6 @@
-#include "cluster.h"
-#include "dbscan.h"
-#include "annotation.h"
-#include "api/BamAux.h"
-#include "api/BamReader.h"
+#include "AnnotationList.h"
+#include "ClusterList.h"
+#include "DBSCAN.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Impaqt Process Class
@@ -114,7 +112,7 @@ public:
 	// Set Annotation (this might cause a memory leak)
 	void add_annotation() {
 		annotation = AnnotationList(); 
-		annotation.create_gene_graph();
+		annotation.create_gene_list();
 	}
 
 	/////////////////////////////////////////////////////////////

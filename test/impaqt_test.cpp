@@ -1,8 +1,16 @@
-#include "gtest/gtest.h"
 #include <iostream>
 #include <fstream>
-#include "global_args.h"
-#include "parser.h"
+#include <sstream>
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <thread>
+
+#include "gtest/gtest.h"
+#include "api/BamAux.h"
+#include "api/BamReader.h"
+#include <global_args.h>
+#include "ArgParser.h"
 #include "impaqt.h"
 
 

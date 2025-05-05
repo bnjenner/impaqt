@@ -1,7 +1,4 @@
-#include <sstream>
-#include "node.h"
-#include "api/BamAux.h"
-#include "api/BamReader.h"
+#include "ClusterNode.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Cluster Class (really just a doubly linked list)
@@ -73,7 +70,7 @@ private:
 	}
 
 	/////////////////////////////////////////////////////////////
-	// Delete Empty Nodes
+	// Delete Empty Nodes (These node operations could likely be cleaned up...)
 	void delete_nodes(ClusterNode *&curr_node, ClusterNode *&temp_node,  ClusterNode *&temp_head, ClusterNode *&temp_tail) {
 	
 		// If last node

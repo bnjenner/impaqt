@@ -1,6 +1,4 @@
-#include <fstream>
-#include <sstream>
-#include "gene.h"
+#include "GeneNode.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Annotation Class (doubley linked list)
@@ -161,7 +159,7 @@ public:
 
 	/////////////////////////////////////////////////////////////
 	// Create Gene Graph Structure
-	void create_gene_graph() {
+	void create_gene_list() {
 
 		// Open file		
 		std::ifstream infile(annotation_file);

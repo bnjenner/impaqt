@@ -1,6 +1,5 @@
-#include <algorithm>
-#include <string>
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DBSCAN and Related Functions
 void reduce_transcripts(ClusterNode *curr_node, const std::vector<std::string> &paths,
                         std::vector<std::vector<int>> &core_5, std::vector<std::vector<int>> &core_3) {
 

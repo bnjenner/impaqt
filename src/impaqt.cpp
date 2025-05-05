@@ -1,15 +1,20 @@
 #include <iostream>
 #include <fstream>
-#include <chrono>
+#include <sstream>
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <chrono>
+
+#include "api/BamAux.h"
+#include "api/BamReader.h"
 #include <global_args.h>
-#include "parser.h"
+#include "ArgParser.h"
+#include "ThreadQueue.h"
 #include "impaqt.h"
-#include "queue.h"
 
 
 // Globals
@@ -57,6 +62,11 @@ int main(int argc, char const ** argv) {
 
 
     /////////////////////////////////////////////////////////////
+    /*
+        Maybe this is an issue with how I implemented multithreading, but there are some serious
+            diminishing returns. Potentially dependent on size of BAM file? I am not sure.
+    */
+    
     // Multithreading Initialization
     int n = processes[0] -> get_chrom_num();
     if (n > 1) {
