@@ -22,6 +22,8 @@ private:
 
 	// Transcript Results
 	std::vector<std::vector<int>> transcript_vec;		// vector of transcript regions
+	std::vector<int> transcript_expression;				// vector of transcript expression
+	std::vector<std::string> transcript_assignments;	// vector of transcript assignments
 
 
 public:
@@ -108,6 +110,12 @@ public:
 		}
 	}
 
+	// add transcript
+	void add_transcript(std::vector<int> &t_transcript) {
+		transcript_vec.push_back(t_transcript);
+	}
+
+
 	// Remove ends of vectors
 	void shrink_vectors() {
 		five_vec.resize(read_count);
@@ -115,6 +123,5 @@ public:
 		three_vec.resize(read_count);
 		three_vec.shrink_to_fit();
 	}
-	/////////////////////////////////////////////////////////////
 };
 

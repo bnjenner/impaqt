@@ -61,12 +61,7 @@ int main(int argc, char const ** argv) {
     processes[0] -> add_annotation();
 
 
-    /////////////////////////////////////////////////////////////
-    /*
-        Maybe this is an issue with how I implemented multithreading, but there are some serious
-            diminishing returns. Potentially dependent on size of BAM file? I am not sure.
-    */
-    
+    /////////////////////////////////////////////////////////////    
     // Multithreading Initialization
     int n = processes[0] -> get_chrom_num();
     if (n > 1) {
@@ -108,7 +103,8 @@ int main(int argc, char const ** argv) {
     std::cerr << "//     Counts Data.......\n";
 
     for (int i = 0; i < n; i++) {
-         total_unique += processes[i] -> get_unique_reads();
+        processes[i] -> print_counts();
+        total_unique += processes[i] -> get_unique_reads();
         total_ambiguous += processes[i] -> get_ambiguous_reads();
         total_multimapping += processes[i] -> get_multimapped_reads();
         total_no_feature += processes[i] -> get_multimapped_reads();

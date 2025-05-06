@@ -79,16 +79,17 @@ TEST_F(impactTest, BasicAnnotation) {
 
 // Test 2
 TEST_F(impactTest, BasicCluster) {
-   test_process -> find_clusters();
+   test_process -> find_transcripts();
    std::string answer = read_test_file("../test/data/test_cluster.txt");
-   ASSERT_EQ(test_process -> cluster_list.string_clusters(0), answer);
+   std::cerr << test_process -> get_clusters() -> get_contig_name() << "\n";
+   ASSERT_EQ(test_process -> get_clusters() -> string_clusters(0), answer);
 };
 
 // Test 3
 TEST_F(impactTest, BasicCollapse) {
    test_process -> collapse_clusters();
    std::string answer = read_test_file("../test/data/test_collapse.txt");
-   ASSERT_EQ(test_process -> cluster_list.string_clusters(0), answer);
+   ASSERT_EQ(test_process -> get_clusters() -> string_clusters(0), answer);
 };
 
 // Test 3

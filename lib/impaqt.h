@@ -1,6 +1,7 @@
 #include "AnnotationList.h"
 #include "ClusterList.h"
 #include "DBSCAN.h"
+#include "AssignClusters.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Impaqt Process Class
@@ -9,17 +10,19 @@ class Impaqt {
 private:
 
 	// Alignment file Readers
-	BamTools::BamReader inFile;		   	 				 // Bam File Object
-	BamTools::BamAlignment alignment;	  				 // BamAlignmentRecord record;
+	BamTools::BamReader inFile;		   	 					  // Bam File Object
+	BamTools::BamAlignment alignment;	  				 	  // BamAlignmentRecord record;
 
-	static AnnotationList annotation;			  		 // Annotation
-	static std::string alignment_file_name;	     		 // alignment file
-	static std::string index;				  	     	 // alignment index file
-	int chrom_index;					  				 // chromosome number
-	bool ignore_chr = false;			  				 // to ignore for downstream
+	static AnnotationList annotation;			  		 	  // Annotation list for genes
+	static std::string alignment_file_name;	     		 	  // alignment file
+	static std::string index;				  	     	 	  // alignment index file
+	int chrom_index;					  				 	  // chromosome number
+	bool ignore_chr = false;			  				 	  // to ignore for downstream
 
 	static std::unordered_map<int, std::string> contig_map;
 	static std::unordered_map<int, int> contig_lengths;
+
+	ClusterList cluster_list;			  					  // List for clusters
 
 	size_t total_reads = 0;
 	size_t unique_reads = 0;
@@ -29,9 +32,6 @@ private:
 
 
 public:
-
-	// Data Structures
-	ClusterList cluster_list;			  // List for clusters
 
 	/////////////////////////////////////////////////////////////
 	// Empty
@@ -44,10 +44,8 @@ public:
 		chrom_index = ref;
 	}
 
-	// Empty
-	~Impaqt() {
-		close_alignment_file();
-	};
+	// Destructor
+	~Impaqt() { close_alignment_file(); };
 
 	/////////////////////////////////////////////////////////////
 	// Get Reads Stats
@@ -57,8 +55,8 @@ public:
     size_t get_multimapped_reads() { return multimapped_reads; }
     size_t get_unassigned_reads(){ return unassigned_reads; }
 
-	// Get annotation
-	AnnotationList* get_annotation() { return &annotation; }
+	AnnotationList* get_annotation() { return &annotation; }	// Get AnnotationList
+	ClusterList* get_clusters() { return &cluster_list; }		// Get ClusterList
 
 	// Get Chromosome Info
 	int get_chrom_num() { return contig_map.size(); }
@@ -117,7 +115,7 @@ public:
 
 	/////////////////////////////////////////////////////////////
 	// Grab Alignments within Interval Using Bam Index
-	void find_clusters() {
+	void create_clusters() {
 
 		cluster_list.initialize(chrom_index, contig_map[chrom_index], contig_lengths[chrom_index]);
 
@@ -138,13 +136,24 @@ public:
 
 	// Differentiate Transcripts
 	void find_transcripts() {
-		dbscan(cluster_list, 0); // Forward
-		dbscan(cluster_list, 1); // Reverse
+		find_transcripts_DBSCAN(cluster_list, 0); // Forward
+		find_transcripts_DBSCAN(cluster_list, 1); // Reverse
 	}
 
 	// Assign Transcripts to Genes
 	void assign_transcripts() {
-		// The work just actually has to be done here I think...
+		assign_transcripts_to_genes(annotation, cluster_list, 0); // Forward
+		assign_transcripts_to_genes(annotation, cluster_list, 1); // Forward
+	}
+
+
+	// Print Cluster Counts
+	void print_counts() {
+		/*
+		The basic idea for this is that we will iterate through our two strands and print them
+			in order. Nothing fancy here. Also, be sure to make relative quantification (for now)
+			the relative proportions of the core points multiplied by total read count. That seems fair. 
+		*/
 	}
 
 
@@ -152,11 +161,11 @@ public:
 	// Launch thread
 	void launch() {
 		this -> open_alignment_file();			  // open files
-		this -> find_clusters();	  			  // find clusters
+		this -> create_clusters();	  			  // find clusters
 		if (ignore_chr) { return; }
 		this -> collapse_clusters();	  		  // collapse clusters
 		this -> find_transcripts();	  		  	  // dbscan clustering algorithm
-		// this -> assign_transcripts();  	  			  // overlap genes
+		this -> assign_transcripts();  	  			  // overlap genes
 	}
 	/////////////////////////////////////////////////////////////
 };
