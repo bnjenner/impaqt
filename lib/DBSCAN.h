@@ -2,7 +2,7 @@
 // DBSCAN and Related Functions
 
 // Merge Overlapping Transcripts
-void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts) {
+void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<float> &counts) {
 
 	int pos;
 	for (int i = 0; i < transcripts.size() - 1; i++) {
@@ -25,12 +25,7 @@ void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &t
 			j += 1;
 		}
 		if (!transcripts[i].empty()) {
-			curr_node -> add_transcript(transcripts[i]);
-			/*
-			I gotta find a way to determine the core point ratio...
-				Some transcripts only have one end cluster so I cant just rely
-				on a single value
-			*/
+			curr_node -> add_transcript(transcripts[i], counts[i]);
 		}
 	}
 }
@@ -39,13 +34,17 @@ void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &t
 // Get Transcript Coordinates
 void get_transcripts(ClusterNode *curr_node, const std::vector<std::string> &paths,
                      	std::vector<std::vector<int>> &core_5, std::vector<std::vector<int>> &core_3,
-                     	std::vector<std::vector<int>> *transcripts) {
+                     	std::vector<std::vector<int>> *transcripts, std::vector<float> *counts) {
+
+	float core_points;
+	int index, clusters;
+	int min_pos, max_pos;  // necessary because 3' vec may not be in order due to splicing
 
 	// Horrible extending vector, but it's short so it shouldn't matter THAT much
 	for (const auto &p : paths) {
 
-		int index;
-		int min_pos, max_pos; // necessary because 3' vec may not be in order due to splicing
+		core_points = 0.0f;
+		clusters = 0;
 		std::vector<int> tmp_vec;
 		std::vector<int>::iterator min_result;
 		std::vector<int>::iterator max_result;
@@ -57,6 +56,8 @@ void get_transcripts(ClusterNode *curr_node, const std::vector<std::string> &pat
 			max_result = std::max_element(core_5.at(index).begin(), core_5.at(index).end());
 			tmp_vec.push_back(curr_node -> get_five_vec().at(*min_result));
 			tmp_vec.push_back(curr_node -> get_five_vec().at(*max_result));
+			core_points += (float)core_5.at(index).size();
+			clusters += 1;
 		}
 
 		// add 3' region
@@ -67,6 +68,8 @@ void get_transcripts(ClusterNode *curr_node, const std::vector<std::string> &pat
 
 			min_pos = curr_node -> get_three_vec().at(*min_result);
 			max_pos = curr_node -> get_three_vec().at(*max_result);
+			core_points += (float)core_3.at(index).size();
+			clusters += 1;
 
 			// swap variables
 			if (min_pos > max_pos) {
@@ -85,6 +88,7 @@ void get_transcripts(ClusterNode *curr_node, const std::vector<std::string> &pat
 			}
 		}
 		transcripts -> push_back(tmp_vec);
+		counts -> push_back(core_points / clusters);
 	}
 }
 
@@ -237,11 +241,10 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 		if (points >= ImpaqtArguments::Args.min_count) {
 
 			std::vector<std::string> paths;
-			std::vector<int> assign_vec_5;
-			std::vector<int> assign_vec_3;
-			std::vector<std::vector<int>> assignments_5;
-			std::vector<std::vector<int>> assignments_3;
+			std::vector<float> counts;
 			std::vector<std::vector<int>> transcripts;
+			std::vector<int> assign_vec_5, assign_vec_3;
+			std::vector<std::vector<int>> assignments_5,  assignments_3;
 
 			// Min Counts for DBSCAN
 			min_counts = std::max((int)((float)points * ((float)ImpaqtArguments::Args.count_percentage / 100)), 20);
@@ -256,13 +259,16 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 				continue;
 			}
 
-			// Find all linked DBSCAN clusters and get transcript coordinates
-			//    BNJ: These steps are a bit cursed and could probably be merged more elegantly
+			// Find all linked DBSCAN clusters 
 			trace_transcripts(curr_node, paths, assign_vec_5, assign_vec_3);	  		 
-			get_transcripts(curr_node, paths, assignments_5, assignments_3, &transcripts);
+			
+			// Get Transcript Coords and Core Points
+			get_transcripts(curr_node, paths, 
+							assignments_5, assignments_3, 
+							&transcripts, &counts); 
 			
 			// Merge overlapping transcripts and add to cluster node
-			reduce_transcripts(curr_node, transcripts);	
+			reduce_transcripts(curr_node, transcripts, counts);	
 		}
 
 		curr_node = curr_node -> get_next();

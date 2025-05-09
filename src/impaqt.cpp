@@ -89,6 +89,22 @@ int main(int argc, char const ** argv) {
 
 
     /////////////////////////////////////////////////////////////
+    // Write Results
+    std::cerr << "// Writing Results.......\n";
+    
+    // Output read cluster gtf if specified
+    if (ImpaqtArguments::Args.gtf_output != "") {
+        std::cerr << "//     GTF File..........\n";
+        std::ofstream gtfFile;
+        gtfFile.open(ImpaqtArguments::Args.gtf_output);
+        gtfFile << "##description: transcripts identified by IMPAQT\n"
+                << "##format: gtf\n"
+                << "##bam: " << ImpaqtArguments::Args.alignment_file << "\n"
+                << "##annotation: " << ImpaqtArguments::Args.annotation_file << "\n";
+        for (const auto &p : processes) { p -> write_gtf(gtfFile); }
+        gtfFile.close();
+    }
+
     // Summary Statistics
     size_t total_ambiguous = 0;
     size_t total_multimapping = 0;
@@ -96,12 +112,9 @@ int main(int argc, char const ** argv) {
     size_t total_low_quality = 0;
     size_t total_unique = 0;
     size_t total_reads = 0;
+    size_t total_transcripts = 0;
 
-
-    // Write Results
-    std::cerr << "// Writing Results.......\n";
     std::cerr << "//     Counts Data.......\n";
-
     for (int i = 0; i < n; i++) {
         processes[i] -> print_counts();
         total_unique += processes[i] -> get_unique_reads();
@@ -109,28 +122,16 @@ int main(int argc, char const ** argv) {
         total_multimapping += processes[i] -> get_multimapped_reads();
         total_no_feature += processes[i] -> get_multimapped_reads();
         total_reads += processes[i] -> get_total_reads();
+        total_transcripts += processes[i] -> get_transcript_num();
         delete processes[i];
     }
 
-    std::cout << "__unique\t" << total_unique << "\n";
-    std::cout << "__ambiguous\t" << total_ambiguous << "\n";
-    std::cout << "// multimapping\t" << total_multimapping << "\n";
-    std::cout << "__unassigned\t" << total_no_feature << "\n";
-    std::cout << "// total\t" << total_reads << std::endl;
-
-
-    /////////////////////////////////////////////////////////////
-    /*
-        Might be better to multithread this
-    */
-    // Output read cluster gtf if specifiedq
-    // if (args.gtf_output != "") {
-    //     std::cerr << "[...Output GTFs...]\n";
-    //     std::ofstream newFile;
-    //     newFile.open(args.gtf_output);
-    //     for (const auto &p : processes) { p -> print_gtf(); }
-    //     newFile.close();
-    // }
+    std::cout << "//unique\t" << total_unique << "\n"
+              << "//ambiguous\t" << total_ambiguous << "\n"
+              << "//multimapping\t" << total_multimapping << "\n"
+              << "//unassigned\t" << total_no_feature << "\n"
+              << "//total\t" << total_reads << "\n"
+              << "//transcriptss\t" << total_transcripts << std::endl;
 
 
     /////////////////////////////////////////////////////////////

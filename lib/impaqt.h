@@ -29,6 +29,7 @@ private:
 	size_t ambiguous_reads = 0;
 	size_t multimapped_reads = 0;
 	size_t unassigned_reads = 0;
+	size_t transcript_num = 0;
 
 
 public:
@@ -53,12 +54,14 @@ public:
 	size_t get_unique_reads() { return unique_reads; }
     size_t get_ambiguous_reads() { return ambiguous_reads; }
     size_t get_multimapped_reads() { return multimapped_reads; }
-    size_t get_unassigned_reads(){ return unassigned_reads; }
+    size_t get_unassigned_reads() { return unassigned_reads; }
+    size_t get_transcript_num() { return transcript_num; }
 
 	AnnotationList* get_annotation() { return &annotation; }	// Get AnnotationList
 	ClusterList* get_clusters() { return &cluster_list; }		// Get ClusterList
 
 	// Get Chromosome Info
+	int get_chrom_index() { return chrom_index; }
 	int get_chrom_num() { return contig_map.size(); }
 	std::unordered_map<int, std::string> get_contig_map() { return contig_map; }
 	std::unordered_map<int, int> get_contig_lengths() { return contig_lengths; }
@@ -81,7 +84,6 @@ public:
 	// Close Bam File
 	void close_alignment_file() { inFile.Close(); }
 
-	/////////////////////////////////////////////////////////////
 	// parse input file for contig order and jump position
 	void set_chrom_order() {
 
@@ -138,6 +140,7 @@ public:
 	void find_transcripts() {
 		find_transcripts_DBSCAN(cluster_list, 0); // Forward
 		find_transcripts_DBSCAN(cluster_list, 1); // Reverse
+		transcript_num = cluster_list.get_transcript_num();
 	}
 
 	// Assign Transcripts to Genes
@@ -156,6 +159,14 @@ public:
 		*/
 	}
 
+	// Print Clusters as GTF
+	void write_gtf(std::ofstream &gtfFile) {
+		cluster_list.write_clusters_as_GTF(gtfFile); 
+		/*
+		Print Identified transcripts as GTF by their coordinates
+		*/
+	}
+
 
 	/////////////////////////////////////////////////////////////
 	// Launch thread
@@ -167,6 +178,5 @@ public:
 		this -> find_transcripts();	  		  	  // dbscan clustering algorithm
 		this -> assign_transcripts();  	  			  // overlap genes
 	}
-	/////////////////////////////////////////////////////////////
 };
 

@@ -1,3 +1,6 @@
+I was afraid this day would come... need to do a GTF merge that generates
+	a final counts table :(
+
 Collapsing core clusters:
 	1. check if 5 core 1 overlaps with 3 core 1,
 		if yes, combine

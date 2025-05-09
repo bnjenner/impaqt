@@ -79,9 +79,8 @@ TEST_F(impactTest, BasicAnnotation) {
 
 // Test 2
 TEST_F(impactTest, BasicCluster) {
-   test_process -> find_transcripts();
+   test_process ->  create_clusters();
    std::string answer = read_test_file("../test/data/test_cluster.txt");
-   std::cerr << test_process -> get_clusters() -> get_contig_name() << "\n";
    ASSERT_EQ(test_process -> get_clusters() -> string_clusters(0), answer);
 };
 

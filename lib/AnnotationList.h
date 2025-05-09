@@ -120,31 +120,6 @@ public:
 	}
 
 	/////////////////////////////////////////////////////////////
-	// Print genes and counts
-	void print_genes() {
-		GeneNode *curr_node = pos_head;
-		while (curr_node != NULL) {
-			std::cout << curr_node -> get_chrom() << "\t" << curr_node -> get_geneID() << "\t";
-			for (const auto &region : curr_node -> get_exon_vec()) { std::cout << region << "\t"; }
-			std::cout << "\n";
-			curr_node = curr_node -> get_next();
-		}
-	}
-
-	// Print genes into strings for tests
-	std::string string_genes() {
-		std::stringstream ss;
-		GeneNode *curr_node = pos_head;
-		while (curr_node != NULL) {
-			ss << curr_node -> get_chrom() << "\t" << curr_node -> get_geneID() << "\t";
-			for (const auto &region : curr_node -> get_exon_vec()) { ss << region << "\t"; }
-			ss << "\n";
-			curr_node = curr_node -> get_next();
-		}
-		return ss.str();
-	}
-
-	/////////////////////////////////////////////////////////////
 	// Get Head Node
 	GeneNode* get_head(int t_strand) {
 		if (t_strand == 0) { return pos_head; }
@@ -226,5 +201,29 @@ public:
 			}	
 		}
 	}
+
 	/////////////////////////////////////////////////////////////
+	// Print genes and counts
+	void print_genes() {
+		GeneNode *curr_node = pos_head;
+		while (curr_node != NULL) {
+			std::cout << curr_node -> get_chrom() << "\t" << curr_node -> get_geneID() << "\t";
+			for (const auto &region : curr_node -> get_exon_vec()) { std::cout << region << "\t"; }
+			std::cout << "\n";
+			curr_node = curr_node -> get_next();
+		}
+	}
+
+	// Print genes into strings for tests
+	std::string string_genes() {
+		std::stringstream ss;
+		GeneNode *curr_node = pos_head;
+		while (curr_node != NULL) {
+			ss << curr_node -> get_chrom() << "\t" << curr_node -> get_geneID() << "\t";
+			for (const auto &region : curr_node -> get_exon_vec()) { ss << region << "\t"; }
+			ss << "\n";
+			curr_node = curr_node -> get_next();
+		}
+		return ss.str();
+	}
 };

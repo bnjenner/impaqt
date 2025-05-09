@@ -2,6 +2,18 @@
 // Gene Assignment and Related Functions
 void assign_transcripts_to_genes(AnnotationList &annotation, ClusterList &cluster_list, const int &strand) {
 
+	/*
+	Here is the procedure, iterate through clusters and genes
+		If genes in cluster region
+			If cluster has transcripts: assign to proper genes
+			If cluster has no transcripts: assign individual 3' and 5' ends
+				(if ends on same gene: unique, 
+				if confliciting genes: ambiguous,
+				if lone ends: unique,
+				if no overlap: unassigned)
+
+	*/
+
 	// Get head and tail
 	GeneNode *prev_gene = annotation.get_head(strand);
 	GeneNode *curr_gene = prev_gene;

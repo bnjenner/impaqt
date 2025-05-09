@@ -22,6 +22,7 @@ private:
 	size_t total_reads = 0;
 	size_t multimapped_reads = 0;
 	size_t unassigned_reads = 0;
+	size_t transcript_num = 0; 
 
 	// For Checks
 	uint16_t NH_tag;						// NH tag to determine number of mappings
@@ -114,6 +115,7 @@ private:
 		temp_node = new ClusterNode(curr_node -> get_start(),
 		                            curr_node -> get_next() -> get_stop(),
 		                            curr_node -> get_strand(),
+		                            curr_node -> get_contig_name(),
 		                            curr_node -> get_chrom_index(),
 		                            curr_node -> get_read_count() + curr_node -> get_next() -> get_read_count(),
 		                            curr_node -> get_five_vec(),
@@ -190,6 +192,22 @@ public:
 	// Get Reads Stats
 	size_t get_total_reads() { return total_reads; }
 	size_t get_multimapped_reads() { return multimapped_reads; }
+	size_t get_transcript_num() {
+		
+		ClusterNode *curr_node = pos_head;
+		while (curr_node != NULL) {
+			transcript_num += curr_node -> get_transcript_num();
+			curr_node = curr_node -> get_next();
+		}
+
+		curr_node = neg_head;
+		while (curr_node != NULL) {
+			transcript_num += curr_node -> get_transcript_num();
+			curr_node = curr_node -> get_next();
+		}
+
+		return transcript_num;
+	}
 
 	/////////////////////////////////////////////////////////////
 	// Initialize empty object
@@ -204,22 +222,22 @@ public:
 		int zones = (chrom_length / window_size) + 1; // Extend past length of chrom
 
 		// Create Positive list
-		temp = new ClusterNode(temp_pos, window_size, 0, chrom_index);
+		temp = new ClusterNode(temp_pos, window_size, 0, chrom_index, contig_name);
 		pos_head = temp; pos_tail = temp;
 		for (int i = 1; i < zones; i++) {
 			temp_pos += window_size;
-			pos_tail -> set_next(new ClusterNode(temp_pos, window_size, 0, chrom_index));
+			pos_tail -> set_next(new ClusterNode(temp_pos, window_size, 0, chrom_index, contig_name));
 			pos_tail -> get_next() -> set_prev(pos_tail);
 			pos_tail = pos_tail -> get_next();
 		}
 
 		// Create Negative list
 		temp_pos = 0;
-		temp = new ClusterNode(temp_pos, window_size, 1, chrom_index);
+		temp = new ClusterNode(temp_pos, window_size, 1, chrom_index, contig_name);
 		neg_head = temp; neg_tail = temp;
 		for (int i = 1; i < zones; i++) {
 			temp_pos += window_size;
-			neg_tail -> set_next(new ClusterNode(temp_pos, window_size, 1, chrom_index));
+			neg_tail -> set_next(new ClusterNode(temp_pos, window_size, 1, chrom_index, contig_name));
 			neg_tail -> get_next() -> set_prev(neg_tail);
 			neg_tail = neg_tail -> get_next();
 		}
@@ -356,8 +374,7 @@ public:
 		ClusterNode *curr_node = get_head(t_strand);
 		while (curr_node != NULL) {
 			std::cout << get_contig_name() << "\t"
-			          << curr_node -> get_start() << "\t"
-			          << curr_node -> get_stop() << "\t"
+			          << curr_node -> get_start() << "\t" << curr_node -> get_stop() << "\t"
 			          << curr_node -> get_read_count() << "\n";
 			curr_node = curr_node -> get_next();
 		}
@@ -368,13 +385,75 @@ public:
 		std::stringstream ss;
 		ClusterNode *curr_node = get_head(t_strand);
 		while (curr_node != NULL) {
-			ss << get_contig_name() << "\t"
-			   << curr_node -> get_start() << "\t"
-			   << curr_node -> get_stop() << "\t"
+			ss << get_contig_name() << "\t" 
+			   << curr_node -> get_start() << "\t" << curr_node -> get_stop() << "\t" 
 			   << curr_node -> get_read_count() << "\n";
 			curr_node = curr_node -> get_next();
 		}
 		return ss.str();
 	}
-	/////////////////////////////////////////////////////////////
+
+	// Write Clusters to GTF File
+	void write_clusters_as_GTF(std::ofstream &gtfFile) {
+
+		// Cancel if empty chromosome
+		if (pos_head == NULL && neg_head == NULL) { return; }
+
+		bool strand;
+		ClusterNode *curr_node;
+		ClusterNode *prev_pos_node = pos_head;
+		ClusterNode *prev_neg_node = neg_head;
+
+		// Get First Cluster
+		if (pos_head == NULL && neg_head != NULL) {
+			curr_node = neg_head; strand = 1;
+		} else if (neg_head == NULL && pos_head != NULL) {
+			curr_node = pos_head; strand = 0;
+		} else {
+			if (pos_head -> get_start() < neg_head -> get_start()) {
+				curr_node = pos_head; strand = 0;
+			} else {
+				curr_node = neg_head; strand = 1;
+			}
+		}
+
+		while (true) {
+
+			// If no more clusters
+			if (prev_pos_node == NULL && prev_neg_node == NULL) { break; }
+
+			// Write transcripts into GTF
+			curr_node -> write_transcripts(gtfFile);
+
+			// Strand switching conditions :(
+			if (strand == 0) {
+				prev_pos_node = curr_node -> get_next();
+				if (prev_pos_node != NULL) {
+					if (prev_neg_node == NULL) {
+						curr_node = prev_pos_node; strand = 0;
+					} else if (prev_pos_node -> get_start() < prev_neg_node -> get_start()) {
+						curr_node = prev_pos_node; strand = 0;
+					} else {
+						curr_node = prev_neg_node; strand = 1;
+					}
+				} else {
+					curr_node = prev_neg_node; strand = 1;
+				}
+
+			} else {
+				prev_neg_node = curr_node -> get_next();
+				if (prev_neg_node != NULL) {
+					if (prev_pos_node == NULL) {
+						curr_node = prev_neg_node; strand = 1;
+					} else if (prev_neg_node -> get_start() < prev_pos_node -> get_start()) {
+						curr_node = prev_neg_node; strand = 1;
+					} else {
+						curr_node = prev_pos_node; strand = 0;
+					}
+				} else {
+					curr_node = prev_pos_node; strand = 0;
+				}
+			}
+		}
+	}
 };
