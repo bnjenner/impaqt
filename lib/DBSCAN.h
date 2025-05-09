@@ -40,7 +40,8 @@ void get_transcripts(ClusterNode *curr_node, const std::vector<std::string> &pat
 	int index, clusters;
 	int min_pos, max_pos;  // necessary because 3' vec may not be in order due to splicing
 
-	// Horrible extending vector, but it's short so it shouldn't matter THAT much
+	// Get transcript coordinates
+	//	BNJ: 5/2/2025 - Horrible extending vector, but they're short so it shouldn't matter THAT much
 	for (const auto &p : paths) {
 
 		core_points = 0.0f;
@@ -221,7 +222,6 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 			}
 		}
 	}
-
 	return assign_vec;
 }
 

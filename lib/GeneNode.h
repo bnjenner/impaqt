@@ -138,9 +138,7 @@ public:
 				} else {
 					continue;
 				}
-
 			}
-
 		}
 	}
 };

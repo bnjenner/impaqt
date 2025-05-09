@@ -10,19 +10,19 @@ class Impaqt {
 private:
 
 	// Alignment file Readers
-	BamTools::BamReader inFile;		   	 					  // Bam File Object
-	BamTools::BamAlignment alignment;	  				 	  // BamAlignmentRecord record;
+	BamTools::BamReader inFile;		   	 					    // Bam File Object
+	BamTools::BamAlignment alignment;	  				 	    // BamAlignmentRecord record;
 
-	static AnnotationList annotation;			  		 	  // Annotation list for genes
-	static std::string alignment_file_name;	     		 	  // alignment file
-	static std::string index;				  	     	 	  // alignment index file
-	int chrom_index;					  				 	  // chromosome number
-	bool ignore_chr = false;			  				 	  // to ignore for downstream
+	static AnnotationList annotation;			  		 	    // Annotation list for genes
+	static std::string alignment_file_name;	     		 	    // alignment file
+	static std::string index;				  	     	 	    // alignment index file
+	int chrom_index;					  				 	    // chromosome number
+	bool ignore_chr = false;			  				 	    // to ignore for downstream
 
-	static std::unordered_map<int, std::string> contig_map;
-	static std::unordered_map<int, int> contig_lengths;
+	static std::unordered_map<int, std::string> contig_map;     // Links Index to Contig Name
+	static std::unordered_map<int, int> contig_lengths;			// Links Index to Contig Length
 
-	ClusterList cluster_list;			  					  // List for clusters
+	ClusterList cluster_list;			  					    // List for clusters
 
 	size_t total_reads = 0;
 	size_t unique_reads = 0;
@@ -150,7 +150,7 @@ public:
 	}
 
 
-	// Print Cluster Counts
+	// Print Gene Counts
 	void print_counts() {
 		/*
 		The basic idea for this is that we will iterate through our two strands and print them
@@ -161,10 +161,8 @@ public:
 
 	// Print Clusters as GTF
 	void write_gtf(std::ofstream &gtfFile) {
+		if (ignore_chr) { return; }
 		cluster_list.write_clusters_as_GTF(gtfFile); 
-		/*
-		Print Identified transcripts as GTF by their coordinates
-		*/
 	}
 
 
@@ -176,7 +174,7 @@ public:
 		if (ignore_chr) { return; }
 		this -> collapse_clusters();	  		  // collapse clusters
 		this -> find_transcripts();	  		  	  // dbscan clustering algorithm
-		this -> assign_transcripts();  	  			  // overlap genes
+		this -> assign_transcripts();  	  		  // overlap genes
 	}
 };
 

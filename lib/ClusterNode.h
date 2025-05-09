@@ -23,7 +23,7 @@ private:
 	ClusterNode *prev = NULL;							// pevsious ClusterNode
 
 	// Transcript Results
-	int transcript_num = 0; 
+	int transcript_num = 0; 							// number of transcripts identified
 	std::vector<std::vector<int>> transcript_vec;		// vector of transcript regions
 	std::vector<float> transcript_expression;			// vector of transcript expression
 	std::vector<std::string> transcript_assignments;	// vector of transcript assignments
@@ -78,7 +78,6 @@ public:
 	void set_chrom_index(int t_chrom_index) { chrom_index = t_chrom_index; }
 	int get_chrom_index() { return chrom_index; }
 	std::string get_contig_name() { return contig_name; }
-
 
 	bool isReverse() { return !strand; }
 	int get_strand() { return strand; }

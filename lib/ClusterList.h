@@ -111,6 +111,7 @@ private:
 	// Merge Neighboring Non-Zero Nodes
 	void merge_nodes(ClusterNode *&curr_node, ClusterNode *&temp_node, ClusterNode *&temp_head, ClusterNode *&temp_tail) {
 
+		// Create new Node
 		curr_node -> get_next() -> shrink_vectors();
 		temp_node = new ClusterNode(curr_node -> get_start(),
 		                            curr_node -> get_next() -> get_stop(),
@@ -174,7 +175,8 @@ public:
 	}
 
 	/////////////////////////////////////////////////////////////
-	// Get Chrom Name (should probably keep consistent with chrom)
+	// Get Chrom Name 
+	//	BNJ: 5/9/2025 - should probably keep name consistent with chrom, not contig
 	std::string get_contig_name() { return contig_name; }
 
 	// Get Head Node
@@ -192,20 +194,19 @@ public:
 	// Get Reads Stats
 	size_t get_total_reads() { return total_reads; }
 	size_t get_multimapped_reads() { return multimapped_reads; }
-	size_t get_transcript_num() {
-		
+	
+	// Get Transcript Number
+	size_t get_transcript_num() {	
 		ClusterNode *curr_node = pos_head;
 		while (curr_node != NULL) {
 			transcript_num += curr_node -> get_transcript_num();
 			curr_node = curr_node -> get_next();
 		}
-
 		curr_node = neg_head;
 		while (curr_node != NULL) {
 			transcript_num += curr_node -> get_transcript_num();
 			curr_node = curr_node -> get_next();
 		}
-
 		return transcript_num;
 	}
 
@@ -213,6 +214,7 @@ public:
 	// Initialize empty object
 	void initialize(const int t_chrom_index, const std::string t_contig_name, const int t_chrom_length) {
 
+		// Set info
 		chrom_index = t_chrom_index;
 		contig_name = t_contig_name;
 		chrom_length = t_chrom_length;
@@ -426,6 +428,7 @@ public:
 			curr_node -> write_transcripts(gtfFile);
 
 			// Strand switching conditions :(
+			//	BNJ: 5/2/2025 - This is a bit messy, but it works, maybe put this into a function?
 			if (strand == 0) {
 				prev_pos_node = curr_node -> get_next();
 				if (prev_pos_node != NULL) {

@@ -175,12 +175,10 @@ public:
 				// If same gene ID
 				if (columns[8] == pos_tail -> get_geneID()) {
 					pos_tail -> add_region(columns[3], columns[4]);
-				
 				} else {
 					pos_extend(columns); // create new gene node
 				}
 				
-
 				// If negative strand
 			} else if (columns[6] == "-") {
 
@@ -190,7 +188,6 @@ public:
 				// If same gene ID
 				if (columns[8] == neg_tail -> get_geneID()) {
 					neg_tail -> add_region(columns[3], columns[4]);
-				
 				} else {
 					neg_extend(columns); // create new gene node
 				}
