@@ -16,62 +16,174 @@ std::vector<int> reverse_and_negate(const std::vector<int> &vec) {
 // Used to Sort those Pesky Reverse Strands
 bool compare_first_element(const std::vector<int>& a, const std::vector<int>& b) { return a[0] < b[0]; }
 
+// Sort Using Vector Lengths
+bool compare_length(const std::vector<int>& a, const std::vector<int>& b) { return a.size() < b.size(); }
+
+
+// Checks to see if regions of transcript overlap
+bool check_transcript_overlap(std::vector<int>& a, const std::vector<int>& b) {
+	int a_len = a.size();
+	// Precedes
+	if (a[a_len - 1] > b[0] && a[a_len - 1] < b[1]) {
+		return true;
+	// Spans
+	} else if (a[a_len - 2] < b[0] && a[a_len - 1] > b[1]) {
+		return true;
+	// Follows
+	} else if (a[a_len - 2] > b[0] && a[a_len - 2] < b[1]) {
+		return true;
+	// Precedes (but close enough)
+	} else if (std::abs(a[a_len - 1]) - b[0] <= ImpaqtArguments::Args.epsilon) {
+		return true;
+	}
+	return false;
+}
+
 // Merge Overlapping Transcripts
-void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<float> &counts) {
+std::vector<int> reduce_transcripts(const std::vector<int>& a, const std::vector<int>& b) {
 
-	int pos;
+	int a_len = a.size();
+	int b_len = b.size();
+	std::vector<int> result(a);
 
-	// If reverse strand, reverse and make negative (I'm actually pretty proud of this solution)
+	for (int i = 0; i < (b_len / 2); i++) {
+		if (b[(2 * i)] > a[a_len - 1]) {
+			result.push_back(b[(2 * i)]);
+			result.push_back(b[(2 * i) + 1]);
+		} else {
+			if (b[(2 * i)] < a[a_len - 2]) { result[a_len - 2] = b[(2 * i)]; }
+			if (b[(2 * i) + 1] > a[a_len - 1]) { result[a_len - 1] = b[(2 * i) + 1]; }
+		}
+	}
+	return result;
+}
+
+
+// Check if Transcript is a subset of another transcript
+bool check_if_subset(const std::vector<int>& a, const std::vector<int>& b) {
+	
+	std::vector<int> tmp_vec;
+	int a_len = a.size();
+	int b_len = b.size();
+	if (a_len > b_len) { return false; }
+
+	for (int i = 0; i < (b_len / 2); i++) {
+		tmp_vec = std::vector<int>(b.begin() + (2 * i), b.end()); 
+		if (tmp_vec.size() >= a_len) {
+			if (a == std::vector<int>(b.begin() + (2 * i), b.begin() + (2 * i) + a_len)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+// Merge Overlapping Transcripts
+void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<float> &counts) {
+
+	int n = transcripts.size();
+	std::vector<std::vector<int>> result;
+
+	// Reverse and Negative if reverse strand (I'm actually pretty proud of this solution)
 	if (curr_node -> get_strand() == 1) {
 		for (int i = 0; i < transcripts.size(); i++) {
 			transcripts[i] = reverse_and_negate(transcripts[i]);
 		}
-		// std::reverse(transcripts.begin(), transcripts.end());
 		std::sort(transcripts.begin(), transcripts.end(), compare_first_element);
-		for (const auto &t1 : transcripts) {
-			for (const auto &t2 : t1) { std::cerr << t2 << " "; }
-			std::cerr << "\n";
-		}
 	}
 
-	for (int i = 0; i < transcripts.size(); i++) {
-
-		for (int j = i + 1; j < transcripts.size(); j++) {
-			pos = transcripts[i].back();
-
-			// pos >= transcripts[j][0] && pos <= transcripts[j][1]
-			if (ImpaqtArguments::Args.epsilon >= std::abs(pos - transcripts[j][0])) {
-				transcripts[i].back() = transcripts[j][1];
-
-				if (transcripts[j].size() > 2) {
-					transcripts[i].push_back(transcripts[j][2]);
-					transcripts[i].push_back(transcripts[j][3]);
-				}
-
-				transcripts[j].clear();
-				i = j;
+	// Overlap transcripts
+	for (int i = 0; i < n; i++) {
+		for (int j = i + 1; j < n; j++) {
+			if (check_transcript_overlap(transcripts[i], transcripts[j])) {
+				result.push_back(reduce_transcripts(transcripts[i], transcripts[j])); // Merge transcript and add
 			}
-
-			// j += 1;
 		}
 	}
 
-	for (int i = 0; i < transcripts.size(); i++) {
-		
-		if (!transcripts[i].empty()) {
+	bool unique;
+	n = result.size();
+	std::sort(result.begin(), result.end(), compare_length);
 
-			for (const auto &t2 : transcripts[i]) { std::cerr << t2 << " "; }
-			std::cerr << "\n";
+	// Further Clean Up, some transcripts are subsets of others
+	for (int i = 0; i < n; i++) {
+		unique = true;
+		for (int j = i + 1; j < n; j++) {
+			if (check_if_subset(result[i], result[j])) {
+				unique = false;
+				break;
+			}
+		}
 
+		if (unique) {
 			// Reinstate original order
 			if (curr_node -> get_strand() == 1) {
-				transcripts[i] = reverse_and_negate(transcripts[i]);
+				result[i] = reverse_and_negate(result[i]);
 			}
-
-			curr_node -> add_transcript(transcripts[i], counts[i]);
+			curr_node -> add_transcript(result[i], counts[i]);
 		}
 	}
+
 }
+
+
+// // Merge Overlapping Transcripts
+// void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<float> &counts) {
+
+// 	int pos;
+
+// 	// If reverse strand, reverse and make negative (I'm actually pretty proud of this solution)
+// 	if (curr_node -> get_strand() == 1) {
+// 		for (int i = 0; i < transcripts.size(); i++) {
+// 			transcripts[i] = reverse_and_negate(transcripts[i]);
+// 		}
+// 		// std::reverse(transcripts.begin(), transcripts.end());
+// 		std::sort(transcripts.begin(), transcripts.end(), compare_first_element);
+// 		for (const auto &t1 : transcripts) {
+// 			for (const auto &t2 : t1) { std::cerr << t2 << " "; }
+// 			std::cerr << "\n";
+// 		}
+// 	}
+
+// 	for (int i = 0; i < transcripts.size(); i++) {
+
+// 		for (int j = i + 1; j < transcripts.size(); j++) {
+// 			pos = transcripts[i].back();
+
+// 			// pos >= transcripts[j][0] && pos <= transcripts[j][1]
+// 			if (ImpaqtArguments::Args.epsilon >= std::abs(pos - transcripts[j][0])) {
+// 				transcripts[i].back() = transcripts[j][1];
+
+// 				if (transcripts[j].size() > 2) {
+// 					transcripts[i].push_back(transcripts[j][2]);
+// 					transcripts[i].push_back(transcripts[j][3]);
+// 				}
+
+// 				transcripts[j].clear();
+// 				i = j;
+// 			}
+
+// 			// j += 1;
+// 		}
+// 	}
+
+// 	for (int i = 0; i < transcripts.size(); i++) {
+		
+// 		if (!transcripts[i].empty()) {
+
+// 			for (const auto &t2 : transcripts[i]) { std::cerr << t2 << " "; }
+// 			std::cerr << "\n";
+
+// 			// Reinstate original order
+// 			if (curr_node -> get_strand() == 1) {
+// 				transcripts[i] = reverse_and_negate(transcripts[i]);
+// 			}
+
+// 			curr_node -> add_transcript(transcripts[i], counts[i]);
+// 		}
+// 	}
+// }
 
 
 // Get Transcript Coordinates
@@ -368,8 +480,13 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 							assignments_5, assignments_3, 
 							&transcripts, &counts); 
 			
-			// Merge overlapping transcripts and add to cluster node
-			reduce_transcripts(curr_node, transcripts, counts);	
+			if (transcripts.size() == 1) {
+				curr_node -> add_transcript(transcripts[0], counts[0]);
+			} else {
+				// Merge overlapping transcripts and add to cluster node
+				get_final_transcripts(curr_node, transcripts, counts);	
+			}
+			
 		}
 
 		curr_node = curr_node -> get_next();
