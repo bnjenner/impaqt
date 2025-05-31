@@ -24,6 +24,7 @@ void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &t
 		for (int i = 0; i < transcripts.size(); i++) {
 			transcripts[i] = reverse_and_negate(transcripts[i]);
 		}
+		std::reverse(transcripts.begin(), transcripts.end());
 	}
 
 	for (int i = 0; i < transcripts.size(); i++) {
@@ -33,7 +34,6 @@ void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &t
 
 			if (pos >= transcripts[j][0] && pos <= transcripts[j][1]) {
 				transcripts[i].back() = transcripts[j][1];
-				counts[i] += counts[j];
 
 				if (transcripts[j].size() > 2) {
 					transcripts[i].push_back(transcripts[j][2]);
