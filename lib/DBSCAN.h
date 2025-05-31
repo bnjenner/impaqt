@@ -13,6 +13,8 @@ std::vector<int> reverse_and_negate(const std::vector<int> &vec) {
 	return tmp_vec;
 }
 
+// Used to Sort those Pesky Reverse Strands
+bool compare_first_element(const std::vector<int>& a, const std::vector<int>& b) { return a[0] < b[0]; }
 
 // Merge Overlapping Transcripts
 void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<float> &counts) {
@@ -24,7 +26,12 @@ void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &t
 		for (int i = 0; i < transcripts.size(); i++) {
 			transcripts[i] = reverse_and_negate(transcripts[i]);
 		}
-		std::reverse(transcripts.begin(), transcripts.end());
+		// std::reverse(transcripts.begin(), transcripts.end());
+		std::sort(transcripts.begin(), transcripts.end(), compare_first_element);
+		for (const auto &t1 : transcripts) {
+			for (const auto &t2 : t1) { std::cerr << t2 << " "; }
+			std::cerr << "\n";
+		}
 	}
 
 	for (int i = 0; i < transcripts.size(); i++) {
@@ -32,7 +39,8 @@ void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &t
 		for (int j = i + 1; j < transcripts.size(); j++) {
 			pos = transcripts[i].back();
 
-			if (pos >= transcripts[j][0] && pos <= transcripts[j][1]) {
+			// pos >= transcripts[j][0] && pos <= transcripts[j][1]
+			if (ImpaqtArguments::Args.epsilon >= std::abs(pos - transcripts[j][0])) {
 				transcripts[i].back() = transcripts[j][1];
 
 				if (transcripts[j].size() > 2) {
@@ -44,10 +52,16 @@ void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &t
 				i = j;
 			}
 
-			j += 1;
+			// j += 1;
 		}
+	}
 
+	for (int i = 0; i < transcripts.size(); i++) {
+		
 		if (!transcripts[i].empty()) {
+
+			for (const auto &t2 : transcripts[i]) { std::cerr << t2 << " "; }
+			std::cerr << "\n";
 
 			// Reinstate original order
 			if (curr_node -> get_strand() == 1) {
@@ -61,9 +75,9 @@ void reduce_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &t
 
 
 // Get Transcript Coordinates
-void get_transcripts(ClusterNode *curr_node, const std::vector<std::string> &paths,
-                     	std::vector<std::vector<int>> &core_5, std::vector<std::vector<int>> &core_3,
-                     	std::vector<std::vector<int>> *transcripts, std::vector<float> *counts) {
+void get_coordinates(ClusterNode *curr_node, const std::vector<std::string> &paths,
+                 	 std::vector<std::vector<int>> &core_5, std::vector<std::vector<int>> &core_3,
+                 	 std::vector<std::vector<int>> *transcripts, std::vector<float> *counts) {
 
 	float core_points;
 	int index, clusters;
@@ -167,8 +181,8 @@ void get_transcripts(ClusterNode *curr_node, const std::vector<std::string> &pat
 
 
 // Find all linked DBSCAN clusters
-void trace_transcripts(ClusterNode *curr_node, std::vector<std::string> &path_vec,
-                       const std::vector<int> &assign_5, const std::vector<int> &assign_3) {
+void get_linked_clusters(ClusterNode *curr_node, std::vector<std::string> &path_vec,
+                         const std::vector<int> &assign_5, const std::vector<int> &assign_3) {
 
 	std::string path;
 	std::vector<std::string> tmp_vec;
@@ -304,10 +318,9 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 	/*
 
 	OK SO, the merging of paths needs to happen prior to converting the indexes to coordinates. thats the ticket. 
+		Or does it?
 
 	*/
-
-
 
 	int points;
 	int min_counts;
@@ -348,10 +361,10 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 			}
 
 			// Find all linked DBSCAN clusters 
-			trace_transcripts(curr_node, paths, assign_vec_5, assign_vec_3);	  		 
+			get_linked_clusters(curr_node, paths, assign_vec_5, assign_vec_3);	  		 
 			
 			// Get Transcript Coords and Core Points
-			get_transcripts(curr_node, paths, 
+			get_coordinates(curr_node, paths, 
 							assignments_5, assignments_3, 
 							&transcripts, &counts); 
 			
