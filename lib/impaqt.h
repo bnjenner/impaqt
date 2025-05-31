@@ -65,6 +65,7 @@ public:
 	int get_chrom_num() { return contig_map.size(); }
 	std::unordered_map<int, std::string> get_contig_map() { return contig_map; }
 	std::unordered_map<int, int> get_contig_lengths() { return contig_lengths; }
+	bool is_ignored() { return ignore_chr; }
 
 	/////////////////////////////////////////////////////////////
 	// Open BAM file
@@ -139,6 +140,7 @@ public:
 	// Differentiate Transcripts
 	void find_transcripts() {
 		find_transcripts_DBSCAN(cluster_list, 0); // Forward
+		std::cerr << "STARTING NEGATIVE\n";
 		find_transcripts_DBSCAN(cluster_list, 1); // Reverse
 		transcript_num = cluster_list.get_transcript_num();
 	}
@@ -165,6 +167,11 @@ public:
 		cluster_list.write_clusters_as_GTF(gtfFile); 
 	}
 
+	void return_stats() {
+		multimapped_reads += cluster_list.get_multimapped_reads();
+		total_reads += cluster_list.get_total_reads();
+	}
+
 
 	/////////////////////////////////////////////////////////////
 	// Launch thread
@@ -175,6 +182,7 @@ public:
 		this -> collapse_clusters();	  		  // collapse clusters
 		this -> find_transcripts();	  		  	  // dbscan clustering algorithm
 		this -> assign_transcripts();  	  		  // overlap genes
-	}
+		this -> return_stats();  	  		  	  // return read stats
+	}	
 };
 

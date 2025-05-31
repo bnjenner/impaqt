@@ -49,7 +49,7 @@ private:
 
 		alignment.GetTag("NH", NH_tag);
 		if ((NH_tag > 1) && (!(ImpaqtArguments::Args.nonunique_alignments))) {
-			multimapped_reads++;
+			++multimapped_reads;
 			return false;
 		}
 
@@ -63,7 +63,7 @@ private:
 			return false;
 		}
 
-		if (alignment.MapQuality < ImpaqtArguments::Args.mapq) {
+		if (alignment.MapQuality <= ImpaqtArguments::Args.mapq) {
 			return false;
 		}
 
@@ -264,7 +264,7 @@ public:
 			if (!inFile.GetNextAlignment(alignment)) { break; }
 			if (alignment.RefID > chrom_index) { break; }
 
-			total_reads ++;
+			++total_reads;
 
 			if (read_check(alignment) == false) { continue; }
 
@@ -286,9 +286,9 @@ public:
 
 				neg_temp_node = neg_curr_node;
 
-				// Get Correct node for 5' end
+				// Get Correct node for 5' end (necessary because reverse strand)
 				while (neg_temp_node -> get_next() != NULL) {
-					if (alignment.Position >= neg_temp_node -> get_stop()) {
+					if (t_5end >= neg_temp_node -> get_stop()) {
 						neg_temp_node = neg_temp_node -> get_next();
 					} else {
 						break;
@@ -428,7 +428,7 @@ public:
 			curr_node -> write_transcripts(gtfFile);
 
 			// Strand switching conditions :(
-			//	BNJ: 5/2/2025 - This is a bit messy, but it works, maybe put this into a function?
+			//	BNJ:q 5/2/2025 - This is a bit messy, but it works, maybe put this into a function?
 			if (strand == 0) {
 				prev_pos_node = curr_node -> get_next();
 				if (prev_pos_node != NULL) {

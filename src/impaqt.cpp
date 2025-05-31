@@ -120,7 +120,7 @@ int main(int argc, char const ** argv) {
         total_unique += processes[i] -> get_unique_reads();
         total_ambiguous += processes[i] -> get_ambiguous_reads();
         total_multimapping += processes[i] -> get_multimapped_reads();
-        total_no_feature += processes[i] -> get_multimapped_reads();
+        total_no_feature += processes[i] -> get_unassigned_reads();
         total_reads += processes[i] -> get_total_reads();
         total_transcripts += processes[i] -> get_transcript_num();
         delete processes[i];

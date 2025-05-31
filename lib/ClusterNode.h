@@ -79,7 +79,6 @@ public:
 	int get_chrom_index() { return chrom_index; }
 	std::string get_contig_name() { return contig_name; }
 
-	bool isReverse() { return !strand; }
 	int get_strand() { return strand; }
 
 	int get_start() { return start; }
@@ -136,40 +135,44 @@ public:
 	// Print Transcripts
 	void write_transcripts(std::ofstream &gtfFile) {
 
+		int start, stop, x_start, x_stop;
 		int regions = 0, quant = 0;
 		std::string gene_id = "Unassigned";
 
 		char strand = '+';
-		if (this -> isReverse()) { strand = '-'; }
+		if (this -> get_strand() == 1) { strand = '-'; }
 
 		for (int i = 0; i < transcript_vec.size(); i++) {
 
 			regions	= transcript_vec.at(i).size();
-			
+
+			start = transcript_vec.at(i).at(0);
+			stop = transcript_vec.at(i).at(regions - 1);
+		
 			// Print Transcript Line
 			gtfFile << contig_name << "\timpaqt\ttranscript\t"
-					<< transcript_vec.at(i).at(0) << "\t"
-					<< transcript_vec.at(i).at(regions - 1) << "\t.\t"
-					<< strand 
-					<< "\t.\tgene_id \"" << gene_id << "\";"
+					<< start << "\t" << stop << "\t.\t"
+					<< strand << "\t.\t"
+					<< "gene_id \"" << gene_id << "\";"
 					<< " transcript_id \"impaqt."
 					<< contig_name << ":" 
-					<< transcript_vec.at(i).at(0)
-					<< "-" << transcript_vec.at(i).at(regions - 1) << "\";"
+					<< start << "-" << stop << "\";"
 					<< " exons \"" << (regions / 2) << "\";"
 					<< " counts \"" << quant << "\";\n";
 
 			// Print Exon Line
 			for (int j = 0; j < regions; j += 2) {
+			
+				x_start = transcript_vec.at(i).at(j);
+				x_stop = transcript_vec.at(i).at(j + 1);
+
 				gtfFile << contig_name << "\timpaqt\texon\t"
-						<< transcript_vec.at(i).at(j) << "\t"
-						<< transcript_vec.at(i).at(j + 1) << "\t.\t"
-						<< strand 
-						<< "\t.\tgene_id \"" << gene_id << "\";"
+						<< x_start << "\t" << x_stop << "\t.\t"
+						<< strand  << "\t.\t"
+						<< "gene_id \"" << gene_id << "\";"
 						<< " transcript_id \"impaqt."
 						<< contig_name << ":" 
-						<< transcript_vec.at(i).at(0)
-						<< "-" << transcript_vec.at(i).at(regions - 1) << "\";"
+						<< start << "-" << stop << "\";"
 						<< " exon \"" << (j / 2) << "\";\n";
 			}
 		}

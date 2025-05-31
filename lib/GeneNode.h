@@ -82,7 +82,6 @@ public:
 	// Get Details
 	std::string get_chrom() { return chrom; }
 
-	bool isReverse() { return !strand; }
 	int get_strand() { return strand; }
 
 	int get_start() { return start; }

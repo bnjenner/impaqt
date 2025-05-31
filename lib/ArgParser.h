@@ -51,9 +51,9 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     // Define DBSCAN Options
     seqan::addOption(parser, seqan::ArgParseOption(
                   "m", "min-count",
-                  "Minimum read count for DBSCAN transcript identification algorithm.",
+                  "Minimum read count for DBSCAN transcript identification algorithm. (Minimum of 10)",
                   seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "min-count", "50");
+    seqan::setDefaultValue(parser, "min-count", "10");
 
     seqan::addOption(parser, seqan::ArgParseOption(
                   "p", "count-percentage",
