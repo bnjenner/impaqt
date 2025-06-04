@@ -47,23 +47,26 @@ private:
 		if (alignment.IsDuplicate()) { return false; }
 		if (!alignment.IsMapped()) { return false; }
 
+		// Multimappers
 		alignment.GetTag("NH", NH_tag);
-		if ((NH_tag > 1) && (!(ImpaqtArguments::Args.nonunique_alignments))) {
+		if ((!(ImpaqtArguments::Args.nonunique_alignments)) && (NH_tag > 1)) {
 			++multimapped_reads;
 			return false;
 		}
 
 		// Exclude secondary alignment
 		if (!alignment.IsPrimaryAlignment() && (!(ImpaqtArguments::Args.nonunique_alignments))) {
+			++multimapped_reads;
 			return false;
 		}
 
 		// If paired end, check propper pair
-		if (!alignment.IsProperPair() && ((ImpaqtArguments::Args.library_type).compare("paired") == 0)) {
+		if (((ImpaqtArguments::Args.library_type).compare("paired") == 0) && !alignment.IsProperPair()) {
 			return false;
 		}
 
-		if (alignment.MapQuality <= ImpaqtArguments::Args.mapq) {
+		// Enfore MAPQ filter
+		if (alignment.MapQuality < ImpaqtArguments::Args.mapq) {
 			return false;
 		}
 
@@ -118,7 +121,7 @@ private:
 		                            curr_node -> get_strand(),
 		                            curr_node -> get_contig_name(),
 		                            curr_node -> get_chrom_index(),
-		                            curr_node -> get_read_count() + curr_node -> get_next() -> get_read_count(),
+		                            (curr_node -> get_read_count()) + (curr_node -> get_next() -> get_read_count()),
 		                            curr_node -> get_five_vec(),
 		                            curr_node -> get_next() -> get_five_vec(),
 		                            curr_node -> get_three_vec(),

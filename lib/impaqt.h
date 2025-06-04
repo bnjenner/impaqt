@@ -140,7 +140,6 @@ public:
 	// Differentiate Transcripts
 	void find_transcripts() {
 		find_transcripts_DBSCAN(cluster_list, 0); // Forward
-		std::cerr << "STARTING NEGATIVE\n";
 		find_transcripts_DBSCAN(cluster_list, 1); // Reverse
 		transcript_num = cluster_list.get_transcript_num();
 	}
@@ -167,9 +166,9 @@ public:
 		cluster_list.write_clusters_as_GTF(gtfFile); 
 	}
 
-	void return_stats() {
-		multimapped_reads += cluster_list.get_multimapped_reads();
-		total_reads += cluster_list.get_total_reads();
+	void set_stats() {
+		multimapped_reads = cluster_list.get_multimapped_reads();
+		total_reads = cluster_list.get_total_reads();
 	}
 
 
@@ -178,11 +177,12 @@ public:
 	void launch() {
 		this -> open_alignment_file();			  // open files
 		this -> create_clusters();	  			  // find clusters
-		if (ignore_chr) { return; }
-		this -> collapse_clusters();	  		  // collapse clusters
-		this -> find_transcripts();	  		  	  // dbscan clustering algorithm
-		this -> assign_transcripts();  	  		  // overlap genes
-		this -> return_stats();  	  		  	  // return read stats
+		if (!ignore_chr) { 
+			this -> collapse_clusters();	  		  // collapse clusters
+			this -> find_transcripts();	  		  	  // dbscan clustering algorithm
+			this -> assign_transcripts();  	  		  // overlap genes
+		}
+		this -> set_stats();  	  		  	 	  // return read stats
 	}	
 };
 
