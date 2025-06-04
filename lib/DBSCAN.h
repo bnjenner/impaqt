@@ -188,8 +188,8 @@ void get_coordinates(ClusterNode *curr_node, const std::vector<std::string> &pat
 
 	// Get transcript coordinates
 	//	BNJ: 5/2/2025 - Horrible extending vector, but they're short so it shouldn't matter THAT much
-	//  BNJ: 5/31/2025 - Also worth mentioning, the tmp_Vec should never be more than 4 in length
-	//  BNJ: 6/4/2025 - Man, I should really use bits instead of a string here. Or maybe not?
+	//	BNJ: 5/31/2025 - Also worth mentioning, the tmp_Vec should never be more than 4 in length
+	//	BNJ: 6/4/2025 - Man, I should really use bits instead of a string here. Or maybe not?
 
 	for (const auto &p : paths) {
 

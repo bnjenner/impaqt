@@ -3,8 +3,8 @@
 #ifndef IMPAQT_ARGUMENTS_H
 #define IMPAQT_ARGUMENTS_H
 
-/* 
-    For the record, having this as a globally accessible struct MAY impact performance (albiet neglibible) 
+/*
+    For the record, having this as a globally accessible struct MAY impact performance (albiet neglibible)
         for the following reasons.
 
     1.) Not hot on the cache, as it's infrequently accessed (slow relative to stack allocation)
@@ -12,11 +12,7 @@
 
 
     I ultimately think splitting hairs over a few seconds is not necessarily optimal. If anything, readability
-        and maintainability should be prioritized. 
-
-    ChatGPT suggested locally caching the reference... we will see.
-
-        ```auto& s = MyApp::getGlobalStruct();  // Local reference```
+        and maintainability should be prioritized.
 */
 namespace ImpaqtArguments {
 struct GlobalArgs {

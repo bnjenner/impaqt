@@ -47,9 +47,9 @@ public:
 
 	// dispatch (basically enqueue)
 	void dispatch(const call &&job) {
-		std::unique_lock<std::mutex> lock(mlock); 	// create lock
-		call_queue.push(std::move(job));		 	// enqueue
-		lock.unlock(); 								// unlock
+		std::unique_lock<std::mutex> lock(mlock);	// create lock
+		call_queue.push(std::move(job));			// enqueue
+		lock.unlock();								// unlock
 		cv.notify_one();							// notify conditional var
 	}
 
@@ -72,8 +72,8 @@ public:
 				call_queue.pop();
 
 				lock.unlock();	// unlock now that we're done messing with the queue
-				job(); 			// call job
-				lock.lock(); 	// lock
+				job();			// call job
+				lock.lock();	// lock
 			}
 		} while (!quit);
 

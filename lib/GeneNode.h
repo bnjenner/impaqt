@@ -5,9 +5,9 @@ class GeneNode {
 private:
 
 	// Node Details
-	std::string geneID;				   					// read ID of first read in cluster
-	std::string chrom;					   				// chromosome index
-	int strand = -1;					    			// standedness
+	std::string geneID;									// read ID of first read in cluster
+	std::string chrom;									// chromosome index
+	int strand = -1;									// standedness
 	int start;											// beginning of window
 	int stop;											// end of window
 	int exons = 0;										// number of exons (or features)
