@@ -43,9 +43,9 @@ private:
 
 	// Join exons
 	void close_gap(const int &pos) {
-        std::swap(exon_vec[(pos * 2) + 1], exon_vec.back()); exon_vec.pop_back(); // Remove end of current exon
-        std::swap(exon_vec[(pos * 2) + 2], exon_vec.back()); exon_vec.pop_back(); // Remove beginning of next exon
-        exons -= 1; // reduce number of exons
+		std::swap(exon_vec[(pos * 2) + 1], exon_vec.back()); exon_vec.pop_back(); // Remove end of current exon
+		std::swap(exon_vec[(pos * 2) + 2], exon_vec.back()); exon_vec.pop_back(); // Remove beginning of next exon
+		exons -= 1; // reduce number of exons
 	}
 
 
@@ -56,8 +56,8 @@ public:
 	GeneNode() {}
 
 	// Initialize
-	GeneNode(const std::string &t_geneID, const std::string &t_chrom, const std::string &t_strand, 
-				const std::string &t_start, const std::string &t_stop) {
+	GeneNode(const std::string &t_geneID, const std::string &t_chrom, const std::string &t_strand,
+	         const std::string &t_start, const std::string &t_stop) {
 		// Set info
 		geneID = t_geneID;
 		chrom = t_chrom;
@@ -67,7 +67,7 @@ public:
 		// Set exons'
 		exon_vec[0] = std::stoi(t_start) - 1;
 		exon_vec[1] = std::stoi(t_stop) - 1;
-		start = exon_vec[0]; 
+		start = exon_vec[0];
 		stop = exon_vec[1];
 		exons += 1;
 	}
@@ -108,7 +108,7 @@ public:
 		const int t_start = std::stoi(str_start) - 1;
 		const int t_stop = std::stoi(str_stop) - 1;
 
-		
+
 		// For all recorded exons
 		for (int i = 0; i < n; i++) {
 
@@ -125,15 +125,15 @@ public:
 			}
 
 			// If exon is further down stream
-			if (t_start > exon_vec[(2 * i) + 1]) { 
+			if (t_start > exon_vec[(2 * i) + 1]) {
 
 				// if last exon
-				if (i == (n - 1)) { 
+				if (i == (n - 1)) {
 					append_exon(t_start, t_stop);
-				
+
 				} else if (t_stop < exon_vec[(2 * i) + 2]) {
 					insert_exon(t_start, t_stop);
-				
+
 				} else {
 					continue;
 				}

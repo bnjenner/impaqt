@@ -61,7 +61,7 @@ int main(int argc, char const ** argv) {
     processes[0] -> add_annotation();
 
 
-    /////////////////////////////////////////////////////////////    
+    /////////////////////////////////////////////////////////////
     // Multithreading Initialization
     int n = processes[0] -> get_chrom_num();
     if (n > 1) {
@@ -91,7 +91,7 @@ int main(int argc, char const ** argv) {
     /////////////////////////////////////////////////////////////
     // Write Results
     std::cerr << "// Writing Results.......\n";
-    
+
     // Output read cluster gtf if specified
     if (ImpaqtArguments::Args.gtf_output != "") {
         std::cerr << "//     GTF File..........\n";

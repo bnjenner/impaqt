@@ -52,10 +52,10 @@ public:
 	// Get Reads Stats
 	size_t get_total_reads() { return total_reads; }
 	size_t get_unique_reads() { return unique_reads; }
-    size_t get_ambiguous_reads() { return ambiguous_reads; }
-    size_t get_multimapped_reads() { return multimapped_reads; }
-    size_t get_unassigned_reads() { return unassigned_reads; }
-    size_t get_transcript_num() { return transcript_num; }
+	size_t get_ambiguous_reads() { return ambiguous_reads; }
+	size_t get_multimapped_reads() { return multimapped_reads; }
+	size_t get_unassigned_reads() { return unassigned_reads; }
+	size_t get_transcript_num() { return transcript_num; }
 
 	AnnotationList* get_annotation() { return &annotation; }	// Get AnnotationList
 	ClusterList* get_clusters() { return &cluster_list; }		// Get ClusterList
@@ -112,7 +112,7 @@ public:
 
 	// Set Annotation (this might cause a memory leak)
 	void add_annotation() {
-		annotation = AnnotationList(); 
+		annotation = AnnotationList();
 		annotation.create_gene_list();
 	}
 
@@ -135,7 +135,7 @@ public:
 	void collapse_clusters() {
 		cluster_list.collapse_clusters(0); // Forward
 		cluster_list.collapse_clusters(1); // Reverse
-}
+	}
 
 	// Differentiate Transcripts
 	void find_transcripts() {
@@ -156,14 +156,14 @@ public:
 		/*
 		The basic idea for this is that we will iterate through our two strands and print them
 			in order. Nothing fancy here. Also, be sure to make relative quantification (for now)
-			the relative proportions of the core points multiplied by total read count. That seems fair. 
+			the relative proportions of the core points multiplied by total read count. That seems fair.
 		*/
 	}
 
 	// Print Clusters as GTF
 	void write_gtf(std::ofstream &gtfFile) {
 		if (ignore_chr) { return; }
-		cluster_list.write_clusters_as_GTF(gtfFile); 
+		cluster_list.write_clusters_as_GTF(gtfFile);
 	}
 
 	void set_stats() {
@@ -177,12 +177,12 @@ public:
 	void launch() {
 		this -> open_alignment_file();			  // open files
 		this -> create_clusters();	  			  // find clusters
-		if (!ignore_chr) { 
+		if (!ignore_chr) {
 			this -> collapse_clusters();	  		  // collapse clusters
 			this -> find_transcripts();	  		  	  // dbscan clustering algorithm
 			this -> assign_transcripts();  	  		  // overlap genes
 		}
 		this -> set_stats();  	  		  	 	  // return read stats
-	}	
+	}
 };
 

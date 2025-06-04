@@ -23,10 +23,10 @@ private:
 	// Create new gene node
 	GeneNode* create_new_node(std::vector<std::string> &columns) {
 		GeneNode *temp = new GeneNode(columns[8], 	// Feature ID
-									  columns[0], 	// Chrom
-									  columns[6],	// Strand
-									  columns[3],	// Start
-									  columns[4]);	// Stop
+		                              columns[0], 	// Chrom
+		                              columns[6],	// Strand
+		                              columns[3],	// Start
+		                              columns[4]);	// Stop
 		return temp;
 	}
 
@@ -66,7 +66,7 @@ private:
 
 		// if gff, different separator.
 		if (ImpaqtArguments::Args.isGFF) { sep = '='; }
-			
+
 		// Iterate through annotation features
 		std::istringstream anno_stream(t_columns.at(8));
 		while (std::getline(anno_stream, tag, ';')) {
@@ -136,7 +136,7 @@ public:
 	// Create Gene Graph Structure
 	void create_gene_list() {
 
-		// Open file		
+		// Open file
 		std::ifstream infile(annotation_file);
 		if (!infile) { throw "ERROR: Could not read annotation file."; }
 
@@ -178,7 +178,7 @@ public:
 				} else {
 					pos_extend(columns); // create new gene node
 				}
-				
+
 				// If negative strand
 			} else if (columns[6] == "-") {
 
@@ -195,7 +195,7 @@ public:
 			} else {
 				std::cerr << "ERROR: Unrecognized symbol in strand column:\n" << line << "\n";
 				throw "ERROR: Unrecognized symbol in strand column of annotation file. Check consistency of formatting.";
-			}	
+			}
 		}
 	}
 

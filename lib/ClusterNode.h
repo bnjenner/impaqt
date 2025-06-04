@@ -47,8 +47,8 @@ public:
 	}
 
 	// For combined Nodes
-	ClusterNode(int t_start, int t_stop, int t_strand, 
-				std::string t_contig_name, int t_chrom_index, int t_read_count,
+	ClusterNode(int t_start, int t_stop, int t_strand,
+	            std::string t_contig_name, int t_chrom_index, int t_read_count,
 	            std::vector<int> a_five_vec, std::vector<int> b_five_vec,
 	            std::vector<int> a_three_vec, std::vector<int> b_three_vec) {
 
@@ -91,7 +91,7 @@ public:
 	std::vector<int> get_three_vec() { return three_vec; }
 	std::vector<int>* get_five_ref() { return &five_vec; }
 	std::vector<int>* get_three_ref() { return &three_vec; }
-	
+
 	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
 	int get_transcript_num() { return transcript_num; }
 
@@ -136,11 +136,15 @@ public:
 	void write_transcripts(std::ofstream &gtfFile) {
 
 		int start, stop, x_start, x_stop;
-		int regions = 0, quant = 0;
+		int regions = 0;
+		float prop, quant;
 		std::string gene_id = "Unassigned";
 
 		char strand = '+';
 		if (this -> get_strand() == 1) { strand = '-'; }
+
+		// gtfFile << "#" << contig_name << ":" << this -> start << "-" << this -> stop
+		// 			   << "\t" << read_count << "\t" << this -> five_vec.size() << "\n";
 
 		for (int i = 0; i < transcript_vec.size(); i++) {
 
@@ -148,32 +152,40 @@ public:
 
 			start = transcript_vec.at(i).at(0);
 			stop = transcript_vec.at(i).at(regions - 1);
-		
+
+			// Get expression
+			prop = transcript_expression.at(i) / total_core_points;
+			if (prop == 1) {
+				quant = read_count;
+			} else {
+				quant = std::round((prop * read_count) * 1000.0f) / 1000.0f;
+			}
+
 			// Print Transcript Line
 			gtfFile << contig_name << "\timpaqt\ttranscript\t"
-					<< start << "\t" << stop << "\t.\t"
-					<< strand << "\t.\t"
-					<< "gene_id \"" << gene_id << "\";"
-					<< " transcript_id \"impaqt."
-					<< contig_name << ":" 
-					<< start << "-" << stop << "\";"
-					<< " exons \"" << (regions / 2) << "\";"
-					<< " counts \"" << quant << "\";\n";
+			        << start << "\t" << stop << "\t.\t"
+			        << strand << "\t.\t"
+			        << "gene_id \"" << gene_id << "\";"
+			        << " transcript_id \"impaqt."
+			        << contig_name << ":"
+			        << start << "-" << stop << "\";"
+			        << " exons \"" << (regions / 2) << "\";"
+			        << " counts \"" << quant << "\";\n";
 
 			// Print Exon Line
 			for (int j = 0; j < regions; j += 2) {
-			
+
 				x_start = transcript_vec.at(i).at(j);
 				x_stop = transcript_vec.at(i).at(j + 1);
 
 				gtfFile << contig_name << "\timpaqt\texon\t"
-						<< x_start << "\t" << x_stop << "\t.\t"
-						<< strand  << "\t.\t"
-						<< "gene_id \"" << gene_id << "\";"
-						<< " transcript_id \"impaqt."
-						<< contig_name << ":" 
-						<< start << "-" << stop << "\";"
-						<< " exon \"" << (j / 2) << "\";\n";
+				        << x_start << "\t" << x_stop << "\t.\t"
+				        << strand  << "\t.\t"
+				        << "gene_id \"" << gene_id << "\";"
+				        << " transcript_id \"impaqt."
+				        << contig_name << ":"
+				        << start << "-" << stop << "\";"
+				        << " exon \"" << (j / 2) << "\";\n";
 			}
 		}
 	}

@@ -7,7 +7,7 @@ void assign_transcripts_to_genes(AnnotationList &annotation, ClusterList &cluste
 		If genes in cluster region
 			If cluster has transcripts: assign to proper genes
 			If cluster has no transcripts: assign individual 3' and 5' ends
-				(if ends on same gene: unique, 
+				(if ends on same gene: unique,
 				if confliciting genes: ambiguous,
 				if lone ends: unique,
 				if no overlap: unassigned)
@@ -23,7 +23,7 @@ void assign_transcripts_to_genes(AnnotationList &annotation, ClusterList &cluste
 
 		// // If not empty
 		// if (curr_clust -> get_read_count() != 0) {
-			
+
 		// 	while (curr_gene != NULL) {
 
 		// 		// If gene is in cluster
@@ -37,7 +37,7 @@ void assign_transcripts_to_genes(AnnotationList &annotation, ClusterList &cluste
 		// }
 
 		// std::cout << curr_clust -> get_chrom_index() << ":"
-		//           << curr_clust -> get_start() << "-" 
+		//           << curr_clust -> get_start() << "-"
 		//           << curr_clust -> get_stop() << "\t";
 		// for (const auto &t : *(curr_clust -> get_transcripts())) {
 		// 	for (const auto &region : t) {

@@ -22,7 +22,7 @@ private:
 	size_t total_reads = 0;
 	size_t multimapped_reads = 0;
 	size_t unassigned_reads = 0;
-	size_t transcript_num = 0; 
+	size_t transcript_num = 0;
 
 	// For Checks
 	uint16_t NH_tag;						// NH tag to determine number of mappings
@@ -76,7 +76,7 @@ private:
 	/////////////////////////////////////////////////////////////
 	// Delete Empty Nodes (These node operations could likely be cleaned up...)
 	void delete_nodes(ClusterNode *&curr_node, ClusterNode *&temp_node,  ClusterNode *&temp_head, ClusterNode *&temp_tail) {
-	
+
 		// If last node
 		if (curr_node -> get_next() == NULL) {
 			temp_node = curr_node -> get_prev();
@@ -178,7 +178,7 @@ public:
 	}
 
 	/////////////////////////////////////////////////////////////
-	// Get Chrom Name 
+	// Get Chrom Name
 	//	BNJ: 5/9/2025 - should probably keep name consistent with chrom, not contig
 	std::string get_contig_name() { return contig_name; }
 
@@ -197,9 +197,9 @@ public:
 	// Get Reads Stats
 	size_t get_total_reads() { return total_reads; }
 	size_t get_multimapped_reads() { return multimapped_reads; }
-	
+
 	// Get Transcript Number
-	size_t get_transcript_num() {	
+	size_t get_transcript_num() {
 		ClusterNode *curr_node = pos_head;
 		while (curr_node != NULL) {
 			transcript_num += curr_node -> get_transcript_num();
@@ -390,8 +390,8 @@ public:
 		std::stringstream ss;
 		ClusterNode *curr_node = get_head(t_strand);
 		while (curr_node != NULL) {
-			ss << get_contig_name() << "\t" 
-			   << curr_node -> get_start() << "\t" << curr_node -> get_stop() << "\t" 
+			ss << get_contig_name() << "\t"
+			   << curr_node -> get_start() << "\t" << curr_node -> get_stop() << "\t"
 			   << curr_node -> get_read_count() << "\n";
 			curr_node = curr_node -> get_next();
 		}

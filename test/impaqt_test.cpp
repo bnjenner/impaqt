@@ -30,7 +30,7 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/test.bam",   
                                                      "exon",                       // feature_tag
                                                      "gene_id",                    // feature_id
                                                      ""                            // gtf_output
-                                                    }; 
+                                                    };
 
 
 // Static Member Defintions
