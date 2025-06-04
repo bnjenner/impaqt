@@ -48,9 +48,9 @@ public:
 	// dispatch (basically enqueue)
 	void dispatch(const call &&job) {
 		std::unique_lock<std::mutex> lock(mlock);	// create lock
-		call_queue.push(std::move(job));			// enqueue
-		lock.unlock();								// unlock
-		cv.notify_one();							// notify conditional var
+		call_queue.push(std::move(job));		// enqueue
+		lock.unlock();					// unlock
+		cv.notify_one();				// notify conditional var
 	}
 
 	// thread handler
@@ -71,9 +71,9 @@ public:
 				auto job = std::move(call_queue.front());
 				call_queue.pop();
 
-				lock.unlock();	// unlock now that we're done messing with the queue
+				lock.unlock();		// unlock now that we're done messing with the queue
 				job();			// call job
-				lock.lock();	// lock
+				lock.lock();		// lock
 			}
 		} while (!quit);
 
