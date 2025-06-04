@@ -7,7 +7,7 @@ class ClusterList {
 private:
 
 	// List Details
-	int chrom_index;						// chromosome number in index
+	int chrom_index;					// chromosome number in index
 	std::string contig_name;				// name of contig
 	int chrom_length = 0;					// length of chromosome
 	int window_size = 5000;					// window size
@@ -25,7 +25,7 @@ private:
 	size_t transcript_num = 0;
 
 	// For Checks
-	uint16_t NH_tag;						// NH tag to determine number of mappings
+	uint16_t NH_tag;					// NH tag to determine number of mappings
 
 	/////////////////////////////////////////////////////////////
 	// Calculate splice
