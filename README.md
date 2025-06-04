@@ -1,6 +1,6 @@
 # IMPAQT
 # IN DEVELOPMENT
-
+Currently only performs transcript identification and naive quantification. Gene assignment and more sophisticated quantification methods remain on the TO-DO list.
 ## Introduction
 
 IMPAQT (Identifies Multiple Peaks and Quantifies Transcripts) is a gene 
