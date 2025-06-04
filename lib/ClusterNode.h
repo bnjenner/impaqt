@@ -5,27 +5,27 @@ class ClusterNode {
 private:
 
 	// Node Details
-	std::string contig_name;							// name of contig
-	int chrom_index;									// chromosome number in index
-	int strand = -1;									// standedness
-	int start;											// beginning of window
-	int stop;											// end of window
+	std::string contig_name;				// name of contig
+	int chrom_index;					// chromosome number in index
+	int strand = -1;					// standedness
+	int start;						// beginning of window
+	int stop;						// end of window
 
 	// Read Details
-	std::string headID;									// read ID of first read in cluster
-	size_t read_count = 0;								// number of associated reads
-	float total_core_points = 0;						// number of total core points
-	std::vector<int> five_vec;							// vector for 5' ends
-	std::vector<int> three_vec;							// vector for 3' ends
+	std::string headID;					// read ID of first read in cluster
+	size_t read_count = 0;					// number of associated reads
+	float total_core_points = 0;				// number of total core points
+	std::vector<int> five_vec;				// vector for 5' ends
+	std::vector<int> three_vec;				// vector for 3' ends
 
 	// Links
-	ClusterNode *next = NULL;							// next ClusterNode
-	ClusterNode *prev = NULL;							// pevsious ClusterNode
+	ClusterNode *next = NULL;				// next ClusterNode
+	ClusterNode *prev = NULL;				// pevsious ClusterNode
 
 	// Transcript Results
-	int transcript_num = 0;								// number of transcripts identified
+	int transcript_num = 0;					// number of transcripts identified
 	std::vector<std::vector<int>> transcript_vec;		// vector of transcript regions
-	std::vector<float> transcript_expression;			// vector of transcript expression
+	std::vector<float> transcript_expression;		// vector of transcript expression
 	std::vector<std::string> transcript_assignments;	// vector of transcript assignments
 
 
