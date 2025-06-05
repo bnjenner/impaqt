@@ -170,7 +170,8 @@ public:
 			        << contig_name << ":"
 			        << start << "-" << stop << "\";"
 			        << " exons \"" << (regions / 2) << "\";"
-			        << " counts \"" << quant << "\";\n";
+			        << " counts \"" << quant << "\";"
+			        << " core \"" << transcript_expression.at(i) << "\";\n";
 
 			// Print Exon Line
 			for (int j = 0; j < regions; j += 2) {

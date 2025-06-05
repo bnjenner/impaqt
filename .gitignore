@@ -1,4 +1,4 @@
-build/
+build/*
 test/
 bayes_notes.txt
 impaqt.sublime*
