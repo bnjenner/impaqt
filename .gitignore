@@ -1,4 +1,5 @@
-build/impaqt_derivation*
+docs/impaqt_derivation*
+build/
 test/
 bayes_notes.txt
 impaqt.sublime*
