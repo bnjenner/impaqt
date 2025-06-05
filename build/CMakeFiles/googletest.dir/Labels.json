@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/bnjenner/bnjenner_software/impaqt/build/CMakeFiles/googletest"
+		},
+		{
+			"file" : "/home/bnjenner/bnjenner_software/impaqt/build/CMakeFiles/googletest.rule"
+		},
+		{
+			"file" : "/home/bnjenner/bnjenner_software/impaqt/build/CMakeFiles/googletest-complete.rule"
+		},
+		{
+			"file" : "/home/bnjenner/bnjenner_software/impaqt/build/src/googletest-stamp/googletest-build.rule"
+		},
+		{
+			"file" : "/home/bnjenner/bnjenner_software/impaqt/build/src/googletest-stamp/googletest-configure.rule"
+		},
+		{
+			"file" : "/home/bnjenner/bnjenner_software/impaqt/build/src/googletest-stamp/googletest-download.rule"
+		},
+		{
+			"file" : "/home/bnjenner/bnjenner_software/impaqt/build/src/googletest-stamp/googletest-install.rule"
+		},
+		{
+			"file" : "/home/bnjenner/bnjenner_software/impaqt/build/src/googletest-stamp/googletest-mkdir.rule"
+		},
+		{
+			"file" : "/home/bnjenner/bnjenner_software/impaqt/build/src/googletest-stamp/googletest-patch.rule"
+		},
+		{
+			"file" : "/home/bnjenner/bnjenner_software/impaqt/build/src/googletest-stamp/googletest-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"googletest"
+		],
+		"name" : "googletest"
+	}
+}

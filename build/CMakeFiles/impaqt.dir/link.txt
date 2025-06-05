@@ -1,0 +1,1 @@
+/usr/bin/c++   -pthread -std=c++14 CMakeFiles/impaqt.dir/src/impaqt.cpp.o -o impaqt  /usr/lib/x86_64-linux-gnu/libz.so ext/bamtools/src/api/libbamtools.a /usr/lib/x86_64-linux-gnu/libz.so 
