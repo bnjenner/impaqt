@@ -26,7 +26,7 @@ private:
 	// Transcript Results
 	int transcript_num = 0;					// number of transcripts identified
 	std::vector<std::vector<int>> transcript_vec;		// vector of transcript regions
-	std::vector<int> transcript_expression;		// vector of transcript expression
+	std::vector<int> transcript_expression;		        // vector of transcript expression
 	std::vector<std::string> transcript_assignments;	// vector of transcript assignments
 
 
@@ -113,10 +113,6 @@ public:
 
 		// Resize count vecs if necessary
 		int n = positions.size();
-		// if ((vec_count + (n / 2)) % 1000 == 0) {
-		// 	five_vec.resize(five_vec.size() + 1000, 0);
-		// 	three_vec.resize(three_vec.size() + 1000, 0);
-		// }
 		for (int i = 1; i <= n; i++) {
 			if ((vec_count + i) % 1000 == 0) { 
 				five_vec.resize(five_vec.size() + 1000, 0);
