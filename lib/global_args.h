@@ -7,13 +7,16 @@
     For the record, having this as a globally accessible struct MAY impact performance (albiet neglibible)
         for the following reasons.
 
-    1.) Not hot on the cache, as it's infrequently accessed (slow relative to stack allocation)
+    1.) Not hot on the cache, as it's infrequently accessed
     2.) ?
 
 
     I ultimately think splitting hairs over a few seconds is not necessarily optimal. If anything, readability
         and maintainability should be prioritized.
+
+    Who am I talking to?
 */
+
 namespace ImpaqtArguments {
 struct GlobalArgs {
 
