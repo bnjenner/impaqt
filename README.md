@@ -4,13 +4,13 @@ Currently only performs transcript identification and naive quantification. Gene
 
 ## Introduction
 
-IMPAQT (Identifies Multiple Peaks and Quantifies Transcripts) is a gene 
+IMPAQT (Identifies Multiple Peaks and Quantifies Transcripts) is an
 expression quantification method for TAGseq experiments developed 
 by Bradley Jenner for his Undergraduate Honors Thesis at UC Davis. 
 It operates on assumptions made about the distribution of sequencing reads
-along the 3' UTR of a gene to cluster reads, enabling accurate quantification
-of gene expression as well as recovery of transcript level expression for 
-isoforms with distinct poly adenyltation sites. This method is particularly
+along the 3' UTR of a gene. Clustering these reads enables identification 
+and quantification of gene level and transcript level expression for 
+isoforms with distinct terminal exon usage. This method is particularly
 useful in non-model organisms where 3' UTRs for most genes are poorly
 annotated, resulting in massive data loss. It also can generate a GTF file
 defining the boundaries and expression levels for each identified cluster. 
@@ -58,9 +58,9 @@ SYNOPSIS
     impaqt input.sorted.bam annotation.gtf [options]
 
 DESCRIPTION
-    Identifies Multiple Peaks and Qauntifies Transcripts. Quantifies gene expression from TAGseq experiments and
-    recovers transcript level quantification for isoforms utilizing distinct poly adenylation sites. Generates a
-    counts file written to stdout and optionally a GTF file of identified read clusters.
+    Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms
+    utilizing distinct terminal exons. Generates a counts file written to stdout and optionally a GTF
+    file of identified read clusters.
 
 REQUIRED ARGUMENTS
     BAM INPUT_FILE
@@ -70,10 +70,9 @@ OPTIONS
     -h, --help
           Display the help message.
     -t, --threads INTEGER
-          Number of processes for multithreading. Default: 1.
+          Number of processers for multithreading. Default: 1.
     -l, --library-type STRING
-          Library type. Paired end is not recommended. Only used to check proper pairing. One of single and paired.
-          Default: single.
+          Library type. Paired end is not recommended. Only used to check proper pairing. One of single and paired. Default: single.
     -s, --strandedness STRING
           Strandedness of library. One of forward and reverse. Default: forward.
     -n, --nonunique-alignments
@@ -81,12 +80,11 @@ OPTIONS
     -q, --mapq-min INTEGER
           Minimum mapping quality score to consider for counts. Default: 1.
     -m, --min-count INTEGER
-          Minimum read count for DBSCAN transcript identification algorithm. Default: 50.
+          Minimum read count for DBSCAN transcript identification algorithm. (Minimum of 10) Default: 10.
     -p, --count-percentage INTEGER
-          Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold
-          until a max of 25 is reached. Default: 15.
+          Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold unless percentage is less than 20. Default: 20.
     -e, --epsilon INTEGER
-          Distance (in base pairs) for DBSCAN algorithm. Default: 50.
+          Distance (in base pairs) for DBSCAN algorithm. Default: 150.
     -f, --feature-tag STRING
           Name of feature tag. Default: exon.
     -i, --feature-id STRING
@@ -97,7 +95,7 @@ OPTIONS
           Display version information.
 
 VERSION
-    Last update: April 2024
+    Last update: June 2025
     impaqt version: dev0
     SeqAn version: 2.4.0
 ```

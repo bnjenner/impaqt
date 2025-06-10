@@ -7,7 +7,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     // Setup ArgumentParser.
     seqan::ArgumentParser parser("impaqt");
     seqan::addDescription(parser,
-                          "Identifies Multiple Peaks and Qauntifies Transcripts. Quantifies gene expression from TAGseq experiments and recovers transcript level quantification for isoforms utilizing distinct poly adenylation sites. Generates a counts file written to stdout and optionally a GTF file of identified read clusters.");
+                          "Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms utilizing distinct terminal exons. Generates a counts file written to stdout and optionally a GTF file of identified read clusters.");
 
 
     // Define Arguments
@@ -88,7 +88,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     seqan::setDefaultValue(parser, "version-check", "OFF");
     seqan::hideOption(parser, "version-check");
     seqan::setVersion(parser, "dev0");
-    seqan::setDate(parser, "April 2024");
+    seqan::setDate(parser, "June 2025");
 
     seqan::ArgumentParser::ParseResult res = seqan::parse(parser, argc, argv);
 
