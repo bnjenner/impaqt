@@ -3,24 +3,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DBSCAN and Related Functions
 
-// Checks to see if regions of transcript overlap
-bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
-	// Precedes
-	if (a_stop >= b_start && a_stop <= b_stop) {
-		return true;
-		// Spans
-	} else if (a_start <= b_start && a_stop >= b_stop) {
-		return true;
-		// Follows
-	} else if (a_start >= b_start && a_start <= b_stop) {
-		return true;
-		// Precedes (but close enough)
-	} else if (std::abs(a_stop - b_start) <= ImpaqtArguments::Args.epsilon) {
-		return true;
-	}
-	return false;
-}
-
 // Check if transcripts overlap / are contained in another transcript
 bool check_subset(const std::vector<int>& a, const std::vector<int>& b) {
 
@@ -57,6 +39,18 @@ bool check_subset(const std::vector<int>& a, const std::vector<int>& b) {
 	}
 
 	return match;
+}
+
+
+// Get Core Points of Transcript
+int get_quant(const std::vector <int> result, const std::vector<std::vector<int>> &init_copy, const std::vector<int> counts) {
+	int core_points = 0;
+	for (int i = 0; i < init_copy.size(); i++) {
+		if (check_subset(result, init_copy[i])) {
+			core_points += counts[i];
+		}
+	}
+	return core_points;
 }
 
 
@@ -111,8 +105,8 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 	std::vector<int> absorbed;
 
 	std::vector<int> tmp;
-	std::vector<int> res_counts;
 	std::vector<std::vector<int>> result;
+	std::vector<std::vector<int>> init_copy = transcripts;
 
 	// No need to overlap
 	if (transcripts.size() == 1) { 
@@ -133,7 +127,6 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 		// Reset Checks
 		n = transcripts.size();
 		result.clear(); 
-		res_counts.clear(); 
 		absorbed.clear();
 		all_unique = true;
 
@@ -151,17 +144,13 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 
 					// If new transcript not already in results, add
 					auto it = std::find(result.begin(), result.end(), tmp);
-					if (it == result.end()) {
-						result.push_back(tmp);
-						res_counts.push_back(counts[i] + counts[j]);
-					}
+					if (it == result.end()) { result.push_back(tmp); }
 				}
 			}
 
 			// If unique transcripts and not absorbed, add. If not, add another iteration
 			if (!overlap && std::find(absorbed.begin(), absorbed.end(), i) == absorbed.end()) {
 				result.push_back(transcripts[i]);
-				res_counts.push_back(counts[i]);
 			} else {
 				all_unique = false;
 			}
@@ -169,13 +158,13 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 
 		if (!all_unique) {
 			transcripts = result;
-			counts = res_counts;
 		} else {
 			break;
 		}
 	}
 
 	// Report Final Transcripts
+	int core_points = 0;
 	for (int i = 0; i < result.size(); i++) {
 
 		// Reinstate original order if necessary
@@ -183,7 +172,8 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 			result[i] = reverse_and_negate(result[i]);
 		}
 
-		curr_node -> add_transcript(result[i], res_counts[i]);
+		core_points = get_quant(result[i], init_copy, counts);
+		curr_node -> add_transcript(result[i], core_points);
 	}
 }
 
@@ -299,7 +289,6 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 			}
 		}
 	}
-
 }
 
 

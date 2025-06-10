@@ -1,6 +1,24 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utils (alot of these could be more generalized...)
 
+// Checks to see if regions of transcript overlap
+bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
+	// Precedes
+	if (a_stop >= b_start && a_stop <= b_stop) {
+		return true;
+		// Spans
+	} else if (a_start <= b_start && a_stop >= b_stop) {
+		return true;
+		// Follows
+	} else if (a_start >= b_start && a_start <= b_stop) {
+		return true;
+		// Precedes (but close enough)
+	} else if (std::abs(a_stop - b_start) <= ImpaqtArguments::Args.epsilon) {
+		return true;
+	}
+	return false;
+}
+
 // Used to Sort those Pesky Reverse Strands
 bool compare_first_element(const std::vector<int>& a, const std::vector<int>& b) { return a[0] < b[0]; }
 
