@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 project(gtest_builder C CXX)
 include(ExternalProject)
 
+# Link google test suite
 ExternalProject_Add(googletest
   SOURCE_DIR "${CMAKE_SOURCE_DIR}/ext/googletest-release-1.12.1"
   CMAKE_ARGS -Dgtest_force_shared_crt=ON
