@@ -126,12 +126,12 @@ int main(int argc, char const ** argv) {
         delete processes[i];
     }
 
-    std::cout << "//unique\t" << total_unique << "\n"
-              << "//ambiguous\t" << total_ambiguous << "\n"
-              << "//multimapping\t" << total_multimapping << "\n"
-              << "//unassigned\t" << total_no_feature << "\n"
-              << "//total\t" << total_reads << "\n"
-              << "//transcriptss\t" << total_transcripts << std::endl;
+    std::cout << "// unique\t" << total_unique << "\n"
+              << "// ambiguous\t" << total_ambiguous << "\n"
+              << "// multimapping\t" << total_multimapping << "\n"
+              << "// unassigned\t" << total_no_feature << "\n"
+              << "// total\t" << total_reads << "\n"
+              << "// transcriptss\t" << total_transcripts << std::endl;
 
 
     /////////////////////////////////////////////////////////////

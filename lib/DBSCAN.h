@@ -37,71 +37,103 @@ bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, con
 	return false;
 }
 
-// Check if Transcript is a subset of another transcript
-bool check_if_subset(const std::vector<int>& a, const std::vector<int>& b) {
+// Check if transcripts overlap / are contained in another transcript
+bool check_subset(const std::vector<int>& a, const std::vector<int>& b) {
 
-	int a_len = a.size();
-	int b_len = b.size();
-	if (a_len > b_len) { return false; }
-
-	bool started = false;
 	bool match = false;
+	bool started = false;
 
-	for (int i = 0; i < (a_len / 2); i++) {
-		for (int j = 0; j < (b_len / 2); j++) {
+	int i = 0;
+	int j = 0;
+	int n = a.size() / 2;
+	int m = b.size() / 2;
 
-			if (check_bounds(a[(2 * i)], a[(2 * i) + 1], b[(2 * j)], b[(2 * j) + 1])) {
-				if (!started) { started = true; } // If path tracing is started
-				match = true;
-				++i;
-			} else {
-				match = false;
-				if (started) { break; }
-			}
+	while (j < m) {
 
-			if (i >= (a_len) / 2) {
-				break;
-			}
-		}
-
-		// Only return true if a full match is achieved
-		if (started && match) {
-			return true;
-		} else {
+		if (i >= n) {
 			break;
-		}
-	}
-	return false;
-}
 
-// Merge Overlapping Transcripts
-std::vector<int> reduce_transcripts(const std::vector<int>& a, const std::vector<int>& b) {
+		} else if (check_bounds(a[(i*2)], a[(i*2)+1], b[(j*2)], b[(j*2)+1])) {
+			match = true;
+			started = true;
+			i += 1;
 
-	int a_len = a.size();
-	int b_len = b.size();
-	std::vector<int> result(a);
-
-	for (int i = 0; i < (b_len / 2); i++) {
-		if (b[(2 * i)] > a[a_len - 1]) {
-			result.push_back(b[(2 * i)]);
-			result.push_back(b[(2 * i) + 1]);
 		} else {
-			if (b[(2 * i)] < a[a_len - 2]) { result[a_len - 2] = b[(2 * i)]; }
-			if (b[(2 * i) + 1] > a[a_len - 1]) { result[a_len - 1] = b[(2 * i) + 1]; }
+
+			if (started) {
+				match = false;
+				break;
+			} else {
+				i += 1;
+				j -= 1;
+			}
 		}
+		j += 1;
 	}
-	return result;
+
+	return match;
 }
 
 
 // Merge Overlapping Transcripts
-void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<float> &counts) {
+std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<int>& b) {
 
-	// BNJ: 5/31/2025 - I can probably find a better way to do this lol
+	std::vector<int> merged;
 
-	int n = transcripts.size();
+	int i = 0;
+	int j = 0;
+	int n = a.size() / 2;
+	int m = b.size() / 2;
+
+	while (j < m) {
+
+		// If section of A precedes B
+		if (i != n && j == 0 && (a[(i*2)+1] < b[(j*2)])) {
+			merged.push_back(a[(i*2)]);
+			merged.push_back(a[(i*2)+1]);
+			i += 1;
+
+			// If remaining sections in B, but A is spent
+		} else if (i == n) {
+			merged.push_back(b[(j*2)]);
+			merged.push_back(b[(j*2)+1]);
+			j += 1;
+		
+			// Merge Overlapping sections
+		} else {
+			merged.push_back(std::min(a[(i*2)], b[(j*2)]));
+			merged.push_back(std::max(a[(i*2)+1], b[(j*2)+1]));
+			i += 1;
+			j += 1;
+		}
+	}
+
+	// If remaining sections of A
+	while (i < n) {
+		merged.push_back(a[(i*2)]);
+		merged.push_back(a[(i*2)+1]);
+		i += 1;
+	}
+	
+	return merged;
+}
+
+
+void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts) {
+
+	int n;
+	bool all_unique, overlap;
+	std::vector<int> absorbed;
+
+	std::vector<int> tmp;
+	std::vector<int> res_counts;
 	std::vector<std::vector<int>> result;
-	std::vector<float> res_counts;
+
+	// No need to overlap
+	if (transcripts.size() == 1) { 
+		curr_node -> add_transcript(transcripts[0], counts[0]);
+		return;
+	}
 
 	// Reverse and Negative if reverse strand (I'm actually pretty proud of this solution)
 	if (curr_node -> get_strand() == 1) {
@@ -111,98 +143,90 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 		std::sort(transcripts.begin(), transcripts.end(), compare_first_element);
 	}
 
-	// Overlap transcripts
-	int t_len;
-	bool overlap;
-	for (int i = 0; i < n; i++) {
-		overlap = false;
-		t_len = transcripts[i].size();
+	while (true) {
 
-		for (int j = i + 1; j < n; j++) {
-
-			if (check_bounds(transcripts[i][t_len - 2], transcripts[i][t_len - 1], transcripts[j][0], transcripts[j][1])) {
-				result.push_back(reduce_transcripts(transcripts[i], transcripts[j])); // Merge transcript and add to results
-				res_counts.push_back(counts[i] + counts[j]);
-				overlap = true;
-			}
-		}
-		if (!overlap) {
-			result.push_back(transcripts[i]);
-			res_counts.push_back(counts[i]);
-		}
-	}
-
-	bool unique;
-	bool all_unique = false;
-
-	// Further Clean Up, some transcripts are subsets of others, iterate until all gone
-	while (!all_unique) {
-
-		// Sort by size and create tmp vec
+		// Reset Checks
+		n = transcripts.size();
+		result.clear(); 
+		res_counts.clear(); 
+		absorbed.clear();
 		all_unique = true;
-		n = result.size();
-		std::sort(result.begin(), result.end(), compare_length);
-		std::vector<std::vector<int>> tmp_result;
-		std::vector<float> tmp_counts;
 
-		// Check for transcripts that subset another
+		// Iterate through transcripts
 		for (int i = 0; i < n; i++) {
-			unique = true;
+			overlap = false;
+
 			for (int j = i + 1; j < n; j++) {
-				if (check_if_subset(result[i], result[j])) {
-					all_unique = false;
-					unique = false;
-					break;
+
+				// Check if transcripts overlap
+				if (check_subset(transcripts[i], transcripts[j])) {
+					overlap = true;
+					absorbed.push_back(j);
+					tmp = merge_transcripts(transcripts[i], transcripts[j]);
+
+					// If new transcript not already in results, add
+					auto it = std::find(result.begin(), result.end(), tmp);
+					if (it == result.end()) {
+						result.push_back(tmp);
+						res_counts.push_back(counts[i] + counts[j]);
+					}
 				}
 			}
 
-			if (unique) {
-				tmp_result.push_back(result[i]);
-				tmp_counts.push_back(res_counts[i]);
+			// If unique transcripts and not absorbed, add. If not, add another iteration
+			if (!overlap && std::find(absorbed.begin(), absorbed.end(), i) == absorbed.end()) {
+				result.push_back(transcripts[i]);
+				res_counts.push_back(counts[i]);
+			} else {
+				all_unique = false;
 			}
 		}
-		// If merges made
+
 		if (!all_unique) {
-			result = tmp_result;
-			res_counts = tmp_counts;
+			transcripts = result;
+			counts = res_counts;
+		} else {
+			break;
 		}
 	}
 
 	// Report Final Transcripts
 	for (int i = 0; i < result.size(); i++) {
+
 		// Reinstate original order if necessary
 		if (curr_node -> get_strand() == 1) {
 			result[i] = reverse_and_negate(result[i]);
 		}
+
 		curr_node -> add_transcript(result[i], res_counts[i]);
 	}
 }
 
 // Get Transcript Coordinates
-void get_coordinates(ClusterNode *curr_node, const std::vector<std::string> &paths,
+void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &paths,
                      std::vector<std::vector<int>> &core_5, std::vector<std::vector<int>> &core_3,
-                     std::vector<std::vector<int>> *transcripts, std::vector<float> *counts) {
+                     std::vector<std::vector<int>> *transcripts, std::vector<int> *counts) {
 
-	float core_points;
 	int index, min_pos, max_pos;  // necessary because 3' vec may not be in order due to splicing
 
 	// Get transcript coordinates
 	//	BNJ: 5/2/2025 - Horrible extending vector, but they're short so it shouldn't matter THAT much
-	//	BNJ: 5/31/2025 - Also worth mentioning, the tmp_Vec should never be more than 4 in length
-	//	BNJ: 6/4/2025 - Man, I should really use bits instead of a string here. Or maybe not?
+	//	BNJ: 5/31/2025 - Also worth mentioning, the tmp_vec should never be more than 4 in length
+	//	BNJ: 6/4/2025 - Man, I should really use bits instead of a string here.
 
 	for (const auto &p : paths) {
 
-		core_points = 0.0f;
+		if (p.second == 0) { continue; } // Skip if no reads
+
 		std::vector<int> tmp_vec;
 		std::vector<int>::iterator min_result;
 		std::vector<int>::iterator max_result;
 
 		// add 5' region
-		if (p[0] != '-') {
+		if (p.first[0] != '-') {
 
 			// Get Bounds of cluster
-			index = std::stoi(p.substr(0, 1));
+			index = std::stoi(p.first.substr(0, 1));
 			min_result = std::min_element(core_5.at(index).begin(), core_5.at(index).end());
 			max_result = std::max_element(core_5.at(index).begin(), core_5.at(index).end());
 			min_pos = curr_node -> get_five_vec().at(*min_result);
@@ -217,15 +241,13 @@ void get_coordinates(ClusterNode *curr_node, const std::vector<std::string> &pat
 
 			tmp_vec.push_back(min_pos);
 			tmp_vec.push_back(max_pos);
-			core_points += (float)core_5.at(index).size();
-
 		}
 
 		// add 3' region
-		if (p[1] != '-') {
+		if (p.first[1] != '-') {
 
 			// Get Bounds of cluster
-			index = std::stoi(p.substr(1, 1));
+			index = std::stoi(p.first.substr(1, 1));
 			min_result = std::min_element(core_3.at(index).begin(), core_3.at(index).end());
 			max_result = std::max_element(core_3.at(index).begin(), core_3.at(index).end());
 			min_pos = curr_node -> get_three_vec().at(*min_result);
@@ -240,8 +262,6 @@ void get_coordinates(ClusterNode *curr_node, const std::vector<std::string> &pat
 
 			tmp_vec.push_back(min_pos);
 			tmp_vec.push_back(max_pos);
-			core_points += (float)core_3.at(index).size();
-
 		}
 
 		// Reorder if necessary (really just a reverse strand thing, will figure this out)
@@ -270,19 +290,20 @@ void get_coordinates(ClusterNode *curr_node, const std::vector<std::string> &pat
 		}
 
 		transcripts -> push_back(tmp_vec);
-		counts -> push_back(core_points);
+		counts -> push_back(p.second);
 	}
 }
 
 
 // Find all linked DBSCAN clusters
-void get_linked_clusters(ClusterNode *curr_node, std::vector<std::string> &path_vec,
+void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &path_map,
                          const std::vector<int> &assign_5, const std::vector<int> &assign_3) {
 
 	std::string path;
-	std::vector<std::string> tmp_vec;
 
-	for (int i = 0; i < curr_node -> get_read_count(); i++) {
+	// Use hashmap to store clusters and supporting counts
+	for (int i = 0; i < curr_node -> get_vec_count(); i++) {
+
 		path = "";
 
 		// assigned in 5' DBSCAN
@@ -296,36 +317,39 @@ void get_linked_clusters(ClusterNode *curr_node, std::vector<std::string> &path_
 			path = "-" + std::to_string(assign_3.at(i));
 		}
 
-		// add to paths vector if path is not empty
-		auto it = std::find(tmp_vec.begin(), tmp_vec.end(), path);
-		if (path != "" && it == tmp_vec.end()) { tmp_vec.push_back(path); }
+		if (path == "") { continue; }
+
+		// Add to map and increment
+		if (path_map.find(path) != path_map.end()) {
+			path_map[path] += 1; // Increment count if path already exists
+		} else {
+			path_map[path] = 1; // Add new path with count of 1
+		}
 	}
 
-
-	// Remove orphan paths that are part of other paths
 	int pos;
-	bool add;
-	for (int i = 0; i < tmp_vec.size(); i++) {
+	for (const auto& p1 : path_map) {
 
-		add = true;
-		pos = tmp_vec[i].find('-');
+		if (path_map[p1.first] == 0) { continue; }
+
+		pos = p1.first.find('-');
 
 		// if path is orphaned
 		if (pos != std::string::npos) {
-			for (int j = 0; j < tmp_vec.size(); j++) {
+			for (const auto& p2 : path_map) { 
 
-				if (i == j) { continue; }
+				if (p1.first == p2.first) { continue; }
 
 				// Check if part of path (ft. tricky bit flip)
-				if (tmp_vec[i][!pos] == tmp_vec[j][!pos]) {
-					add = false;
+				if (p1.first[!pos] == p2.first[!pos]) {
+					path_map[p1.first] = 0;
+					// add = false;
 					break;
 				}
 			}
 		}
-
-		if (add) { path_vec.push_back(tmp_vec[i]); }
 	}
+
 }
 
 
@@ -410,7 +434,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 // Initiate DBSCAN Transcript Identifying Procedure
 void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 
-	int points;
+	int expr, points;
 	int min_counts;
 	int count_threshold = std::max(ImpaqtArguments::Args.min_count, 10);
 
@@ -418,41 +442,45 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 
 	while (curr_node != NULL) {
 
-		points = curr_node -> get_read_count();
+		expr = curr_node -> get_read_count();
+		points = curr_node -> get_vec_count();
 
 		// If threshold for transcript detection is reached
-		if (points >= count_threshold) {
+		if (expr >= count_threshold) {
 
-			std::vector<std::string> paths;
-			std::vector<float> counts;
+			// std::vector<std::string> paths;
+			std::map<std::string, int> paths;
+			std::vector<int> counts;
 			std::vector<std::vector<int>> transcripts;
 			std::vector<int> assign_vec_5, assign_vec_3;
 			std::vector<std::vector<int>> assignments_5,  assignments_3;
 
 			// Min Counts for DBSCAN
-			min_counts = std::max((int)((float)points * ((float)(ImpaqtArguments::Args.count_percentage / 100))), 20);
+			min_counts = std::max((int)((float)expr * ((float)(ImpaqtArguments::Args.count_percentage / 100))), 20);
+
+			// Sort Vectors
+			curr_node -> sort_vectors();
 
 			// Run DBSCAN
 			assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, true);
 			assign_vec_3 = dbscan(curr_node, points, min_counts, assignments_3, false);
 
-
 			// If clusters were not found
 			if (assignments_5.empty() && assignments_3.empty()) {
-				curr_node = curr_node -> get_next();
-				continue;
+				;
+			} else {
+
+				// Find all linked DBSCAN clusters
+				get_linked_clusters(curr_node, paths, assign_vec_5, assign_vec_3);
+
+				// Get Transcript Coords and Core Points
+				get_coordinates(curr_node, paths,
+				                assignments_5, assignments_3,
+				                &transcripts, &counts);
+
+				// Merge overlapping transcripts 
+				get_final_transcripts(curr_node, transcripts, counts);
 			}
-
-			// Find all linked DBSCAN clusters
-			get_linked_clusters(curr_node, paths, assign_vec_5, assign_vec_3);
-
-			// Get Transcript Coords and Core Points
-			get_coordinates(curr_node, paths,
-			                assignments_5, assignments_3,
-			                &transcripts, &counts);
-
-			// Merge overlapping transcripts and add to cluster node
-			get_final_transcripts(curr_node, transcripts, counts);
 		}
 
 		curr_node = curr_node -> get_next();

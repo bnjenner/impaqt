@@ -27,18 +27,50 @@ private:
 	// For Checks
 	uint16_t NH_tag;					// NH tag to determine number of mappings
 
+
 	/////////////////////////////////////////////////////////////
 	// Calculate splice
-	int calculate_splice(BamTools::BamAlignment &alignment) {
-		int end_pos = alignment.Position;
+	void calculate_splice(BamTools::BamAlignment &alignment, std::vector<int> &positions) {
+
+		int x, prev_m;
+		bool gapped = false;
+
+		int start_pos = alignment.Position;
+		int curr_pos = start_pos;
+	
+		// Iterate Through Cigar String
 		for (int i = 0; i < alignment.CigarData.size(); i++) {
-			// If not clipped and free of inserts, (may also need to check cigar string standards)
-			if ((alignment.CigarData[i].Type != 'S') && (alignment.CigarData[i].Type != 'H') &&
-			        (alignment.CigarData[i].Type != 'I')) {
-				end_pos += alignment.CigarData[i].Length;
+
+			// If gapped alignment, get start and ends of neighbor aligned regions 
+			if (alignment.CigarData[i].Type == 'N') {
+				
+				// Get Next Matched Vector
+				x = -1;
+				for (int j = (i + 1); j < alignment.CigarData.size(); j++) {
+					if (alignment.CigarData[j].Type == 'M') { x = j; break; }
+				}
+
+				if (x == -1) { 
+					std::cerr << "ERROR: Could not find next match in CIGAR string. This should not happen.\n";
+					throw "ERROR: Could not find next match in CIGAR string. This should not happen.";
+				}
+
+				positions.push_back(curr_pos - alignment.CigarData[prev_m].Length);
+				positions.push_back(curr_pos + alignment.CigarData[i].Length + alignment.CigarData[x].Length);
+				gapped = true;
+
+				// update current position
+			} else if (alignment.CigarData[i].Type == 'M') {
+				curr_pos += alignment.CigarData[i].Length;
+				prev_m = i;
 			}
 		}
-		return end_pos;
+
+		// Should only be called in instance where no gap is detected
+		if (!gapped) {
+			positions.push_back(start_pos);
+			positions.push_back(curr_pos);
+		}
 	}
 
 	// Check Read
@@ -115,17 +147,9 @@ private:
 	void merge_nodes(ClusterNode *&curr_node, ClusterNode *&temp_node, ClusterNode *&temp_head, ClusterNode *&temp_tail) {
 
 		// Create new Node
+		ClusterNode *next_node = curr_node -> get_next();
 		curr_node -> get_next() -> shrink_vectors();
-		temp_node = new ClusterNode(curr_node -> get_start(),
-		                            curr_node -> get_next() -> get_stop(),
-		                            curr_node -> get_strand(),
-		                            curr_node -> get_contig_name(),
-		                            curr_node -> get_chrom_index(),
-		                            (curr_node -> get_read_count()) + (curr_node -> get_next() -> get_read_count()),
-		                            curr_node -> get_five_vec(),
-		                            curr_node -> get_next() -> get_five_vec(),
-		                            curr_node -> get_three_vec(),
-		                            curr_node -> get_next() -> get_three_vec());
+		temp_node = new ClusterNode(*curr_node, *next_node);
 		temp_node -> set_prev(curr_node -> get_prev());
 
 		// If not first node
@@ -258,6 +282,7 @@ public:
 
 		int t_5end, t_3end, t_strand;
 		bool found_reads = false;
+		std::vector<int> positions;
 		ClusterNode *pos_curr_node = get_head(0);
 		ClusterNode *neg_curr_node = get_head(1);
 		ClusterNode *neg_temp_node = neg_curr_node; // This needs to exist because the file is ordered according to the left most point
@@ -267,16 +292,18 @@ public:
 			if (!inFile.GetNextAlignment(alignment)) { break; }
 			if (alignment.RefID > chrom_index) { break; }
 
-			++total_reads;
+			total_reads += 1;
 
 			if (read_check(alignment) == false) { continue; }
 
 			found_reads = true;
+			positions.clear();
+			calculate_splice(alignment, positions); // Get Gapped Alignments
 
 			if (alignment.IsReverseStrand()) {
 
-				t_5end = calculate_splice(alignment);
-				t_3end = alignment.Position;
+				t_5end = positions[positions.size() - 1];
+				t_3end = positions[0];
 
 				// Advance to correct node based on left position
 				while (neg_curr_node -> get_next() != NULL) {
@@ -303,13 +330,13 @@ public:
 					std::cerr << "ERROR: Alignment is not in a cluster. This should not happen.\n";
 					throw "ERROR: Alignment is not in a cluster. This should not happen.";
 				} else {
-					neg_temp_node -> add_alignment(t_5end, t_3end);
+					neg_temp_node -> add_alignment(positions);
 				}
 
 			} else {
 
-				t_5end = alignment.Position;
-				t_3end = calculate_splice(alignment);
+				t_5end = positions[0];
+				t_3end = positions[positions.size() - 1];
 
 				// Get Correct node
 				while (pos_curr_node -> get_next() != NULL) {
@@ -325,7 +352,7 @@ public:
 					std::cerr << "ERROR: Alignment is not in a cluster. This should not happen.\n";
 					throw "ERROR: Alignment is not in a cluster. This should not happen.";
 				} else {
-					pos_curr_node -> add_alignment(t_5end, t_3end);
+					pos_curr_node -> add_alignment(positions);
 				}
 			}
 

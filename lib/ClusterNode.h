@@ -14,6 +14,7 @@ private:
 	// Read Details
 	std::string headID;					// read ID of first read in cluster
 	size_t read_count = 0;					// number of associated reads
+	size_t vec_count = 0;
 	float total_core_points = 0;				// number of total core points
 	std::vector<int> five_vec;				// vector for 5' ends
 	std::vector<int> three_vec;				// vector for 3' ends
@@ -25,7 +26,7 @@ private:
 	// Transcript Results
 	int transcript_num = 0;					// number of transcripts identified
 	std::vector<std::vector<int>> transcript_vec;		// vector of transcript regions
-	std::vector<float> transcript_expression;		// vector of transcript expression
+	std::vector<int> transcript_expression;		// vector of transcript expression
 	std::vector<std::string> transcript_assignments;	// vector of transcript assignments
 
 
@@ -47,24 +48,26 @@ public:
 	}
 
 	// For combined Nodes
-	ClusterNode(int t_start, int t_stop, int t_strand,
-	            std::string t_contig_name, int t_chrom_index, int t_read_count,
-	            std::vector<int> a_five_vec, std::vector<int> b_five_vec,
-	            std::vector<int> a_three_vec, std::vector<int> b_three_vec) {
+	ClusterNode(ClusterNode curr_node, ClusterNode next_node) {
 
-		start = t_start;
-		stop = t_stop;
-		strand = t_strand;
-		chrom_index = t_chrom_index;
-		contig_name = t_contig_name;
+		std::vector<int> tmp_vec; // For copies
 
-		five_vec = a_five_vec;
-		five_vec.insert(five_vec.end(), b_five_vec.begin(), b_five_vec.end());
+		start = curr_node.get_start();
+		stop = next_node.get_stop();
+		strand = curr_node.get_strand();
+		contig_name = curr_node.get_contig_name();
+		chrom_index = curr_node.get_chrom_index();
 
-		three_vec = a_three_vec;
-		three_vec.insert(three_vec.end(), b_three_vec.begin(), b_three_vec.end());
+		five_vec = curr_node.get_five_vec();
+		tmp_vec = next_node.get_five_vec();
+		five_vec.insert(five_vec.end(), tmp_vec.begin(), tmp_vec.end());
 
-		read_count = t_read_count;
+		three_vec = curr_node.get_three_vec(); 
+		tmp_vec = next_node.get_three_vec();
+		three_vec.insert(three_vec.end(), tmp_vec.begin(), tmp_vec.end());
+
+		read_count = curr_node.get_read_count() + next_node.get_read_count();
+		vec_count = curr_node.get_vec_count() + next_node.get_vec_count(); 
 	}
 
 	// Destroy
@@ -85,13 +88,15 @@ public:
 	int get_stop() { return stop; }
 
 	std::string get_headID() { return headID; }
+
 	size_t get_read_count() { return read_count; }
+	size_t get_vec_count() { return vec_count; }
 
 	std::vector<int> get_five_vec() { return five_vec; }
 	std::vector<int> get_three_vec() { return three_vec; }
 	std::vector<int>* get_five_ref() { return &five_vec; }
 	std::vector<int>* get_three_ref() { return &three_vec; }
-
+	
 	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
 	int get_transcript_num() { return transcript_num; }
 
@@ -104,28 +109,65 @@ public:
 
 	/////////////////////////////////////////////////////////////
 	// Add alignment to cluster
-	void add_alignment(int t_5end, int t_3end) {
+	void add_alignment(const std::vector<int> &positions) {
 
-		five_vec.at(read_count) = t_5end;
-		three_vec.at(read_count) = t_3end;
-		read_count += 1;
-
-		if (read_count % 1000 == 0) {
-			five_vec.resize(five_vec.size() + 1000, 0);
-			three_vec.resize(three_vec.size() + 1000, 0);
+		// Resize count vecs if necessary
+		int n = positions.size();
+		// if ((vec_count + (n / 2)) % 1000 == 0) {
+		// 	five_vec.resize(five_vec.size() + 1000, 0);
+		// 	three_vec.resize(three_vec.size() + 1000, 0);
+		// }
+		for (int i = 1; i <= n; i++) {
+			if ((vec_count + i) % 1000 == 0) { 
+				five_vec.resize(five_vec.size() + 1000, 0);
+				three_vec.resize(three_vec.size() + 1000, 0);
+				break;
+			}
 		}
+
+		// Add positions to 3 and 5 vec
+		for (int i = 0; i < n; i++) {
+			if (i % 2 == 0) {
+				five_vec.at(vec_count) = positions[i];
+			} else {
+				three_vec.at(vec_count) = positions[i];
+				vec_count += 1;
+			}
+		}
+
+		read_count += 1;
 	}
 
 	// Remove ends of vectors
 	void shrink_vectors() {
-		five_vec.resize(read_count);
+		five_vec.resize(vec_count);
 		five_vec.shrink_to_fit();
-		three_vec.resize(read_count);
+		three_vec.resize(vec_count);
 		three_vec.shrink_to_fit();
 	}
 
+	// Sort Vectors By 5' Positions
+	void sort_vectors() {
+		std::vector<int> indices(vec_count);
+		std::iota(indices.begin(), indices.end(), 0);
+		std::sort(indices.begin(), indices.end(),
+			       [&](int i, int j) -> bool {
+			            return five_vec[i] < five_vec[j];
+			        });
+
+		std::vector<int> tmp_vec(vec_count);
+		for (int i = 0; i < vec_count; i++) { tmp_vec[i] = five_vec[indices[i]]; }
+		five_vec = tmp_vec;
+
+		for (int i = 0; i < vec_count; i++) { tmp_vec[i] = three_vec[indices[i]]; }
+		three_vec = tmp_vec;
+	}
+
+
+
+	/////////////////////////////////////////////////////////////
 	// add transcript
-	void add_transcript(const std::vector<int> &t_transcript, const float &t_expression) {
+	void add_transcript(const std::vector<int> &t_transcript, const int &t_expression) {
 		transcript_vec.push_back(t_transcript);
 		transcript_expression.push_back(t_expression);
 		total_core_points += t_expression;
@@ -140,11 +182,9 @@ public:
 		float prop, quant;
 		std::string gene_id = "Unassigned";
 
+		// Set Strand
 		char strand = '+';
 		if (this -> get_strand() == 1) { strand = '-'; }
-
-		// gtfFile << "#" << contig_name << ":" << this -> start << "-" << this -> stop
-		// 			   << "\t" << read_count << "\t" << this -> five_vec.size() << "\n";
 
 		for (int i = 0; i < transcript_vec.size(); i++) {
 
@@ -169,6 +209,8 @@ public:
 			        << " transcript_id \"impaqt."
 			        << contig_name << ":"
 			        << start << "-" << stop << "\";"
+			        << " region \"" << contig_name << ":" 
+			        << this -> get_start() << "-" << this -> get_stop() << "\";"
 			        << " exons \"" << (regions / 2) << "\";"
 			        << " counts \"" << quant << "\";"
 			        << " core \"" << transcript_expression.at(i) << "\";\n";
