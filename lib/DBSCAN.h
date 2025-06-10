@@ -1,23 +1,7 @@
+#include "utils.h"
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DBSCAN and Related Functions
-
-// Reverse and Negate Reverse Strand Vectors
-std::vector<int> reverse_and_negate(const std::vector<int> &vec) {
-	int x = 0;
-	int n = vec.size();
-	std::vector<int> tmp_vec(n);
-	for (int j = n - 1; j > -1; j--) {
-		tmp_vec[x] = vec[j] * -1;
-		++x;
-	}
-	return tmp_vec;
-}
-
-// Used to Sort those Pesky Reverse Strands
-bool compare_first_element(const std::vector<int>& a, const std::vector<int>& b) { return a[0] < b[0]; }
-
-// Sort Using Vector Lengths
-bool compare_length(const std::vector<int>& a, const std::vector<int>& b) { return a.size() < b.size(); }
 
 // Checks to see if regions of transcript overlap
 bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
@@ -48,6 +32,7 @@ bool check_subset(const std::vector<int>& a, const std::vector<int>& b) {
 	int n = a.size() / 2;
 	int m = b.size() / 2;
 
+	// Iterate through exons, see if match is complete 
 	while (j < m) {
 
 		if (i >= n) {
@@ -207,37 +192,29 @@ void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &p
                      std::vector<std::vector<int>> &core_5, std::vector<std::vector<int>> &core_3,
                      std::vector<std::vector<int>> *transcripts, std::vector<int> *counts) {
 
-	int index, min_pos, max_pos;  // necessary because 3' vec may not be in order due to splicing
-
 	// Get transcript coordinates
 	//	BNJ: 5/2/2025 - Horrible extending vector, but they're short so it shouldn't matter THAT much
 	//	BNJ: 5/31/2025 - Also worth mentioning, the tmp_vec should never be more than 4 in length
 	//	BNJ: 6/4/2025 - Man, I should really use bits instead of a string here.
+
+	int index, min_pos, max_pos; 
 
 	for (const auto &p : paths) {
 
 		if (p.second == 0) { continue; } // Skip if no reads
 
 		std::vector<int> tmp_vec;
-		std::vector<int>::iterator min_result;
-		std::vector<int>::iterator max_result;
 
 		// add 5' region
 		if (p.first[0] != '-') {
 
 			// Get Bounds of cluster
 			index = std::stoi(p.first.substr(0, 1));
-			min_result = std::min_element(core_5.at(index).begin(), core_5.at(index).end());
-			max_result = std::max_element(core_5.at(index).begin(), core_5.at(index).end());
-			min_pos = curr_node -> get_five_vec().at(*min_result);
-			max_pos = curr_node -> get_five_vec().at(*max_result);
+			min_pos = get_pos_min(index, core_5, curr_node -> get_five_ref());
+			max_pos = get_pos_max(index, core_5, curr_node -> get_five_ref());
 
 			// swap variables if necessary
-			if (min_pos > max_pos) {
-				max_pos = max_pos + min_pos;
-				min_pos = max_pos - min_pos;
-				max_pos = max_pos - min_pos;
-			}
+			if (min_pos > max_pos) { variable_swap(min_pos, max_pos); } 
 
 			tmp_vec.push_back(min_pos);
 			tmp_vec.push_back(max_pos);
@@ -248,40 +225,14 @@ void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &p
 
 			// Get Bounds of cluster
 			index = std::stoi(p.first.substr(1, 1));
-			min_result = std::min_element(core_3.at(index).begin(), core_3.at(index).end());
-			max_result = std::max_element(core_3.at(index).begin(), core_3.at(index).end());
-			min_pos = curr_node -> get_three_vec().at(*min_result);
-			max_pos = curr_node -> get_three_vec().at(*max_result);
+			min_pos = get_pos_min(index, core_3, curr_node -> get_three_ref());
+			max_pos = get_pos_max(index, core_3, curr_node -> get_three_ref());
 
 			// swap variables if necessary
-			if (min_pos > max_pos) {
-				max_pos = max_pos + min_pos;
-				min_pos = max_pos - min_pos;
-				max_pos = max_pos - min_pos;
-			}
+			if (min_pos > max_pos) { variable_swap(min_pos, max_pos); } 
 
 			tmp_vec.push_back(min_pos);
 			tmp_vec.push_back(max_pos);
-		}
-
-		// Reorder if necessary (really just a reverse strand thing, will figure this out)
-		if (curr_node -> get_strand() == 1 && tmp_vec.size() > 2
-		        && tmp_vec[0] >= tmp_vec[2]) {
-
-			// If completely encompassing
-			if (tmp_vec[1] <= tmp_vec[3]) {
-				tmp_vec = {tmp_vec[2], tmp_vec[3]};
-
-				// if separate clusters
-			} else if (tmp_vec[3] < tmp_vec[0]) {
-				tmp_vec = {tmp_vec[2], tmp_vec[3],
-				           tmp_vec[0], tmp_vec[1]
-				          };
-
-				// if overlapping
-			} else {
-				tmp_vec = {tmp_vec[2], tmp_vec[1]};
-			}
 		}
 
 		// if close enough
@@ -332,10 +283,10 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 
 		if (path_map[p1.first] == 0) { continue; }
 
-		pos = p1.first.find('-');
-
 		// if path is orphaned
+		pos = p1.first.find('-');
 		if (pos != std::string::npos) {
+			
 			for (const auto& p2 : path_map) { 
 
 				if (p1.first == p2.first) { continue; }
@@ -343,7 +294,6 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 				// Check if part of path (ft. tricky bit flip)
 				if (p1.first[!pos] == p2.first[!pos]) {
 					path_map[p1.first] = 0;
-					// add = false;
 					break;
 				}
 			}
@@ -431,7 +381,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 	return assign_vec;
 }
 
-// Initiate DBSCAN Transcript Identifying Procedure
+// Initiate Transcript Identifying Procedure
 void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 
 	int expr, points;

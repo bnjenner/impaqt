@@ -142,7 +142,7 @@ public:
 		three_vec.shrink_to_fit();
 	}
 
-	// Sort Vectors By 5' Positions
+	// Sort Point Vectors By 5' Positions
 	void sort_vectors() {
 		std::vector<int> indices(vec_count);
 		std::iota(indices.begin(), indices.end(), 0);
@@ -210,6 +210,7 @@ public:
 			        << " exons \"" << (regions / 2) << "\";"
 			        << " counts \"" << quant << "\";"
 			        << " core \"" << transcript_expression.at(i) << "\";\n";
+
 
 			// Print Exon Line
 			for (int j = 0; j < regions; j += 2) {

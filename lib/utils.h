@@ -1,0 +1,41 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Utils (alot of these could be more generalized...)
+
+// Used to Sort those Pesky Reverse Strands
+bool compare_first_element(const std::vector<int>& a, const std::vector<int>& b) { return a[0] < b[0]; }
+
+// Sort Using Vector Lengths
+bool compare_length(const std::vector<int>& a, const std::vector<int>& b) { return a.size() < b.size(); }
+
+// Get Min Position of Identified Cluster
+int get_pos_min(const int &index, std::vector<std::vector<int>> &core, std::vector<int> *vec) {
+	std::vector<int>::iterator min_result = std::min_element(core.at(index).begin(), core.at(index).end());
+	return vec -> at(*min_result);
+}
+
+// Get Max Position of Identified Cluster
+int get_pos_max(const int &index, std::vector<std::vector<int>> &core, std::vector<int> *vec) {
+	std::vector<int>::iterator max_result = std::max_element(core.at(index).begin(), core.at(index).end());
+	return vec -> at(*max_result);
+}
+
+// Reverse and Negate Reverse Strand Vectors
+std::vector<int> reverse_and_negate(const std::vector<int> &vec) {
+	int x = 0;
+	int n = vec.size();
+	std::vector<int> tmp_vec(n);
+	for (int j = n - 1; j > -1; j--) {
+		tmp_vec[x] = vec[j] * -1;
+		++x;
+	}
+	return tmp_vec;
+}
+
+// Swap Int Variables
+void variable_swap(int &a, int &b) {
+	if (a > b) {
+		b = b + a;
+		a = b - a;
+		b = b - a;
+	}
+}

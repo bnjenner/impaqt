@@ -86,7 +86,7 @@ private:
 			return false;
 		}
 
-		// Exclude secondary alignment
+		// Exclude secondary alignment (do I need this?)
 		if (!alignment.IsPrimaryAlignment() && (!(ImpaqtArguments::Args.nonunique_alignments))) {
 			++multimapped_reads;
 			return false;
@@ -106,7 +106,7 @@ private:
 	}
 
 	/////////////////////////////////////////////////////////////
-	// Delete Empty Nodes (These node operations could likely be cleaned up...)
+	// Delete Empty Nodes (These node operations could likely simplified in functions...)
 	void delete_nodes(ClusterNode *&curr_node, ClusterNode *&temp_node,  ClusterNode *&temp_head, ClusterNode *&temp_tail) {
 
 		// If last node
@@ -436,6 +436,7 @@ public:
 		ClusterNode *prev_pos_node = pos_head;
 		ClusterNode *prev_neg_node = neg_head;
 
+
 		// Get First Cluster
 		if (pos_head == NULL && neg_head != NULL) {
 			curr_node = neg_head; strand = 1;
@@ -458,31 +459,30 @@ public:
 			curr_node -> write_transcripts(gtfFile);
 
 			// Strand switching conditions :(
-			//	BNJ:q 5/2/2025 - This is a bit messy, but it works, maybe put this into a function?
 			if (strand == 0) {
 				prev_pos_node = curr_node -> get_next();
-				if (prev_pos_node != NULL) {
-					if (prev_neg_node == NULL) {
-						curr_node = prev_pos_node; strand = 0;
-					} else if (prev_pos_node -> get_start() < prev_neg_node -> get_start()) {
-						curr_node = prev_pos_node; strand = 0;
-					} else {
-						curr_node = prev_neg_node; strand = 1;
-					}
+
+				if (prev_pos_node == NULL) {
+					curr_node = prev_neg_node; strand = 1;
+					continue;
+				}
+
+				if (prev_neg_node == NULL || prev_pos_node -> get_start() < prev_neg_node -> get_start()) {
+					curr_node = prev_pos_node; strand = 0;
 				} else {
 					curr_node = prev_neg_node; strand = 1;
 				}
 
 			} else {
 				prev_neg_node = curr_node -> get_next();
-				if (prev_neg_node != NULL) {
-					if (prev_pos_node == NULL) {
-						curr_node = prev_neg_node; strand = 1;
-					} else if (prev_neg_node -> get_start() < prev_pos_node -> get_start()) {
-						curr_node = prev_neg_node; strand = 1;
-					} else {
-						curr_node = prev_pos_node; strand = 0;
-					}
+
+				if (prev_neg_node == NULL) { 
+					curr_node = prev_pos_node; strand = 0;
+					continue;
+				}
+
+				if (prev_pos_node == NULL || prev_neg_node -> get_start() < prev_pos_node -> get_start()) {
+					curr_node = prev_neg_node; strand = 1;
 				} else {
 					curr_node = prev_pos_node; strand = 0;
 				}
