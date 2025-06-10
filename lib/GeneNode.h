@@ -5,18 +5,18 @@ class GeneNode {
 private:
 
 	// Node Details
-	std::string geneID;									// read ID of first read in cluster
-	std::string chrom;									// chromosome index
-	int strand = -1;									// standedness
-	int start;											// beginning of window
-	int stop;											// end of window
-	int exons = 0;										// number of exons (or features)
-	size_t read_count = 0;								// number of associated reads
+	std::string geneID;							// read ID of first read in cluster
+	std::string chrom;							// chromosome index
+	int strand = -1;							// standedness
+	int start;								// beginning of window
+	int stop;								// end of window
+	int exons = 0;								// number of exons (or features)
+	size_t read_count = 0;							// number of associated reads
 	std::vector<int> exon_vec = {0, 0};					// vector for bounds
 
 	// Links
-	GeneNode *next = NULL;								// next ClusterNode
-	GeneNode *prev = NULL;								// pevsious ClusterNode
+	GeneNode *next = NULL;							// next ClusterNode
+	GeneNode *prev = NULL;							// pevsious ClusterNode
 
 	/////////////////////////////////////////////////////////////
 	// If two exons overlap
