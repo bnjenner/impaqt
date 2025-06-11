@@ -1,6 +1,12 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utils (alot of these could be more generalized...)
 
+// Used to Sort those Pesky Reverse Strands
+bool compare_first_element(const std::vector<int>& a, const std::vector<int>& b) { return a[0] < b[0]; }
+
+// Sort Using Vector Lengths
+bool compare_length(const std::vector<int>& a, const std::vector<int>& b) { return a.size() < b.size(); }
+
 // Checks to see if regions of transcript overlap
 bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
 	// Precedes
@@ -19,11 +25,25 @@ bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, con
 	return false;
 }
 
-// Used to Sort those Pesky Reverse Strands
-bool compare_first_element(const std::vector<int>& a, const std::vector<int>& b) { return a[0] < b[0]; }
+// Reverse and Negative if reverse strand (I'm actually pretty proud of this solution)
+std::vector<int> reverse_and_negate(const std::vector<int> &vec) {
+	int x = 0;
+	int n = vec.size();
+	std::vector<int> tmp_vec(n);
+	for (int j = n - 1; j > -1; j--) {
+		tmp_vec[x] = vec[j] * -1;
+		++x;
+	}
+	return tmp_vec;
+}
 
-// Sort Using Vector Lengths
-bool compare_length(const std::vector<int>& a, const std::vector<int>& b) { return a.size() < b.size(); }
+// Reverse Transcripts
+void reverse_transcripts(std::vector<std::vector<int>> &transcripts) {
+	for (int i = 0; i < transcripts.size(); i++) {
+		transcripts[i] = reverse_and_negate(transcripts[i]);
+	}
+	std::sort(transcripts.begin(), transcripts.end(), compare_first_element);
+}
 
 // Get Min Position of Identified Cluster
 int get_pos_min(const int &index, std::vector<std::vector<int>> &core, std::vector<int> *vec) {
@@ -35,18 +55,6 @@ int get_pos_min(const int &index, std::vector<std::vector<int>> &core, std::vect
 int get_pos_max(const int &index, std::vector<std::vector<int>> &core, std::vector<int> *vec) {
 	std::vector<int>::iterator max_result = std::max_element(core.at(index).begin(), core.at(index).end());
 	return vec -> at(*max_result);
-}
-
-// Reverse and Negate Reverse Strand Vectors
-std::vector<int> reverse_and_negate(const std::vector<int> &vec) {
-	int x = 0;
-	int n = vec.size();
-	std::vector<int> tmp_vec(n);
-	for (int j = n - 1; j > -1; j--) {
-		tmp_vec[x] = vec[j] * -1;
-		++x;
-	}
-	return tmp_vec;
 }
 
 // Swap Int Variables

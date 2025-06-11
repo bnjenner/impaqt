@@ -21,18 +21,15 @@ bool check_subset(const std::vector<int>& a, const std::vector<int>& b) {
 			break;
 
 		} else if (check_bounds(a[(i*2)], a[(i*2)+1], b[(j*2)], b[(j*2)+1])) {
-			match = true;
-			started = true;
+			match = true; started = true;
 			i += 1;
 
 		} else {
 
 			if (started) {
-				match = false;
-				break;
+				match = false; break;
 			} else {
-				i += 1;
-				j -= 1;
+				i += 1; j -= 1;
 			}
 		}
 		j += 1;
@@ -114,13 +111,8 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 		return;
 	}
 
-	// Reverse and Negative if reverse strand (I'm actually pretty proud of this solution)
-	if (curr_node -> get_strand() == 1) {
-		for (int i = 0; i < transcripts.size(); i++) {
-			transcripts[i] = reverse_and_negate(transcripts[i]);
-		}
-		std::sort(transcripts.begin(), transcripts.end(), compare_first_element);
-	}
+	// Reverse and Negative if reverse strand
+	if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
 
 	while (true) {
 
@@ -163,15 +155,13 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 		}
 	}
 
+
+	// Reverse and Negative Results if Necessary
+	if (curr_node -> get_strand() == 1) { reverse_transcripts(result); }
+	
 	// Report Final Transcripts
 	int core_points = 0;
 	for (int i = 0; i < result.size(); i++) {
-
-		// Reinstate original order if necessary
-		if (curr_node -> get_strand() == 1) {
-			result[i] = reverse_and_negate(result[i]);
-		}
-
 		core_points = get_quant(result[i], init_copy, counts);
 		curr_node -> add_transcript(result[i], core_points);
 	}
