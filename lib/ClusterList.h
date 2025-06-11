@@ -32,9 +32,9 @@ private:
 	// Calculate splice
 	void calculate_splice(BamTools::BamAlignment &alignment, std::vector<int> &positions) {
 
-		int x, prev_m;
+		int x;
+		int prev_m_offset = 0;
 		bool gapped = false;
-
 		int start_pos = alignment.Position;
 		int curr_pos = start_pos;
 	
@@ -55,15 +55,16 @@ private:
 					throw "ERROR: Could not find next match in CIGAR string. This should not happen.";
 				}
 
-				positions.push_back(curr_pos - alignment.CigarData[prev_m].Length);
+				positions.push_back(curr_pos - prev_m_offset);
 				positions.push_back(curr_pos + alignment.CigarData[i].Length + alignment.CigarData[x].Length);
 				curr_pos += alignment.CigarData[i].Length;
+				prev_m_offset = 0;
 				gapped = true;
 
 				// update current position
 			} else if (alignment.CigarData[i].Type == 'M') {
 				curr_pos += alignment.CigarData[i].Length;
-				prev_m = i;
+				prev_m_offset += alignment.CigarData[i].Length;
 			}
 		}
 
@@ -309,7 +310,7 @@ public:
 
 				// Advance to correct node based on left position
 				while (neg_curr_node -> get_next() != NULL) {
-					if (alignment.Position >= neg_curr_node -> get_stop()) {
+					if (alignment.Position > neg_curr_node -> get_stop()) {
 						neg_curr_node = neg_curr_node -> get_next();
 					} else {
 						break;
@@ -320,7 +321,7 @@ public:
 
 				// Get Correct node for 5' end (necessary because reverse strand)
 				while (neg_temp_node -> get_next() != NULL) {
-					if (t_5end >= neg_temp_node -> get_stop()) {
+					if (t_5end > neg_temp_node -> get_stop()) {
 						neg_temp_node = neg_temp_node -> get_next();
 					} else {
 						break;
@@ -342,7 +343,7 @@ public:
 
 				// Get Correct node
 				while (pos_curr_node -> get_next() != NULL) {
-					if (t_5end >= pos_curr_node -> get_stop()) {
+					if (t_5end > pos_curr_node -> get_stop()) {
 						pos_curr_node = pos_curr_node -> get_next();
 					} else {
 						break;
