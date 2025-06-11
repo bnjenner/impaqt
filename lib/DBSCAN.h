@@ -94,7 +94,7 @@ std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<
 	return merged;
 }
 
-
+// Reduce Transcript Number by Overlapping. Report Unique Transcripts
 void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts) {
 
 	int n;
@@ -171,6 +171,20 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 		curr_node -> add_transcript(result[i], core_points);
 	}
 }
+
+
+// Report Unique Transcripts (no overlapping, used for Mitochrondria)
+void report_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &result, std::vector<int> &counts) {
+	
+	// Reverse and Negative Results if Necessary
+	if (curr_node -> get_strand() == 1) { reverse_transcripts(result); }
+
+	// Report Final Transcripts
+	for (int i = 0; i < result.size(); i++) {
+		curr_node -> add_transcript(result[i], counts[i]);
+	}
+}
+
 
 // Get Transcript Coordinates
 void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &paths,
@@ -292,7 +306,7 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 // DBSCAN Clustering Function
 // 		inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
 std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &min_counts,
-                        std::vector<std::vector<int>> &assignment, const bool &five) {
+                        std::vector<std::vector<int>> &assignment, const bool &five, const bool &mito) {
 
 	int index;
 	int dist;
@@ -303,6 +317,9 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 	std::vector<int> assign_vec(points, -1);
 	std::vector<bool> visted(points, false);
 
+
+	int epsilon = ImpaqtArguments::Args.epsilon;
+	if (mito) { epsilon = 50; } // If mito, use smaller epsilon (magic number again... look they're fundamentally different problems)
 
 	// Sepicfy 5' or 3' clusters
 	if (five) {
@@ -322,7 +339,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 			// Get distance to all other points
 			for (int j = 0; j < points; j++) {
 				dist = std::abs((*adj_vec)[j] - (*adj_vec)[i]); // Distance between points
-				if ((i != j) && (dist <= ImpaqtArguments::Args.epsilon)) { neighbors.push_back(j); }
+				if ((i != j) && (dist <= epsilon)) { neighbors.push_back(j); }
 			}
 
 			// If core point
@@ -345,7 +362,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 
 						// Check if member of cluster
 						for (int k = 0; k < points; k++) {
-							if (std::abs((*adj_vec)[index] - (*adj_vec)[k]) <= ImpaqtArguments::Args.epsilon) {
+							if (std::abs((*adj_vec)[index] - (*adj_vec)[k]) <= epsilon) {
 								sub_neighbors.push_back(k);
 								assign_vec.at(k) = clust_num;
 							}
@@ -370,8 +387,8 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 // Initiate Transcript Identifying Procedure
 void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 
-	int expr, points;
-	int min_counts;
+	float density;
+	int expr, points, min_counts;
 	int count_threshold = std::max(ImpaqtArguments::Args.min_count, 10);
 
 	ClusterNode *curr_node = cluster.get_head(strand);
@@ -384,31 +401,34 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 		// If threshold for transcript detection is reached
 		if (expr >= count_threshold) {
 
-			// std::vector<std::string> paths;
 			std::map<std::string, int> paths;
 			std::vector<int> counts;
 			std::vector<std::vector<int>> transcripts;
 			std::vector<int> assign_vec_5, assign_vec_3;
 			std::vector<std::vector<int>> assignments_5,  assignments_3;
 
-			// Min Counts for DBSCAN
+			// Read Density and Min Counts for DBSCAN
+			density = (float)expr / (float)(curr_node -> get_stop()) - curr_node -> get_start();
 			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100))), 10);
-
-
-			/*
-				Ok so the issue is mitochrondrial genomes. I think we need to find a way to detect
-				these situtations based on read density, these chromosomes just have absurd counts.
-				For example, if the region has an avergae of 1.5 read per base pair (density > 1.5), let's
-				only do 5 end DBSCAN.
-			*/
 
 
 			// Sort Vectors
 			curr_node -> sort_vectors();
 
 			// Run DBSCAN
-			assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, true);
-			assign_vec_3 = dbscan(curr_node, points, min_counts, assignments_3, false);
+			if (density < 1.5) {
+				assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, true, false);
+				assign_vec_3 = dbscan(curr_node, points, min_counts, assignments_3, false, false);
+
+			} else {
+
+				// If read mitochrondrial genome detected, only cluster 5' end 
+				min_counts = (int)((float)expr * 0.01); // 1% of total reads for mito (magic number, I am sorry)
+				assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, true, true);
+				assign_vec_3 = std::vector<int>(points, -1);
+				assignments_3.push_back(assign_vec_3);		
+			}
+			
 
 			// If clusters were not found
 			if (assignments_5.empty() && assignments_3.empty()) {
@@ -423,8 +443,15 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 				                assignments_5, assignments_3,
 				                &transcripts, &counts);
 
-				// Merge overlapping transcripts 
-				get_final_transcripts(curr_node, transcripts, counts);
+				
+				// Report Final Transcripts
+				if (density < 1.5) {
+					// Merge overlapping transcripts 
+					get_final_transcripts(curr_node, transcripts, counts);
+				} else {
+					// Handle Mitochrondria, do not merge
+					report_transcripts(curr_node, transcripts, counts);
+				}
 			}
 		}
 
