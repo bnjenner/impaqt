@@ -1,6 +1,5 @@
 # IMPAQT
-# IN DEVELOPMENT
-Currently only performs transcript identification and naive quantification. Gene assignment and more sophisticated quantification methods remain on the TO-DO list.
+Currently only performs transcript identification, gene assignment, and naive quantification.  A more sophisticated quantification methods remain on the TO-DO list.
 
 ## Introduction
 
