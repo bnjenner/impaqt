@@ -24,16 +24,7 @@ void assign_transcripts_to_genes(AnnotationList &annotation, ClusterList &cluste
 		// // If not empty
 		// if (curr_clust -> get_read_count() != 0) {
 
-		// 	while (curr_gene != NULL) {
-
-		// 		// If gene is in cluster
-		// 		if (curr_clust -> get_start() >= curr_gene -> get_start() &&
-		// 		    curr_clust -> get_stop() <= curr_gene -> get_stop()) {
-		// 			curr_clust -> add_gene(curr_gene -> get_geneID());
-		// 			break;
-		// 		}
-		// 		curr_gene = curr_gene -> get_next();
-		// 	}
+			
 		// }
 
 		// std::cout << curr_clust -> get_chrom_index() << ":"

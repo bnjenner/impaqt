@@ -7,10 +7,14 @@ class AnnotationList {
 private:
 
 	std::string annotation_file;
-	std::string chrom;
 	std::string stranded;
 	bool isGFF;
 
+	// Get First Feature of Chrom
+	std::unordered_map<std::string, GeneNode*> pos_chrom_map;
+	std::unordered_map<std::string, GeneNode*> neg_chrom_map;
+
+	int features = 0;
 	std::string feature_id;
 	std::string feature_tag;
 
@@ -121,16 +125,20 @@ public:
 
 	/////////////////////////////////////////////////////////////
 	// Get Head Node
-	GeneNode* get_head(int t_strand) {
+	GeneNode* get_head(const int t_strand) {
 		if (t_strand == 0) { return pos_head; }
 		return neg_head;
 	}
 
 	// Get Tail Node
-	GeneNode* get_tail(int t_strand) {
+	GeneNode* get_tail(const int t_strand) {
 		if (t_strand == 0) { return pos_tail; }
 		return neg_tail;
 	}
+
+	/////////////////////////////////////////////////////////////
+	// Get Features
+	int get_features() { return features; }
 
 	/////////////////////////////////////////////////////////////
 	// Create Gene Graph Structure
@@ -166,6 +174,8 @@ public:
 				throw "ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.";
 			}
 
+			features += 1;
+
 			// If positive strand
 			if (columns[6] == "+") {
 
@@ -177,6 +187,9 @@ public:
 					pos_tail -> add_region(columns[3], columns[4]);
 				} else {
 					pos_extend(columns); // create new gene node
+					
+					// If New Chrom add to chrom map
+					if (pos_chrom_map.find(columns[0]) == pos_chrom_map.end()) { pos_chrom_map[columns[0]] = pos_tail; }
 				}
 
 				// If negative strand
@@ -190,6 +203,9 @@ public:
 					neg_tail -> add_region(columns[3], columns[4]);
 				} else {
 					neg_extend(columns); // create new gene node
+
+					// If New Chrom add to chrom map
+					if (neg_chrom_map.find(columns[0]) == neg_chrom_map.end()) { neg_chrom_map[columns[0]] = neg_tail; }
 				}
 
 			} else {
@@ -222,5 +238,19 @@ public:
 			curr_node = curr_node -> get_next();
 		}
 		return ss.str();
+	}
+
+	// Print genes and counts
+	void print_chrom_map() {
+		std::cerr << "// Positive Strand Chrom Map\n";
+		for (const auto &pair : pos_chrom_map) {
+			std::cerr << pair.first << ": " << pair.second << "\n";
+		}
+
+		std::cerr << "// Negative Strand Chrom Map\n";
+		for (const auto &pair : neg_chrom_map) {
+			std::cerr << pair.first << ": " << pair.second << "\n";
+		}
+	
 	}
 };
