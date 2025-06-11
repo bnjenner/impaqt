@@ -58,9 +58,8 @@ SYNOPSIS
     impaqt input.sorted.bam annotation.gtf [options]
 
 DESCRIPTION
-    Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms
-    utilizing distinct terminal exons. Generates a counts file written to stdout and optionally a GTF
-    file of identified read clusters.
+    Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms utilizing distinct
+    terminal exons. Generates a counts file written to stdout and optionally a GTF file of identified read clusters.
 
 REQUIRED ARGUMENTS
     BAM INPUT_FILE
@@ -72,7 +71,8 @@ OPTIONS
     -t, --threads INTEGER
           Number of processers for multithreading. Default: 1.
     -l, --library-type STRING
-          Library type. Paired end is not recommended. Only used to check proper pairing. One of single and paired. Default: single.
+          Library type. Paired end is not recommended. Only used to check proper pairing. One of single and paired.
+          Default: single.
     -s, --strandedness STRING
           Strandedness of library. One of forward and reverse. Default: forward.
     -n, --nonunique-alignments
@@ -80,9 +80,10 @@ OPTIONS
     -q, --mapq-min INTEGER
           Minimum mapping quality score to consider for counts. Default: 1.
     -m, --min-count INTEGER
-          Minimum read count for DBSCAN transcript identification algorithm. (Minimum of 10) Default: 10.
+          Minimum read count to initiate DBSCAN transcript identification algorithm. (Minimum of 10) Default: 10.
     -p, --count-percentage INTEGER
-          Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold unless percentage is less than 20. Default: 20.
+          Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold
+          unless percentage is less than 10. Default: 10.
     -e, --epsilon INTEGER
           Distance (in base pairs) for DBSCAN algorithm. Default: 150.
     -f, --feature-tag STRING
