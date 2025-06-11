@@ -15,7 +15,7 @@ private:
 	std::string headID;					// read ID of first read in cluster
 	size_t read_count = 0;					// number of associated reads
 	size_t vec_count = 0;
-	float total_core_points = 0;				// number of total core points
+	float total_core_points = 0.0;				// number of total core points
 	std::vector<int> five_vec;				// vector for 5' ends
 	std::vector<int> three_vec;				// vector for 3' ends
 
@@ -24,9 +24,9 @@ private:
 	ClusterNode *prev = NULL;				// pevsious ClusterNode
 
 	// Transcript Results
-	int transcript_num = 0;					// number of transcripts identified
+	size_t transcript_num = 0;					// number of transcripts identified
 	std::vector<std::vector<int>> transcript_vec;		// vector of transcript regions
-	std::vector<int> transcript_expression;		        // vector of transcript expression
+	std::vector<float> transcript_expression;		    // vector of transcript expression
 	std::vector<std::string> transcript_assignments;	// vector of transcript assignments
 
 
@@ -98,7 +98,8 @@ public:
 	std::vector<int>* get_three_ref() { return &three_vec; }
 	
 	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
-	int get_transcript_num() { return transcript_num; }
+	float get_transcript_expr(const int i) { return transcript_expression.at(i); }
+	size_t get_transcript_num() { return transcript_num; }
 
 	/////////////////////////////////////////////////////////////
 	// Linking functions
@@ -165,18 +166,39 @@ public:
 	// add transcript
 	void add_transcript(const std::vector<int> &t_transcript, const int &t_expression) {
 		transcript_vec.push_back(t_transcript);
-		transcript_expression.push_back(t_expression);
+		transcript_expression.push_back((float)t_expression);
+		transcript_assignments.push_back("Unassigned");
 		total_core_points += t_expression;
 		transcript_num += 1;
 	}
+
+	// determine transcript abundance
+	void quantify_transcripts() {
+		float prop, quant;
+		for (int i = 0; i < transcript_vec.size(); i++) {
+			prop = transcript_expression.at(i) / total_core_points;
+			if (prop == 1) {
+				quant = read_count;
+			} else {
+				quant = std::round((prop * read_count) * 1000.0f) / 1000.0f;
+			}
+			transcript_expression.at(i) = quant;
+		}
+	}
+
+	// assign transcripts
+	void assign_transcript(const std::string &t_gene_id, const int &i) { transcript_assignments[i] = t_gene_id; }
+
+	// mark as ambiguous
+	void assign_ambiguous(const int &i) { transcript_assignments[i] = "Ambiguous"; }
 
 	// Print Transcripts
 	void write_transcripts(std::ofstream &gtfFile) {
 
 		int start, stop, x_start, x_stop;
 		int regions = 0;
-		float prop, quant;
-		std::string gene_id = "Unassigned";
+		float quant;
+		std::string gene_id;
 
 		// Set Strand
 		char strand = '+';
@@ -184,18 +206,11 @@ public:
 
 		for (int i = 0; i < transcript_vec.size(); i++) {
 
+			gene_id = transcript_assignments.at(i);
 			regions	= transcript_vec.at(i).size();
-
 			start = transcript_vec.at(i).at(0);
 			stop = transcript_vec.at(i).at(regions - 1);
-
-			// Get expression
-			prop = transcript_expression.at(i) / total_core_points;
-			if (prop == 1) {
-				quant = read_count;
-			} else {
-				quant = std::round((prop * read_count) * 1000.0f) / 1000.0f;
-			}
+			quant = transcript_expression.at(i);
 
 			// Print Transcript Line
 			gtfFile << contig_name << "\timpaqt\ttranscript\t"
@@ -208,9 +223,7 @@ public:
 			        << " region \"" << contig_name << ":" 
 			        << this -> get_start() << "-" << this -> get_stop() << "\";"
 			        << " exons \"" << (regions / 2) << "\";"
-			        << " counts \"" << quant << "\";"
-			        << " core \"" << transcript_expression.at(i) << "\";\n";
-
+			        << " counts \"" << quant << "\";\n";
 
 			// Print Exon Line
 			for (int j = 0; j < regions; j += 2) {
@@ -225,6 +238,8 @@ public:
 				        << " transcript_id \"impaqt."
 				        << contig_name << ":"
 				        << start << "-" << stop << "\";"
+				        << " region \"" << contig_name << ":" 
+				        << this -> get_start() << "-" << this -> get_stop() << "\";"
 				        << " exon \"" << (j / 2) << "\";\n";
 			}
 		}

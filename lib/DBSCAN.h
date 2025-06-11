@@ -1,5 +1,3 @@
-#include "utils.h"
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DBSCAN and Related Functions
 
@@ -20,7 +18,7 @@ bool check_subset(const std::vector<int>& a, const std::vector<int>& b) {
 		if (i >= n) {
 			break;
 
-		} else if (check_bounds(a[(i*2)], a[(i*2)+1], b[(j*2)], b[(j*2)+1])) {
+		} else if (check_transcript_bounds(a[(i*2)], a[(i*2)+1], b[(j*2)], b[(j*2)+1])) {
 			match = true; started = true;
 			i += 1;
 
@@ -432,6 +430,7 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 			// If clusters were not found
 			if (assignments_5.empty() && assignments_3.empty()) {
 				;
+			
 			} else {
 
 				// Find all linked DBSCAN clusters
@@ -451,7 +450,11 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 					// Handle Mitochrondria, do not merge
 					report_transcripts(curr_node, transcripts, counts);
 				}
+
+				// Determine abundance of each transcript
+				curr_node -> quantify_transcripts();
 			}
+
 		}
 
 		curr_node = curr_node -> get_next();

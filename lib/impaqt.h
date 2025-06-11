@@ -1,5 +1,6 @@
 #include "AnnotationList.h"
 #include "ClusterList.h"
+#include "utils.h"
 #include "DBSCAN.h"
 #include "AssignClusters.h"
 
@@ -24,11 +25,13 @@ private:
 
 	ClusterList cluster_list;						// List for clusters
 
-	size_t total_reads = 0;
-	size_t unique_reads = 0;
-	size_t ambiguous_reads = 0;
+	// Read Stats
+	float assigned_reads = 0.0;
+	float unassigned_reads = 0.0;
+	float ambiguous_reads = 0.0;
 	size_t multimapped_reads = 0;
-	size_t unassigned_reads = 0;
+	size_t low_quality_reads = 0;
+	size_t total_reads = 0;
 	size_t transcript_num = 0;
 
 
@@ -50,12 +53,13 @@ public:
 
 	/////////////////////////////////////////////////////////////
 	// Get Reads Stats
-	size_t get_total_reads() { return total_reads; }
-	size_t get_unique_reads() { return unique_reads; }
-	size_t get_ambiguous_reads() { return ambiguous_reads; }
-	size_t get_multimapped_reads() { return multimapped_reads; }
-	size_t get_unassigned_reads() { return unassigned_reads; }
-	size_t get_transcript_num() { return transcript_num; }
+	float get_assigned_reads() { return cluster_list.get_assigned_reads(); }
+	float get_unassigned_reads() { return cluster_list.get_unassigned_reads(); }
+	float get_ambiguous_reads() { return cluster_list.get_ambiguous_reads(); }
+	size_t get_multimapped_reads() { return cluster_list.get_multimapped_reads(); }
+	size_t get_low_quality_reads() { return cluster_list.get_low_quality_reads(); }
+	size_t get_total_reads() { return cluster_list.get_total_reads(); }
+	size_t get_transcript_num() { return cluster_list.get_transcript_num(); }
 
 	AnnotationList* get_annotation() { return &annotation; }	// Get AnnotationList
 	ClusterList* get_clusters() { return &cluster_list; }		// Get ClusterList
@@ -141,23 +145,12 @@ public:
 	void find_transcripts() {
 		find_transcripts_DBSCAN(cluster_list, 0); // Forward
 		find_transcripts_DBSCAN(cluster_list, 1); // Reverse
-		transcript_num = cluster_list.get_transcript_num();
 	}
 
 	// Assign Transcripts to Genes
 	void assign_transcripts() {
-		assign_transcripts_to_genes(annotation, cluster_list, 0); // Forward
-		assign_transcripts_to_genes(annotation, cluster_list, 1); // Forward
-	}
-
-
-	// Print Gene Counts
-	void print_counts() {
-		/*
-		The basic idea for this is that we will iterate through our two strands and print them
-			in order. Nothing fancy here. Also, be sure to make relative quantification (for now)
-			the relative proportions of the core points multiplied by total read count. That seems fair.
-		*/
+		assign_transcripts_to_genes(annotation, cluster_list, contig_map[chrom_index], 0); // Forward
+		assign_transcripts_to_genes(annotation, cluster_list, contig_map[chrom_index], 1); // Forward
 	}
 
 	// Print Clusters as GTF
@@ -166,11 +159,8 @@ public:
 		cluster_list.write_clusters_as_GTF(gtfFile);
 	}
 
-	void set_stats() {
-		multimapped_reads = cluster_list.get_multimapped_reads();
-		total_reads = cluster_list.get_total_reads();
-	}
-
+	// Print Gene Counts
+	void print_counts() { annotation.print_gene_counts(); }
 
 	/////////////////////////////////////////////////////////////
 	// Launch thread
@@ -182,7 +172,6 @@ public:
 			this -> find_transcripts();			// dbscan clustering algorithm
 			this -> assign_transcripts();			// overlap genes
 		}
-		this -> set_stats();					// return read stats
 		this -> close_alignment_file();			// close files
 	}
 };

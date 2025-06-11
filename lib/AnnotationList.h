@@ -136,6 +136,16 @@ public:
 		return neg_tail;
 	}
 
+	GeneNode* jump_to_chrom(const std::string t_chrom, const int t_strand) {
+		if (t_strand == 0) { 
+			if (pos_chrom_map.find(t_chrom) == pos_chrom_map.end()) { return NULL; }
+			return pos_chrom_map[t_chrom];
+		} else {
+			if (neg_chrom_map.find(t_chrom) == neg_chrom_map.end()) { return NULL; }
+			return neg_chrom_map[t_chrom];
+		}
+	}
+
 	/////////////////////////////////////////////////////////////
 	// Get Features
 	int get_features() { return features; }
@@ -180,32 +190,40 @@ public:
 			if (columns[6] == "+") {
 
 				// If first gene on positive strand
-				if (pos_head == NULL) { set_pos_head(columns); continue; }
-
-				// If same gene ID
-				if (columns[8] == pos_tail -> get_geneID()) {
-					pos_tail -> add_region(columns[3], columns[4]);
+				if (pos_head == NULL) {
+					set_pos_head(columns);
 				} else {
-					pos_extend(columns); // create new gene node
-					
-					// If New Chrom add to chrom map
-					if (pos_chrom_map.find(columns[0]) == pos_chrom_map.end()) { pos_chrom_map[columns[0]] = pos_tail; }
+					// If same gene ID
+					if (columns[8] == pos_tail -> get_geneID()) {
+						pos_tail -> add_region(columns[3], columns[4]);
+					} else {
+						pos_extend(columns); // create new gene node
+					}
+				}	
+
+				// If New Chrom add to chrom map
+				if (pos_chrom_map.find(columns[0]) == pos_chrom_map.end()) {
+					pos_chrom_map[columns[0]] = pos_tail;
 				}
 
 				// If negative strand
 			} else if (columns[6] == "-") {
 
 				// If first gene on positive strand
-				if (neg_head == NULL) {  set_neg_head(columns); continue; }
-
-				// If same gene ID
-				if (columns[8] == neg_tail -> get_geneID()) {
-					neg_tail -> add_region(columns[3], columns[4]);
+				if (neg_head == NULL) {
+					set_neg_head(columns);
 				} else {
-					neg_extend(columns); // create new gene node
+					// If same gene ID
+					if (columns[8] == neg_tail -> get_geneID()) {
+						neg_tail -> add_region(columns[3], columns[4]);
+					} else {
+						neg_extend(columns); // create new gene node
+					}
+				}
 
-					// If New Chrom add to chrom map
-					if (neg_chrom_map.find(columns[0]) == neg_chrom_map.end()) { neg_chrom_map[columns[0]] = neg_tail; }
+				// If New Chrom add to chrom map
+				if (neg_chrom_map.find(columns[0]) == neg_chrom_map.end()) {
+					neg_chrom_map[columns[0]] = neg_tail;
 				}
 
 			} else {
@@ -217,16 +235,86 @@ public:
 
 	/////////////////////////////////////////////////////////////
 	// Print genes and counts
-	void print_genes() {
-		GeneNode *curr_node = pos_head;
-		while (curr_node != NULL) {
-			std::cout << curr_node -> get_chrom() << "\t" << curr_node -> get_geneID() << "\t";
-			for (const auto &region : curr_node -> get_exon_vec()) { std::cout << region << "\t"; }
-			std::cout << "\n";
-			curr_node = curr_node -> get_next();
+	void print_gene_counts() {
+
+		// Return if empty GTF?
+		if (pos_head == NULL && neg_head == NULL) {
+			std::cerr << "// NOTICE: No genes found in annotation file.\n";
+			return;
+		}
+
+
+		bool strand;
+		GeneNode *curr_node;
+		GeneNode *prev_pos_node = pos_head;
+		GeneNode *prev_neg_node = neg_head;
+
+		// Get First Gene
+		if (pos_head == NULL && neg_head != NULL) {
+			curr_node = neg_head; strand = 1;
+		} else if (neg_head == NULL && pos_head != NULL) {
+			curr_node = pos_head; strand = 0;
+		} else {
+			if (pos_head -> get_start() < neg_head -> get_start()) {
+				curr_node = pos_head; strand = 0;
+			} else {
+				curr_node = neg_head; strand = 1;
+			}
+		}
+
+		// Iterate Throught Genes
+		while (true) {
+
+			// Break When all genes have been exhausted
+			if (prev_neg_node == NULL && prev_pos_node == NULL) { break; }
+
+			// Report Gene and Counts
+			std::cout << curr_node -> get_geneID() << "\t" 
+					  << curr_node -> get_read_count() << "\n";
+			
+			// Strand switching conditions :(
+			if (strand == 0) {
+				prev_pos_node = curr_node -> get_next();
+
+				// If positives exhausted, switch strands
+				if (prev_pos_node == NULL) {
+					curr_node = prev_neg_node; strand = 1;
+					continue;
+				}
+
+				// If negatives exhausted, continue with positives
+				if (prev_neg_node == NULL || prev_pos_node -> get_start() < prev_neg_node -> get_start()) {
+					curr_node = prev_pos_node; strand = 0;
+
+					// If positives are after negatives, switch strands
+				} else {
+					curr_node = prev_neg_node; strand = 1;
+				}
+
+			} else {
+				prev_neg_node = curr_node -> get_next();
+
+				// If negatives exhausted, switch strands
+				if (prev_neg_node == NULL) { 
+					curr_node = prev_pos_node; strand = 0;
+					continue;
+				}
+
+				// If positives exhausted, continue with negatives
+				if (prev_pos_node == NULL || prev_neg_node -> get_start() < prev_pos_node -> get_start()) {
+					curr_node = prev_neg_node; strand = 1;
+
+					// If negatives are after positives, switch strands
+				} else {
+					curr_node = prev_pos_node; strand = 0;
+				}
+			}
 		}
 	}
 
+
+	/////////////////////////////////////////////////////////////
+	// Mainly for Test Suite
 	// Print genes into strings for tests
 	std::string string_genes() {
 		std::stringstream ss;

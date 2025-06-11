@@ -11,7 +11,7 @@ private:
 	int start;								// beginning of window
 	int stop;								// end of window
 	int exons = 0;								// number of exons (or features)
-	size_t read_count = 0;							// number of associated reads
+	float read_count = 0;							// number of associated reads
 	std::vector<int> exon_vec = {0, 0};					// vector for bounds
 
 	// Links
@@ -26,19 +26,14 @@ private:
 	}
 
 	/////////////////////////////////////////////////////////////
-	// Append exon
-	void append_exon(const int &t1, const int &t2) {
+	// Insert exon
+	void insert_exon(const int &t1, const int &t2) {
 		int new_size = exon_vec.size() + 2;
 		exon_vec.resize(new_size);
 		exon_vec.at(new_size - 2) = t1;
 		exon_vec.at(new_size - 1) = t2;
-		exons += 1;
-	}
-
-	// Insert exon
-	void insert_exon(const int &t1, const int &t2) {
-		append_exon(t1, t2); // calls append (adds to end)
 		std::sort(exon_vec.begin(), exon_vec.end()); // sort in ascending order
+		exons += 1;
 	}
 
 	// Join exons
@@ -86,13 +81,15 @@ public:
 
 	int get_start() { return start; }
 	int get_stop() { return stop; }
+	int get_exon_num() { return exons; }
 
 	std::string get_geneID() { return geneID; }
-	size_t get_read_count() { return read_count; }
+	float get_read_count() { return read_count; }
 
 	std::vector<int> get_exon_vec() { return exon_vec; }
 	std::vector<int>* get_exon_ref() { return &exon_vec; }
 
+	/////////////////////////////////////////////////////////////
 	// Linking functions
 	void set_next(GeneNode *node) { next = node; }
 	void set_prev(GeneNode *node) { prev = node; }
@@ -121,25 +118,17 @@ public:
 				if (i != (n - 1) && exon_vec[(2 * i) + 1] >= exon_vec[(2 * i) + 2]) {
 					close_gap(i);  // exon spans previous intron
 				}
-				break;
-			}
-
-			// If exon is further down stream
-			if (t_start > exon_vec[(2 * i) + 1]) {
-
-				// if last exon
-				if (i == (n - 1)) {
-					append_exon(t_start, t_stop);
-
-				} else if (t_stop < exon_vec[(2 * i) + 2]) {
-					insert_exon(t_start, t_stop);
-
-				} else {
-					continue;
-				}
+				return;
 			}
 		}
+
+		insert_exon(t_start, t_stop);
+		start = exon_vec[0]; // update start position
+		stop = exon_vec.back(); // update stop position
 	}
+
+	// Add expression
+	void add_expression(const float expr) { read_count += expr; }
 };
 
 

@@ -8,7 +8,7 @@ bool compare_first_element(const std::vector<int>& a, const std::vector<int>& b)
 bool compare_length(const std::vector<int>& a, const std::vector<int>& b) { return a.size() < b.size(); }
 
 // Checks to see if regions of transcript overlap
-bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
+bool check_transcript_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
 	// Precedes
 	if (a_stop >= b_start && a_stop <= b_stop) {
 		return true;
@@ -64,4 +64,19 @@ void variable_swap(int &a, int &b) {
 		a = b - a;
 		b = b - a;
 	}
+}
+
+// Checks to see if regions of transcript overlap a gene
+bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
+	// Precedes
+	if (a_stop >= b_start && a_stop <= b_stop) {
+		return true;
+		// Spans
+	} else if (a_start <= b_start && a_stop >= b_stop) {
+		return true;
+		// Follows
+	} else if (a_start >= b_start && a_start <= b_stop) {
+		return true;
+	}
+	return false;
 }

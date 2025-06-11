@@ -59,7 +59,7 @@ int main(int argc, char const ** argv) {
     // Add Annotation Info
     std::cerr << "//     Annotation File...\n";
     processes[0] -> add_annotation();
-    
+
 
     /////////////////////////////////////////////////////////////
     // Multithreading Initialization
@@ -94,44 +94,55 @@ int main(int argc, char const ** argv) {
 
     // Output read cluster gtf if specified
     if (ImpaqtArguments::Args.gtf_output != "") {
+
         std::cerr << "//     GTF File..........\n";
+
+        // Open GTF File
         std::ofstream gtfFile;
         gtfFile.open(ImpaqtArguments::Args.gtf_output);
+
+        // Write Header 
         gtfFile << "##description: transcripts identified by IMPAQT\n"
                 << "##format: gtf\n"
                 << "##bam: " << ImpaqtArguments::Args.alignment_file << "\n"
                 << "##annotation: " << ImpaqtArguments::Args.annotation_file << "\n";
+
+        // Write Transcripts
         for (const auto &p : processes) { p -> write_gtf(gtfFile); }
         gtfFile.close();
     }
 
+
     // Summary Statistics
-    size_t total_ambiguous = 0;
+    float total_assigned = 0.0;
+    float total_unassigned = 0.0;
+    float total_ambiguous = 0.0;
     size_t total_multimapping = 0;
-    size_t total_no_feature = 0;
     size_t total_low_quality = 0;
-    size_t total_unique = 0;
     size_t total_reads = 0;
     size_t total_transcripts = 0;
 
     std::cerr << "//     Counts Data.......\n";
     for (int i = 0; i < n; i++) {
-        processes[i] -> print_counts();
-        total_unique += processes[i] -> get_unique_reads();
+        total_assigned += processes[i] -> get_assigned_reads();
+        total_unassigned += processes[i] -> get_unassigned_reads();
         total_ambiguous += processes[i] -> get_ambiguous_reads();
         total_multimapping += processes[i] -> get_multimapped_reads();
-        total_no_feature += processes[i] -> get_unassigned_reads();
+        total_low_quality += processes[i] -> get_low_quality_reads();
         total_reads += processes[i] -> get_total_reads();
         total_transcripts += processes[i] -> get_transcript_num();
         delete processes[i];
     }
 
-    std::cout << "// unique\t" << total_unique << "\n"
-              << "// ambiguous\t" << total_ambiguous << "\n"
+    // Report Counts
+    processes[0] -> print_counts();
+    std::cout << "// assigned\t" << std::fixed << std::setprecision(2) << total_assigned << "\n"
+              << "// unassigned\t" << std::fixed << std::setprecision(2) << total_unassigned << "\n"
+              << "// ambiguous\t" << std::fixed << std::setprecision(2) << total_ambiguous << "\n"
               << "// multimapping\t" << total_multimapping << "\n"
-              << "// unassigned\t" << total_no_feature << "\n"
+              << "// low_quality\t" << total_low_quality << "\n"
               << "// total\t" << total_reads << "\n"
-              << "// transcriptss\t" << total_transcripts << std::endl;
+              << "// transcripts\t" << total_transcripts << std::endl;
 
 
     /////////////////////////////////////////////////////////////

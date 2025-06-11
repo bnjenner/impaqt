@@ -19,9 +19,12 @@ private:
 	ClusterNode *neg_tail;					// last negative ClusterNode
 
 	// Summary
-	size_t total_reads = 0;
+	float assigned_reads = 0.0;
+	float ambiguous_reads = 0.0;
+	float unassigned_reads = 0.0;
 	size_t multimapped_reads = 0;
-	size_t unassigned_reads = 0;
+	size_t low_quality_reads = 0;
+	size_t total_reads = 0;
 	size_t transcript_num = 0;
 
 	// For Checks
@@ -50,6 +53,7 @@ private:
 					if (alignment.CigarData[j].Type == 'M') { x = j; break; }
 				}
 
+				// Catch Errors
 				if (x == -1) { 
 					std::cerr << "ERROR: Could not find next match in CIGAR string. This should not happen.\n";
 					throw "ERROR: Could not find next match in CIGAR string. This should not happen.";
@@ -101,6 +105,7 @@ private:
 
 		// Enfore MAPQ filter
 		if (alignment.MapQuality < ImpaqtArguments::Args.mapq) {
+			++low_quality_reads;
 			return false;
 		}
 
@@ -205,8 +210,7 @@ public:
 
 	/////////////////////////////////////////////////////////////
 	// Get Chrom Name
-	//	BNJ: 5/9/2025 - should probably keep name consistent with chrom, not contig
-	std::string get_contig_name() { return contig_name; }
+	std::string get_contig_name() { return contig_name; } // BNJ: 5/9/2025 - should probably keep name consistent with chrom, not contig
 
 	// Get Head Node
 	ClusterNode* get_head(int t_strand) {
@@ -221,8 +225,12 @@ public:
 	}
 
 	// Get Reads Stats
-	size_t get_total_reads() { return total_reads; }
+	float get_assigned_reads() { return assigned_reads; }
+	float get_unassigned_reads() { return unassigned_reads; }
+	float get_ambiguous_reads() { return ambiguous_reads; }
 	size_t get_multimapped_reads() { return multimapped_reads; }
+	size_t get_low_quality_reads() { return low_quality_reads; }
+	size_t get_total_reads() { return total_reads; }
 
 	// Get Transcript Number
 	size_t get_transcript_num() {
@@ -238,6 +246,11 @@ public:
 		}
 		return transcript_num;
 	}
+		
+	// Set Read Stats
+	void add_ambiguous_reads(const float &expr) { ambiguous_reads += expr; }
+	void add_assigned_reads(const float &expr) { assigned_reads += expr; }
+	void add_unassigned_reads(const float &expr) { unassigned_reads += expr; }
 
 	/////////////////////////////////////////////////////////////
 	// Initialize empty object
@@ -404,30 +417,6 @@ public:
 	}
 
 	/////////////////////////////////////////////////////////////
-	// Print Clusters
-	void print_clusters(int t_strand) {
-		ClusterNode *curr_node = get_head(t_strand);
-		while (curr_node != NULL) {
-			std::cout << get_contig_name() << "\t"
-			          << curr_node -> get_start() << "\t" << curr_node -> get_stop() << "\t"
-			          << curr_node -> get_read_count() << "\n";
-			curr_node = curr_node -> get_next();
-		}
-	}
-
-	// Print clusters into strings for tests
-	std::string string_clusters(int t_strand) {
-		std::stringstream ss;
-		ClusterNode *curr_node = get_head(t_strand);
-		while (curr_node != NULL) {
-			ss << get_contig_name() << "\t"
-			   << curr_node -> get_start() << "\t" << curr_node -> get_stop() << "\t"
-			   << curr_node -> get_read_count() << "\n";
-			curr_node = curr_node -> get_next();
-		}
-		return ss.str();
-	}
-
 	// Write Clusters to GTF File
 	void write_clusters_as_GTF(std::ofstream &gtfFile) {
 
@@ -453,6 +442,7 @@ public:
 			}
 		}
 
+		// Iterate Through Clusters
 		while (true) {
 
 			// If no more clusters
@@ -465,13 +455,17 @@ public:
 			if (strand == 0) {
 				prev_pos_node = curr_node -> get_next();
 
+				// If positives exhausted, switch strands
 				if (prev_pos_node == NULL) {
 					curr_node = prev_neg_node; strand = 1;
 					continue;
 				}
 
+				// If negatives exhausted, continue with positives
 				if (prev_neg_node == NULL || prev_pos_node -> get_start() < prev_neg_node -> get_start()) {
 					curr_node = prev_pos_node; strand = 0;
+
+					// If positives are after negatives, switch strands
 				} else {
 					curr_node = prev_neg_node; strand = 1;
 				}
@@ -479,17 +473,47 @@ public:
 			} else {
 				prev_neg_node = curr_node -> get_next();
 
+				// If negatives exhausted, switch strands
 				if (prev_neg_node == NULL) { 
 					curr_node = prev_pos_node; strand = 0;
 					continue;
 				}
 
+				// If positives exhausted, continue with negatives
 				if (prev_pos_node == NULL || prev_neg_node -> get_start() < prev_pos_node -> get_start()) {
 					curr_node = prev_neg_node; strand = 1;
+
+					// If negatives are after positives, switch strands
 				} else {
 					curr_node = prev_pos_node; strand = 0;
 				}
 			}
 		}
+	}
+
+	/////////////////////////////////////////////////////////////
+	// Functions for Test Suite
+	// Print Clusters
+	void print_clusters(int t_strand) {
+		ClusterNode *curr_node = get_head(t_strand);
+		while (curr_node != NULL) {
+			std::cout << get_contig_name() << "\t"
+			          << curr_node -> get_start() << "\t" << curr_node -> get_stop() << "\t"
+			          << curr_node -> get_read_count() << "\n";
+			curr_node = curr_node -> get_next();
+		}
+	}
+
+	// Print clusters into strings for tests
+	std::string string_clusters(int t_strand) {
+		std::stringstream ss;
+		ClusterNode *curr_node = get_head(t_strand);
+		while (curr_node != NULL) {
+			ss << get_contig_name() << "\t"
+			   << curr_node -> get_start() << "\t" << curr_node -> get_stop() << "\t"
+			   << curr_node -> get_read_count() << "\n";
+			curr_node = curr_node -> get_next();
+		}
+		return ss.str();
 	}
 };
