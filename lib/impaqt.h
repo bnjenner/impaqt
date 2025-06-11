@@ -183,6 +183,7 @@ public:
 			this -> assign_transcripts();			// overlap genes
 		}
 		this -> set_stats();					// return read stats
+		this -> close_alignment_file();			// close files
 	}
 };
 

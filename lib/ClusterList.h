@@ -57,6 +57,7 @@ private:
 
 				positions.push_back(curr_pos - alignment.CigarData[prev_m].Length);
 				positions.push_back(curr_pos + alignment.CigarData[i].Length + alignment.CigarData[x].Length);
+				curr_pos += alignment.CigarData[i].Length;
 				gapped = true;
 
 				// update current position
@@ -300,6 +301,7 @@ public:
 			positions.clear();
 			calculate_splice(alignment, positions); // Get Gapped Alignments
 
+			// Process in Strand Specific way
 			if (alignment.IsReverseStrand()) {
 
 				t_5end = positions[positions.size() - 1];

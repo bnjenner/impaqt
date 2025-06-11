@@ -114,7 +114,12 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 	// Reverse and Negative if reverse strand
 	if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
 
+
+	// Merge transcripts until all are unique
+	// int x = 0;
 	while (true) {
+
+		// std::cerr << "Iterations: " << x << "\t" << transcripts.size() << "\n";
 
 		// Reset Checks
 		n = transcripts.size();
@@ -258,6 +263,8 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 		}
 	}
 
+
+	// Absorb orphan paths
 	int pos;
 	for (const auto& p1 : path_map) {
 
@@ -385,7 +392,16 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 			std::vector<std::vector<int>> assignments_5,  assignments_3;
 
 			// Min Counts for DBSCAN
-			min_counts = std::max((int)((float)expr * ((float)(ImpaqtArguments::Args.count_percentage / 100))), 20);
+			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100))), 10);
+
+
+			/*
+				Ok so the issue is mitochrondrial genomes. I think we need to find a way to detect
+				these situtations based on read density, these chromosomes just have absurd counts.
+				For example, if the region has an avergae of 1.5 read per base pair (density > 1.5), let's
+				only do 5 end DBSCAN.
+			*/
+
 
 			// Sort Vectors
 			curr_node -> sort_vectors();
