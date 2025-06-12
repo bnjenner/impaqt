@@ -44,11 +44,11 @@ cmake ../
 make
 ```
 
-4. Add path to bash profile
+4. Install
 ```
-echo "export PATH=$PATH:path/to/build_directory" >> ~/.bash_profile
-source ~/.bash_profile
+sudo make install
 ```
+
 5. Give it a go! 
 
 ## Usage
