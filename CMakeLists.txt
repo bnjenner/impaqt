@@ -41,3 +41,7 @@ add_executable(impaqt_test test/impaqt_test.cpp)
 target_link_libraries(impaqt_test gtest gtest_main)
 target_link_libraries(impaqt_test BamTools)
 add_test(impaqt_test impaqt_test)
+
+
+# Install the executable
+install(TARGETS impaqt DESTINATION bin)
