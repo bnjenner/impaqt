@@ -425,8 +425,6 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 			density = (float)expr / (float)(curr_node -> get_stop()) - curr_node -> get_start();
 			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
 
-			// Sort Vectors
-			curr_node -> sort_vectors();
 
 			// Run DBSCAN
 			if (density < 1.5) {

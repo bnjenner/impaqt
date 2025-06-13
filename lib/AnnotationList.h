@@ -316,9 +316,9 @@ public:
 	/////////////////////////////////////////////////////////////
 	// Mainly for Test Suite
 	// Print genes into strings for tests
-	std::string string_genes() {
+	std::string string_genes(const int &strand) {
 		std::stringstream ss;
-		GeneNode *curr_node = pos_head;
+		GeneNode *curr_node = get_head(strand);
 		while (curr_node != NULL) {
 			ss << curr_node -> get_chrom() << "\t" << curr_node -> get_geneID() << "\t";
 			for (const auto &region : curr_node -> get_exon_vec()) { ss << region << "\t"; }

@@ -18,6 +18,8 @@ private:
 	float total_core_points = 0.0;				// number of total core points
 	std::vector<int> five_vec;				// vector for 5' ends
 	std::vector<int> three_vec;				// vector for 3' ends
+	std::vector<int> index_vec;				// vector for read indexes
+
 
 	// Links
 	ClusterNode *next = NULL;				// next ClusterNode
@@ -45,6 +47,7 @@ public:
 		contig_name = t_contig_name;
 		five_vec.resize(1000, 0);
 		three_vec.resize(1000, 0);
+		index_vec.resize(1000, 0);
 	}
 
 	// For combined Nodes
@@ -65,6 +68,11 @@ public:
 		three_vec = curr_node.get_three_vec(); 
 		tmp_vec = next_node.get_three_vec();
 		three_vec.insert(three_vec.end(), tmp_vec.begin(), tmp_vec.end());
+
+		index_vec = curr_node.get_index_vec(); 
+		tmp_vec = next_node.get_index_vec();
+		for (int i = 0; i < tmp_vec.size(); i++) { tmp_vec[i] += curr_node.get_vec_count(); } 
+		index_vec.insert(index_vec.end(), tmp_vec.begin(), tmp_vec.end());
 
 		read_count = curr_node.get_read_count() + next_node.get_read_count();
 		vec_count = curr_node.get_vec_count() + next_node.get_vec_count(); 
@@ -94,8 +102,10 @@ public:
 
 	std::vector<int> get_five_vec() { return five_vec; }
 	std::vector<int> get_three_vec() { return three_vec; }
+	std::vector<int> get_index_vec() { return index_vec; }
 	std::vector<int>* get_five_ref() { return &five_vec; }
 	std::vector<int>* get_three_ref() { return &three_vec; }
+	std::vector<int>* get_index_ref() { return &index_vec; }
 	
 	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
 	float get_transcript_expr(const int i) { return transcript_expression.at(i); }
@@ -118,6 +128,7 @@ public:
 			if ((vec_count + i) % 1000 == 0) { 
 				five_vec.resize(five_vec.size() + 1000, 0);
 				three_vec.resize(three_vec.size() + 1000, 0);
+				index_vec.resize(index_vec.size() + 1000, 0);
 				break;
 			}
 		}
@@ -126,6 +137,7 @@ public:
 		for (int i = 0; i < n; i++) {
 			if (i % 2 == 0) {
 				five_vec.at(vec_count) = positions[i];
+				index_vec.at(vec_count) = read_count; // Store index for sorting
 			} else {
 				three_vec.at(vec_count) = positions[i];
 				vec_count += 1;
@@ -137,21 +149,13 @@ public:
 
 	// Remove ends of vectors
 	void shrink_vectors() {
-		five_vec.resize(vec_count);
-		five_vec.shrink_to_fit();
-		three_vec.resize(vec_count);
-		three_vec.shrink_to_fit();
+		five_vec.resize(vec_count); five_vec.shrink_to_fit();
+		three_vec.resize(vec_count); three_vec.shrink_to_fit();
+		index_vec.resize(vec_count); index_vec.shrink_to_fit();
 	}
 
-	// Sort Point Vectors By 5' Positions
-	void sort_vectors() {
-		std::vector<int> indices(vec_count);
-		std::iota(indices.begin(), indices.end(), 0);
-		std::sort(indices.begin(), indices.end(),
-			       [&](int i, int j) -> bool {
-			            return five_vec[i] < five_vec[j];
-			        });
-
+	// Sort Vectors
+	void sort_vectors(std::vector<int> &indices) {
 		std::vector<int> tmp_vec(vec_count);
 		for (int i = 0; i < vec_count; i++) { tmp_vec[i] = five_vec[indices[i]]; }
 		five_vec = tmp_vec;
@@ -160,7 +164,29 @@ public:
 		three_vec = tmp_vec;
 	}
 
+	// Sort Point Vectors By 5' Positions
+	void point_sort_vectors() {
+		std::vector<int> indices(vec_count);
+		std::iota(indices.begin(), indices.end(), 0);
+		std::sort(indices.begin(), indices.end(),
+			       [&](int i, int j) -> bool {
+			            return five_vec[i] < five_vec[j];
+			        });
 
+		sort_vectors(indices);
+	}
+
+	// Sort Point Vectors By Index
+	void index_sort_vectors() {
+		std::vector<int> indices(vec_count);
+		std::iota(indices.begin(), indices.end(), 0);
+		std::sort(indices.begin(), indices.end(),
+			       [&](int i, int j) -> bool {
+			            return index_vec[i] < index_vec[j];
+			        });
+
+		sort_vectors(indices);
+	}
 
 	/////////////////////////////////////////////////////////////
 	// add transcript

@@ -149,8 +149,8 @@ public:
 
 	// Assign Transcripts to Genes
 	void assign_transcripts() {
-		assign_transcripts_to_genes(annotation, cluster_list, contig_map[chrom_index], 0); // Forward
-		assign_transcripts_to_genes(annotation, cluster_list, contig_map[chrom_index], 1); // Forward
+		assign_to_genes(annotation, cluster_list, contig_map[chrom_index], 0); // Forward
+		assign_to_genes(annotation, cluster_list, contig_map[chrom_index], 1); // Forward
 	}
 
 	// Print Clusters as GTF

@@ -7,23 +7,6 @@ bool compare_first_element(const std::vector<int>& a, const std::vector<int>& b)
 // Sort Using Vector Lengths
 bool compare_length(const std::vector<int>& a, const std::vector<int>& b) { return a.size() < b.size(); }
 
-// Checks to see if regions of transcript overlap
-bool check_transcript_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
-	// Precedes
-	if (a_stop >= b_start && a_stop <= b_stop) {
-		return true;
-		// Spans
-	} else if (a_start <= b_start && a_stop >= b_stop) {
-		return true;
-		// Follows
-	} else if (a_start >= b_start && a_start <= b_stop) {
-		return true;
-		// Precedes (but close enough)
-	} else if (std::abs(a_stop - b_start) <= ImpaqtArguments::Args.epsilon) {
-		return true;
-	}
-	return false;
-}
 
 // Reverse and Negative if reverse strand (I'm actually pretty proud of this solution)
 std::vector<int> reverse_and_negate(const std::vector<int> &vec) {
@@ -70,4 +53,10 @@ void variable_swap(int &a, int &b) {
 bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
 	if (a_start > b_stop || a_stop < b_start) { return false; }
 	return true;
+}
+
+// Check Overlap of read position with exon
+bool check_point_overlap(const int &p, const int &e1, const int &e2) {
+	if (p >= e1 && p <= e2) { return true; } 
+	return false;
 }

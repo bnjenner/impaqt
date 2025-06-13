@@ -70,12 +70,12 @@ TEST_F(impactTest, OpenAlignmentFile) {
 };
 
 
-// // Test 1
-// TEST_F(impactTest, BasicAnnotation) {
-//    test_process -> add_annotation();
-//    std::string answer = test_process -> get_annotation() -> string_genes();
-//    ASSERT_EQ("chr1\tgene1\t49\t149\t174\t324\t374\t499\t524\t574\t599\t899\t\n", answer);
-// };
+// Test 1
+TEST_F(impactTest, BasicAnnotation) {
+   test_process -> add_annotation();
+   std::string answer = test_process -> get_annotation() -> string_genes(0);
+   ASSERT_EQ("chr1\tgene1\t49\t149\t174\t324\t374\t499\t524\t574\t599\t899\t\n", answer);
+};
 
 // // Test 2
 // TEST_F(impactTest, BasicCluster) {
