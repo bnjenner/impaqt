@@ -208,8 +208,8 @@ public:
 
 			gene_id = transcript_assignments.at(i);
 			regions	= transcript_vec.at(i).size();
-			start = transcript_vec.at(i).at(0);
-			stop = transcript_vec.at(i).at(regions - 1);
+			start = transcript_vec.at(i).at(0) + 1;
+			stop = transcript_vec.at(i).at(regions - 1) + 1;
 			quant = transcript_expression.at(i);
 
 			// Print Transcript Line
@@ -228,8 +228,8 @@ public:
 			// Print Exon Line
 			for (int j = 0; j < regions; j += 2) {
 
-				x_start = transcript_vec.at(i).at(j);
-				x_stop = transcript_vec.at(i).at(j + 1);
+				x_start = transcript_vec.at(i).at(j) + 1;
+				x_stop = transcript_vec.at(i).at(j + 1) + 1;
 
 				gtfFile << contig_name << "\timpaqt\texon\t"
 				        << x_start << "\t" << x_stop << "\t.\t"

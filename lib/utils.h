@@ -66,17 +66,8 @@ void variable_swap(int &a, int &b) {
 	}
 }
 
-// Checks to see if regions of transcript overlap a gene
+// Checks to see if regions of transcript overlap a gene, also used to overlap transrcipts
 bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
-	// Precedes
-	if (a_stop >= b_start && a_stop <= b_stop) {
-		return true;
-		// Spans
-	} else if (a_start <= b_start && a_stop >= b_stop) {
-		return true;
-		// Follows
-	} else if (a_start >= b_start && a_start <= b_stop) {
-		return true;
-	}
-	return false;
+	if (a_start > b_stop || a_stop < b_start) { return false; }
+	return true;
 }

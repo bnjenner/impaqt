@@ -15,10 +15,17 @@ bool check_subset(const std::vector<int>& a, const std::vector<int>& b) {
 	// Iterate through exons, see if match is complete 
 	while (j < m) {
 
-		if (i >= n) {
+		// If end of A is reached or first match was not a hit
+		if (i >= n || (!match && ((i > 0) && (j > 0)))) {
 			break;
 
-		} else if (check_transcript_bounds(a[(i*2)], a[(i*2)+1], b[(j*2)], b[(j*2)+1])) {
+		} else if (check_bounds(a[(i*2)], a[(i*2)+1], b[(j*2)], b[(j*2)+1])) {
+			match = true; started = true;
+			i += 1;
+
+			// If last exon and it matches the first exon of B is after but close to A
+		} else if (i == n - 1 && (a.back() < b[0]) && 
+				   std::abs(a.back() - b[0]) <= ImpaqtArguments::Args.epsilon) {
 			match = true; started = true;
 			i += 1;
 
@@ -59,6 +66,8 @@ std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<
 	int n = a.size() / 2;
 	int m = b.size() / 2;
 
+	bool appended = false;
+
 	while (j < m) {
 
 		// If section of A precedes B
@@ -69,8 +78,14 @@ std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<
 
 			// If remaining sections in B, but A is spent
 		} else if (i == n) {
-			merged.push_back(b[(j*2)]);
-			merged.push_back(b[(j*2)+1]);
+
+			if (!appended && std::abs(merged.back() - b[(j*2)]) <= ImpaqtArguments::Args.epsilon) {
+				merged.back() = std::max(merged.back(), b[(j*2)+1]);
+				appended = true;
+			} else {
+				merged.push_back(b[(j*2)]);
+				merged.push_back(b[(j*2)+1]);
+			}
 			j += 1;
 		
 			// Merge Overlapping sections
@@ -112,12 +127,8 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 	// Reverse and Negative if reverse strand
 	if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
 
-
 	// Merge transcripts until all are unique
-	// int x = 0;
 	while (true) {
-
-		// std::cerr << "Iterations: " << x << "\t" << transcripts.size() << "\n";
 
 		// Reset Checks
 		n = transcripts.size();
@@ -133,10 +144,11 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 
 				// Check if transcripts overlap
 				if (check_subset(transcripts[i], transcripts[j])) {
+
 					overlap = true;
 					absorbed.push_back(j);
 					tmp = merge_transcripts(transcripts[i], transcripts[j]);
-
+					
 					// If new transcript not already in results, add
 					auto it = std::find(result.begin(), result.end(), tmp);
 					if (it == result.end()) { result.push_back(tmp); }
@@ -232,9 +244,13 @@ void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &p
 			tmp_vec.push_back(max_pos);
 		}
 
-		// if close enough
-		if (tmp_vec.size() > 2 && ImpaqtArguments::Args.epsilon >= (tmp_vec[2] - tmp_vec[1])) {
-			tmp_vec = {tmp_vec[0], tmp_vec[3]};
+		// If two regions and they are close or out of order, merge
+		if (tmp_vec.size() > 2) {
+			if (ImpaqtArguments::Args.epsilon >= std::abs(tmp_vec[2] - tmp_vec[1])) {
+				tmp_vec = {tmp_vec[0], tmp_vec[3]};
+			} else if (tmp_vec[2] <= tmp_vec[1]) {
+				tmp_vec = {std::min(tmp_vec[0], tmp_vec[2]), std::max(tmp_vec[1], tmp_vec[3])};
+			}
 		}
 
 		transcripts -> push_back(tmp_vec);

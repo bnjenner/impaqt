@@ -35,47 +35,43 @@ private:
 	// Calculate splice
 	void calculate_splice(BamTools::BamAlignment &alignment, std::vector<int> &positions) {
 
-		int x;
-		int prev_m_offset = 0;
-		bool gapped = false;
-		int start_pos = alignment.Position;
-		int curr_pos = start_pos;
-	
+		int n_offset = 0;
+		int curr_pos = alignment.Position;
+		int n = alignment.CigarData.size();
+
+		positions.push_back(curr_pos);
+
 		// Iterate Through Cigar String
 		for (int i = 0; i < alignment.CigarData.size(); i++) {
 
 			// If gapped alignment, get start and ends of neighbor aligned regions 
 			if (alignment.CigarData[i].Type == 'N') {
 				
-				// Get Next Matched Vector
-				x = -1;
-				for (int j = (i + 1); j < alignment.CigarData.size(); j++) {
-					if (alignment.CigarData[j].Type == 'M') { x = j; break; }
-				}
-
-				// Catch Errors
-				if (x == -1) { 
-					std::cerr << "ERROR: Could not find next match in CIGAR string. This should not happen.\n";
-					throw "ERROR: Could not find next match in CIGAR string. This should not happen.";
-				}
-
-				positions.push_back(curr_pos - prev_m_offset);
-				positions.push_back(curr_pos + alignment.CigarData[i].Length + alignment.CigarData[x].Length);
-				curr_pos += alignment.CigarData[i].Length;
-				prev_m_offset = 0;
-				gapped = true;
+				n_offset = alignment.CigarData[i].Length;
+				curr_pos += n_offset;
 
 				// update current position
 			} else if (alignment.CigarData[i].Type == 'M') {
 				curr_pos += alignment.CigarData[i].Length;
-				prev_m_offset += alignment.CigarData[i].Length;
-			}
-		}
 
-		// Should only be called in instance where no gap is detected
-		if (!gapped) {
-			positions.push_back(start_pos);
-			positions.push_back(curr_pos);
+				// If gap detected and not last alignment
+				if (n_offset != 0 && i != n - 1) {
+
+					// If following D or I detected, skip, but only if no more gaps
+					if ((alignment.CigarData[i + 1].Type == 'I' ||
+						 alignment.CigarData[i + 1].Type == 'D') && 
+						 i + 2 == n - 1) {
+						continue;
+					}
+
+					positions.push_back(curr_pos - 1);
+					positions.push_back(curr_pos - alignment.CigarData[i].Length);
+					n_offset = 0;
+				}
+			}
+
+			// Add last element
+			if (i == n - 1) { positions.push_back(curr_pos - 1); }
 		}
 	}
 
