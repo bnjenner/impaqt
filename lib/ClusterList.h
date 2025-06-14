@@ -19,9 +19,9 @@ private:
 	ClusterNode *neg_tail;					// last negative ClusterNode
 
 	// Summary
-	float assigned_reads = 0.0;
-	float ambiguous_reads = 0.0;
-	float unassigned_reads = 0.0;
+	double assigned_reads = 0.0;
+	double ambiguous_reads = 0.0;
+	double unassigned_reads = 0.0;
 	size_t multimapped_reads = 0;
 	size_t low_quality_reads = 0;
 	size_t total_reads = 0;
@@ -221,9 +221,9 @@ public:
 	}
 
 	// Get Reads Stats
-	float get_assigned_reads() { return assigned_reads; }
-	float get_unassigned_reads() { return unassigned_reads; }
-	float get_ambiguous_reads() { return ambiguous_reads; }
+	double get_assigned_reads() { return assigned_reads; }
+	double get_unassigned_reads() { return unassigned_reads; }
+	double get_ambiguous_reads() { return ambiguous_reads; }
 	size_t get_multimapped_reads() { return multimapped_reads; }
 	size_t get_low_quality_reads() { return low_quality_reads; }
 	size_t get_total_reads() { return total_reads; }
@@ -244,9 +244,9 @@ public:
 	}
 		
 	// Set Read Stats
-	void add_ambiguous_reads(const float &expr) { ambiguous_reads += expr; }
-	void add_assigned_reads(const float &expr) { assigned_reads += expr; }
-	void add_unassigned_reads(const float &expr) { unassigned_reads += expr; }
+	void add_ambiguous_reads(const double &expr) { ambiguous_reads += expr; }
+	void add_assigned_reads(const double &expr) { assigned_reads += expr; }
+	void add_unassigned_reads(const double &expr) { unassigned_reads += expr; }
 
 	/////////////////////////////////////////////////////////////
 	// Initialize empty object

@@ -317,8 +317,10 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 }
 
 
-// DBSCAN Clustering Function
-// 		inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
+// DBSCAN Clustering Function, inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
+//		This function EATS time... I should cash the bounds for each point, make it obvious where to search.
+//			That being said, would only work for the 5' end cause it's ordered.
+//			Could also address the resizing vector issue... 
 std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &min_counts,
                         std::vector<std::vector<int>> &assignment, const bool &five, const bool &mito) {
 
@@ -422,7 +424,7 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 			std::vector<std::vector<int>> assignments_5,  assignments_3;
 
 			// Read Density and Min Counts for DBSCAN
-			density = (float)expr / (float)(curr_node -> get_stop()) - curr_node -> get_start();
+			density = (float)expr / (float)(curr_node -> get_stop() - curr_node -> get_start());
 			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
 
 

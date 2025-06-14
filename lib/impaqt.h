@@ -26,9 +26,9 @@ private:
 	ClusterList cluster_list;						// List for clusters
 
 	// Read Stats
-	float assigned_reads = 0.0;
-	float unassigned_reads = 0.0;
-	float ambiguous_reads = 0.0;
+	double assigned_reads = 0.0;
+	double unassigned_reads = 0.0;
+	double ambiguous_reads = 0.0;
 	size_t multimapped_reads = 0;
 	size_t low_quality_reads = 0;
 	size_t total_reads = 0;
@@ -53,9 +53,9 @@ public:
 
 	/////////////////////////////////////////////////////////////
 	// Get Reads Stats
-	float get_assigned_reads() { return cluster_list.get_assigned_reads(); }
-	float get_unassigned_reads() { return cluster_list.get_unassigned_reads(); }
-	float get_ambiguous_reads() { return cluster_list.get_ambiguous_reads(); }
+	double get_assigned_reads() { return cluster_list.get_assigned_reads(); }
+	double get_unassigned_reads() { return cluster_list.get_unassigned_reads(); }
+	double get_ambiguous_reads() { return cluster_list.get_ambiguous_reads(); }
 	size_t get_multimapped_reads() { return cluster_list.get_multimapped_reads(); }
 	size_t get_low_quality_reads() { return cluster_list.get_low_quality_reads(); }
 	size_t get_total_reads() { return cluster_list.get_total_reads(); }

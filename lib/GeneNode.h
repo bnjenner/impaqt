@@ -11,7 +11,7 @@ private:
 	int start;								// beginning of window
 	int stop;								// end of window
 	int exons = 0;								// number of exons (or features)
-	float read_count = 0;							// number of associated reads
+	double read_count = 0;							// number of associated reads
 	std::vector<int> exon_vec = {0, 0};					// vector for bounds
 
 	// Links
@@ -84,7 +84,7 @@ public:
 	int get_exon_num() { return exons; }
 
 	std::string get_geneID() { return geneID; }
-	float get_read_count() { return read_count; }
+	double get_read_count() { return read_count; }
 
 	std::vector<int> get_exon_vec() { return exon_vec; }
 	std::vector<int>* get_exon_ref() { return &exon_vec; }
@@ -128,7 +128,7 @@ public:
 	}
 
 	// Add expression
-	void add_expression(const float expr) { read_count += expr; }
+	void add_expression(const double &expr) { read_count += expr; }
 };
 
 
