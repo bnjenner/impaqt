@@ -178,6 +178,11 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 	int core_points = 0;
 	for (int i = 0; i < result.size(); i++) {
 		core_points = get_quant(result[i], init_copy, counts);
+		if (core_points == 0) {
+			std::cerr << "ERROR: No core points found for transcript: "
+					  << curr_node -> get_contig_name() << ":"
+					  << result[i][0] << "-" << result[i].back() << "\n";
+		} // Skip if no core points
 		curr_node -> add_transcript(result[i], core_points);
 	}
 }

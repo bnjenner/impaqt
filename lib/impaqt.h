@@ -68,6 +68,7 @@ public:
 	int get_chrom_index() { return chrom_index; }
 	int get_chrom_num() { return contig_map.size(); }
 	std::unordered_map<int, std::string> get_contig_map() { return contig_map; }
+	std::string get_contig_name() { return contig_map[chrom_index]; }
 	std::unordered_map<int, int> get_contig_lengths() { return contig_lengths; }
 	bool is_ignored() { return ignore_chr; }
 
@@ -127,7 +128,7 @@ public:
 		cluster_list.initialize(chrom_index, contig_map[chrom_index], contig_lengths[chrom_index]);
 
 		if (!inFile.Jump(chrom_index)) {
-			std::cerr << "[ERROR: Could not jump to region: " << chrom_index << ".]\n";
+			std::cerr << "// ERROR: Could not jump to region: " << chrom_index << ".]\n";
 			return;
 		}
 

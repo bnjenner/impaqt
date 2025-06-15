@@ -71,6 +71,7 @@ int main(int argc, char const ** argv) {
 
     // Launch Threads
     std::cerr << "// Processing Data.......\n";
+    std::cerr << "//     Chromosomes Found: " << n << "\n";
     int i = 0;
     const int proc = std::max(ImpaqtArguments::Args.threads - 1, 1);
     {
@@ -124,9 +125,11 @@ int main(int argc, char const ** argv) {
 
     std::cerr << "//     Counts Data.......\n";
     for (int i = 0; i < n; i++) {
-        total_assigned += processes[i] -> get_assigned_reads();
-        total_unassigned += processes[i] -> get_unassigned_reads();
-        total_ambiguous += processes[i] -> get_ambiguous_reads();
+        if (!(processes[i] -> is_ignored())) {
+            total_assigned += processes[i] -> get_assigned_reads();
+            total_unassigned += processes[i] -> get_unassigned_reads();
+            total_ambiguous += processes[i] -> get_ambiguous_reads();
+        }
         total_multimapping += processes[i] -> get_multimapped_reads();
         total_low_quality += processes[i] -> get_low_quality_reads();
         total_reads += processes[i] -> get_total_reads();

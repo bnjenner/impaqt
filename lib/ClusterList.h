@@ -392,9 +392,9 @@ public:
 	void collapse_clusters(int t_strand) {
 
 		ClusterNode *temp_node;
-		ClusterNode *temp_head = NULL;
-		ClusterNode *temp_tail = NULL;
-		ClusterNode *curr_node = get_head(t_strand);
+		ClusterNode *temp_head = get_head(t_strand);
+		ClusterNode *temp_tail = get_tail(t_strand);
+		ClusterNode *curr_node = temp_head;
 
 		while (curr_node != NULL) {
 

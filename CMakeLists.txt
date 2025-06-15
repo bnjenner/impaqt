@@ -35,6 +35,10 @@ target_link_libraries (impaqt ${SEQAN_LIBRARIES})
 target_link_libraries(impaqt ${ZLIB_LIBRARIES})
 target_link_libraries(impaqt BamTools)
 
+# Install the executable
+install(TARGETS impaqt DESTINATION bin)
+
+
 # Tests
 link_directories(${GTEST_LIBS_DIR})
 add_executable(impaqt_test test/impaqt_test.cpp)
@@ -46,7 +50,3 @@ add_executable(ClusterList_test test/ClusterList_test.cpp)
 target_link_libraries(ClusterList_test gtest gtest_main)
 target_link_libraries(ClusterList_test BamTools)
 add_test(ClusterList_test ClusterList_test)
-
-
-# Install the executable
-install(TARGETS impaqt DESTINATION bin)
