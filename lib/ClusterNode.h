@@ -15,7 +15,7 @@ private:
 	std::string headID;					// read ID of first read in cluster
 	size_t read_count = 0;					// number of associated reads
 	size_t vec_count = 0;
-	double total_core_points = 0.0;				// number of total core points
+	size_t total_core_points = 0;		// number of total core points
 	std::vector<int> five_vec;				// vector for 5' ends
 	std::vector<int> three_vec;				// vector for 3' ends
 	std::vector<int> index_vec;				// vector for read indexes
@@ -28,7 +28,7 @@ private:
 	// Transcript Results
 	size_t transcript_num = 0;				// number of transcripts identified
 	std::vector<std::vector<int>> transcript_vec;		// vector of transcript regions
-	std::vector<double> transcript_expression;		// vector of transcript expression
+	std::vector<long double> transcript_expression;			// vector of transcript expression
 	std::vector<std::string> transcript_assignments;	// vector of transcript assignments
 
 
@@ -108,7 +108,7 @@ public:
 	std::vector<int>* get_index_ref() { return &index_vec; }
 	
 	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
-	float get_transcript_expr(const int i) { return transcript_expression.at(i); }
+	long double get_transcript_expr(const int &i) { return transcript_expression.at(i); }
 	size_t get_transcript_num() { return transcript_num; }
 
 	/////////////////////////////////////////////////////////////
@@ -192,7 +192,7 @@ public:
 	// add transcript
 	void add_transcript(const std::vector<int> &t_transcript, const int &t_expression) {
 		transcript_vec.push_back(t_transcript);
-		transcript_expression.push_back((double)t_expression);
+		transcript_expression.push_back((long double)t_expression);
 		transcript_assignments.push_back("Unassigned");
 		total_core_points += t_expression;
 		transcript_num += 1;
@@ -200,13 +200,14 @@ public:
 
 	// determine transcript abundance
 	void quantify_transcripts() {
-		double prop, quant;
+		long double prop, quant;
+		long double denom = total_core_points;
 		for (int i = 0; i < transcript_vec.size(); i++) {
-			prop = transcript_expression.at(i) / total_core_points;
+			prop = transcript_expression.at(i) / denom;
 			if (prop == 1) {
-				quant = read_count;
+				quant = (long double)read_count;
 			} else {
-				quant = prop * (double)read_count;
+				quant = prop * (long double)read_count;
 			}
 			transcript_expression.at(i) = quant;
 		}
@@ -214,8 +215,6 @@ public:
 
 	// assign transcripts
 	void assign_transcript(const std::string &t_gene_id, const int &i) { transcript_assignments[i] = t_gene_id; }
-
-	// mark as ambiguous
 	void assign_ambiguous(const int &i) { transcript_assignments[i] = "Ambiguous"; }
 
 	// Print Transcripts

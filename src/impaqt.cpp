@@ -114,9 +114,9 @@ int main(int argc, char const ** argv) {
 
 
     // Summary Statistics
-    double total_assigned = 0.0;
-    double total_unassigned = 0.0;
-    double total_ambiguous = 0.0;
+    long double total_assigned = 0.0;
+    long double total_unassigned = 0.0;
+    long double total_ambiguous = 0.0;
     size_t total_multimapping = 0;
     size_t total_low_quality = 0;
     size_t total_reads = 0;

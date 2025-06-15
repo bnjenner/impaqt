@@ -19,12 +19,18 @@ private:
 	ClusterNode *neg_tail;					// last negative ClusterNode
 
 	// Summary
-	double assigned_reads = 0.0;
-	double ambiguous_reads = 0.0;
-	double unassigned_reads = 0.0;
+	long double assigned_reads = 0.0;
+	long double ambiguous_reads = 0.0;
+	long double unassigned_reads = 0.0;
+	size_t assigned_singles = 0;
+	size_t ambiguous_singles = 0;
+	size_t unassigned_singles = 0;
 	size_t multimapped_reads = 0;
 	size_t low_quality_reads = 0;
+
 	size_t total_reads = 0;
+	size_t passing_pos_reads = 0;
+	size_t passing_neg_reads = 0;
 	size_t transcript_num = 0;
 
 	// For Checks
@@ -221,12 +227,15 @@ public:
 	}
 
 	// Get Reads Stats
-	double get_assigned_reads() { return assigned_reads; }
-	double get_unassigned_reads() { return unassigned_reads; }
-	double get_ambiguous_reads() { return ambiguous_reads; }
+	long double get_assigned_reads() { return assigned_reads + (long double)assigned_singles; }
+	long double get_unassigned_reads() { return unassigned_reads + (long double)unassigned_singles; }
+	long double get_ambiguous_reads() { return ambiguous_reads + (long double)ambiguous_singles; }
 	size_t get_multimapped_reads() { return multimapped_reads; }
 	size_t get_low_quality_reads() { return low_quality_reads; }
 	size_t get_total_reads() { return total_reads; }
+	size_t get_pos_reads() { return passing_pos_reads; }
+	size_t get_neg_reads() { return passing_neg_reads; }
+
 
 	// Get Transcript Number
 	size_t get_transcript_num() {
@@ -244,9 +253,12 @@ public:
 	}
 		
 	// Set Read Stats
-	void add_ambiguous_reads(const double &expr) { ambiguous_reads += expr; }
-	void add_assigned_reads(const double &expr) { assigned_reads += expr; }
-	void add_unassigned_reads(const double &expr) { unassigned_reads += expr; }
+	void add_assigned_reads(const long double &expr) { assigned_reads += expr; }
+	void add_unassigned_reads(const long double &expr) { unassigned_reads += expr; }
+	void add_ambiguous_reads(const long double &expr) { ambiguous_reads += expr; }
+	void add_assigned_singles(const size_t &expr) { assigned_reads += expr; }
+	void add_unassigned_singles(const size_t &expr) { unassigned_reads += expr; }
+	void add_ambiguous_singles(const size_t &expr) { ambiguous_reads += expr; }
 
 	/////////////////////////////////////////////////////////////
 	// Initialize empty object
@@ -316,6 +328,7 @@ public:
 
 				t_5end = positions[positions.size() - 1];
 				t_3end = positions[0];
+				passing_neg_reads += 1;
 
 				// Advance to correct node based on left position
 				while (neg_curr_node -> get_next() != NULL) {
@@ -349,6 +362,7 @@ public:
 
 				t_5end = positions[0];
 				t_3end = positions[positions.size() - 1];
+				passing_pos_reads += 1;
 
 				// Get Correct node
 				while (pos_curr_node -> get_next() != NULL) {

@@ -15,20 +15,20 @@ GeneNode* get_closest_gene(const int &t, GeneNode *curr_gene, ClusterNode *curr_
 }
 
 // Resolve Read Assignment To Genes
-void resolve_read_assignment(ClusterList &cluster_list, GeneNode *best_overlap, const int &max_overlap) {
+void resolve_read_assignment(GeneNode *best_overlap, const int &max_overlap, std::vector<size_t> &read_assignments) {
 	// If multiple assignments, mark ambiguous
 	if (best_overlap == NULL && max_overlap != 0) {
-		cluster_list.add_ambiguous_reads(1.0);
+		read_assignments[2] += 1; // Add to ambiguous
 
 		// If no overlap, add to unassigned reads
     } else if (max_overlap == 0) {
-		cluster_list.add_unassigned_reads(1.0);
+		read_assignments[1] += 1; // Add to Unassigned
 
 	// Add Expression to best overlapping gene
 	} else if (best_overlap != NULL) {
-		best_overlap -> add_expression(1.0);
-		cluster_list.add_assigned_reads(1.0);
-	}
+		best_overlap -> add_expression(1.0f); // May be an issue
+		read_assignments[0] += 1;
+ 	}
 }
 
 
@@ -36,7 +36,7 @@ void resolve_read_assignment(ClusterList &cluster_list, GeneNode *best_overlap, 
 void resolve_transcript_assignment(ClusterList &cluster_list, ClusterNode *curr_clust, GeneNode *best_overlap, 
 									const int &max_overlap, const int &i) {
 	
-	double expr = curr_clust -> get_transcript_expr(i);
+	long double expr = curr_clust -> get_transcript_expr(i);
 
 	// If multiple assignments, mark ambiguous
 	if (best_overlap == NULL && max_overlap != 0) {
@@ -187,6 +187,7 @@ void assign_reads_to_genes(ClusterNode *curr_clust, GeneNode *prev_gene,
 	GeneNode *best_overlap;
 	int t_start, t_stop, overlap, max_overlap, index;
 
+	std::vector<size_t> read_assignments = {0, 0, 0}; // {Assigned, Unassigned, Ambiguous}
 	int prev_read = -1;
 
 	for (int i = 0; i < curr_clust -> get_vec_count(); i++) {
@@ -198,7 +199,7 @@ void assign_reads_to_genes(ClusterNode *curr_clust, GeneNode *prev_gene,
 		if (index != prev_read) {
 
 			if (prev_read != -1) {
-				resolve_read_assignment(cluster_list, best_overlap, max_overlap);
+				resolve_read_assignment(best_overlap, max_overlap, read_assignments);
 			}
 
 			prev_read = index;
@@ -235,7 +236,18 @@ void assign_reads_to_genes(ClusterNode *curr_clust, GeneNode *prev_gene,
 	}
 
 	// Catch Last Read Assignment
-	resolve_read_assignment(cluster_list, best_overlap, max_overlap);
+	resolve_read_assignment(best_overlap, max_overlap, read_assignments);
+
+	// Increment Counts (necessary to do at once because of precision loss)
+	for (int i = 0; i < 3; i++) {
+		if (i == 0) {
+			cluster_list.add_assigned_singles(read_assignments[i]);
+		} else if (i == 1) {
+			cluster_list.add_unassigned_singles(read_assignments[i]);
+		} else {
+			cluster_list.add_ambiguous_singles(read_assignments[i]);
+		}
+	}
 }
 
 
@@ -248,12 +260,10 @@ void assign_to_genes(AnnotationList &annotation, ClusterList &cluster_list, cons
 	
 	// If no genes
 	if (curr_gene == NULL) {
-		// Only need to do this once for both strands
-		if (strand == 0) {
-			double tmp_count = cluster_list.get_total_reads();
-			tmp_count -= (double)cluster_list.get_multimapped_reads();
-			tmp_count -= (double)cluster_list.get_low_quality_reads();
-			cluster_list.add_unassigned_reads(tmp_count);
+		if (strand == 0) { 
+			cluster_list.add_unassigned_singles(cluster_list.get_pos_reads());
+		} else {
+			cluster_list.add_unassigned_singles(cluster_list.get_neg_reads());
 		}
 		return;
 	}
@@ -273,13 +283,15 @@ void assign_to_genes(AnnotationList &annotation, ClusterList &cluster_list, cons
 			// Advance to Potential Gene
 			prev_gene = get_closest_gene(t_start, prev_gene, curr_clust);
 			if (prev_gene == NULL) {
-				cluster_list.add_unassigned_reads((double)(curr_clust -> get_read_count()));
+				cluster_list.add_unassigned_singles(curr_clust -> get_read_count());
 				return;
 			}
 
 			assign_transcripts_to_genes(curr_clust, prev_gene, cluster_list, annotation, t_num);
 
 		} else {
+
+			// cluster_list.add_unassigned_reads((float)(curr_clust -> get_read_count()));
 
 			curr_clust -> index_sort_vectors();
 
@@ -288,7 +300,7 @@ void assign_to_genes(AnnotationList &annotation, ClusterList &cluster_list, cons
 			// Advance to Potential Gene
 			prev_gene = get_closest_gene(t_start, prev_gene, curr_clust);
 			if (prev_gene == NULL) {
-				cluster_list.add_unassigned_reads((double)(curr_clust -> get_read_count()));
+				cluster_list.add_unassigned_singles(curr_clust -> get_read_count());
 				return;
 			}
 
