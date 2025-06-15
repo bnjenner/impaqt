@@ -1,0 +1,16 @@
+##provider: TEST
+##format: gtf
+##date: 2024-02-27
+chr1	IMPAQT	gene	1	1000	.	+	.	gene_id "gene1"; gene_type "gene"; gene_name "Eugene";
+chr1	IMPAQT	transcript	10	950	.	+	.	gene_id "gene1"; transcript_id "transcript1"; 
+chr1	IMPAQT	exon	50	150	.	+	.	gene_id "gene1"; transcript_id "transcript1";
+chr1	IMPAQT	exon	175	300	.	+	.	gene_id "gene1"; transcript_id "transcript1";
+chr1	IMPAQT	exon	400	500	.	+	.	gene_id "gene1"; transcript_id "transcript1";
+chr1	IMPAQT	exon	600	700	.	+	.	gene_id "gene1"; transcript_id "transcript1";
+chr1	IMPAQT	exon	800	900	.	+	.	gene_id "gene1"; transcript_id "transcript1";
+chr1	IMPAQT	transcript	10	950	.	+	.	gene_id "gene1"; transcript_id "transcript2"; 
+chr1	IMPAQT	exon	50	150	.	+	.	gene_id "gene1"; transcript_id "transcript2";
+chr1	IMPAQT	exon	175	325	.	+	.	gene_id "gene1"; transcript_id "transcript2";
+chr1	IMPAQT	exon	375	500	.	+	.	gene_id "gene1"; transcript_id "transcript2";
+chr1	IMPAQT	exon	525	575	.	+	.	gene_id "gene1"; transcript_id "transcript2";
+chr1	IMPAQT	exon	600	900	.	+	.	gene_id "gene1"; transcript_id "transcript2";
