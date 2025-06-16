@@ -37,10 +37,31 @@ private:
 	}
 
 	// Join exons
-	void close_gap(const int &pos) {
-		std::swap(exon_vec[(pos * 2) + 1], exon_vec.back()); exon_vec.pop_back(); // Remove end of current exon
-		std::swap(exon_vec[(pos * 2) + 2], exon_vec.back()); exon_vec.pop_back(); // Remove beginning of next exon
-		exons -= 1; // reduce number of exons
+	void close_gap(const int &t_start, const int &t_stop) {
+
+		// Jut populate new vector with exons that are unique
+		std::vector<int> tmp_vec; // New exon vec
+
+		for (int i = 0; i < exons; i++) {
+
+			if (exon_vec[(2*i) + 1] < t_start) {
+				tmp_vec.push_back(exon_vec[(2*i)]);
+				tmp_vec.push_back(exon_vec[(2*i) + 1]);
+			
+			} else if (exon_vec[(2*i)] > t_stop) {
+				tmp_vec.push_back(exon_vec[(2*i)]);
+				tmp_vec.push_back(exon_vec[(2*i) + 1]);
+
+			} else {
+				tmp_vec.push_back(std::min(exon_vec[(2*i)], t_start));
+				tmp_vec.push_back(std::max(exon_vec[(2*i) + 1], t_stop));
+				i += 1;
+			}
+
+		}
+
+		exon_vec = tmp_vec; // update exon vector
+		exons = exon_vec.size() / 2;
 	}
 
 
@@ -101,10 +122,9 @@ public:
 	// Add exon to exon vector
 	void add_region(const std::string &str_start, const std::string &str_stop) {
 
-		const int n = exon_vec.size() / 2;
+		const int n = this -> get_exon_num();
 		const int t_start = std::stoi(str_start) - 1;
 		const int t_stop = std::stoi(str_stop) - 1;
-
 
 		// For all recorded exons
 		for (int i = 0; i < n; i++) {
@@ -114,9 +134,9 @@ public:
 				exon_vec[(2 * i)] = std::min(exon_vec[(2 * i)], t_start);
 				exon_vec[(2 * i) + 1] = std::max(exon_vec[(2 * i) + 1], t_stop);
 
-				// if gap now closed
+				// if not last exon and gap now closed
 				if (i != (n - 1) && exon_vec[(2 * i) + 1] >= exon_vec[(2 * i) + 2]) {
-					close_gap(i);  // exon spans previous intron
+					close_gap(exon_vec[(2 * i)], exon_vec[(2 * i) + 1]);  // exon spans previous intron
 				}
 				return;
 			}

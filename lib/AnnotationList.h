@@ -328,6 +328,20 @@ public:
 		return ss.str();
 	}
 
+
+	// Print genes 
+	void print_genes(const int &strand) {
+		GeneNode *curr_node = get_head(strand);
+		while (curr_node != NULL) {
+			std::cerr << curr_node -> get_chrom() << ": " << curr_node -> get_geneID() << "\n";
+			for (int i = 0; i < curr_node -> get_exon_num(); i++) {
+				std::cerr << "\t" << curr_node -> get_exon_vec()[(2*i)] << "\t"
+								  << curr_node -> get_exon_vec()[(2*i)+1] << "\n";
+			}
+			curr_node = curr_node -> get_next();
+		}
+	}
+
 	// Print genes and counts
 	void print_chrom_map() {
 		std::cerr << "// Positive Strand Chrom Map\n";
