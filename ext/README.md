@@ -1,1 +1,1 @@
-Statically links all dependencies. Sorry.
+Stores libraries. Sorry. 
