@@ -15,7 +15,7 @@ private:
 	std::string headID;					// read ID of first read in cluster
 	size_t read_count = 0;					// number of associated reads
 	size_t vec_count = 0;
-	size_t total_core_points = 0;		// number of total core points
+	size_t total_core_points = 0;				// number of total core points
 	std::vector<int> five_vec;				// vector for 5' ends
 	std::vector<int> three_vec;				// vector for 3' ends
 	std::vector<int> index_vec;				// vector for read indexes
@@ -28,7 +28,7 @@ private:
 	// Transcript Results
 	size_t transcript_num = 0;				// number of transcripts identified
 	std::vector<std::vector<int>> transcript_vec;		// vector of transcript regions
-	std::vector<long double> transcript_expression;			// vector of transcript expression
+	std::vector<long double> transcript_expression;		// vector of transcript expression
 	std::vector<std::string> transcript_assignments;	// vector of transcript assignments
 
 
