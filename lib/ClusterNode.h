@@ -61,6 +61,7 @@ public:
 		contig_name = curr_node.get_contig_name();
 		chrom_index = curr_node.get_chrom_index();
 
+		// BNJ - 6/16/26: These vector copies needs to be changed. Copies + resizes not necessary.
 		five_vec = curr_node.get_five_vec();
 		tmp_vec = next_node.get_five_vec();
 		five_vec.insert(five_vec.end(), tmp_vec.begin(), tmp_vec.end());

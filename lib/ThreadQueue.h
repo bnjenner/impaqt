@@ -34,8 +34,8 @@ public:
 		quit = true;
 
 		// unlock, notify all threads
-		lock.unlock();
 		cv.notify_all();
+		lock.unlock();
 
 		for (auto &t : threads) {
 			if (t.joinable()) {
@@ -49,7 +49,6 @@ public:
 	void dispatch(const call &&job) {
 		std::unique_lock<std::mutex> lock(mlock);	// create lock
 		call_queue.push(std::move(job));		// enqueue
-		lock.unlock();					// unlock
 		cv.notify_one();				// notify conditional var
 	}
 

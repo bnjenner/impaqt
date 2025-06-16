@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <memory>
 #include <condition_variable>
 #include <mutex>
 #include <chrono>
@@ -46,40 +47,41 @@ int main(int argc, char const ** argv) {
 
     /////////////////////////////////////////////////////////////
     // Welcome!
-    std::cerr << "// IMPAQT\n";
-    std::cerr << "// Parsing Input Files...\n";
+    std::cerr << "//IMPAQT\n";
+    std::cerr << "//Parsing Input Files:\n";
 
     // Set Up Impaqt Threads
-    std::cerr << "//     Alignment File....\n";
-    std::vector<Impaqt*> processes;
-    processes.emplace_back(new Impaqt(0));
+    std::cerr << "//    Alignment File.....\n";
+    std::vector<Impaqt*> processes = {new Impaqt(0)};
     processes[0] -> open_alignment_file();
     processes[0] -> set_chrom_order();
 
     // Add Annotation Info
-    std::cerr << "//     Annotation File...\n";
+    std::cerr << "//    Annotation File....\n";
     processes[0] -> add_annotation();
+    AnnotationList* annotation = processes[0] -> get_annotation();
 
 
     /////////////////////////////////////////////////////////////
     // Multithreading Initialization
-    int n = processes[0] -> get_chrom_num();
+    size_t n = processes[0] -> get_chrom_num();
     if (n > 1) {
         processes.reserve(n);
         for (int i = 1; i < n; i++) { processes.emplace_back(new Impaqt(i)); }
     }
 
     // Launch Threads
-    std::cerr << "// Processing Data.......\n";
-    std::cerr << "//     Chromosomes Found: " << n << "\n";
+    std::cerr << "//Processing Data:\n";
+    std::cerr << "//    Contigs: " << n << "\n";
+
     int i = 0;
     const int proc = std::max(ImpaqtArguments::Args.threads - 1, 1);
     {
-        thread_queue call_queue(proc); // initialize dispatch queue with N threads
+        // initialize dispatch queue with N threads
+        thread_queue call_queue(proc); 
         do {
-            // populate dispatch queue with necessary jobs
             while (i < n) {
-                call_queue.dispatch([&, i] {processes[i] -> launch();}); // dispatch job
+                call_queue.dispatch([&, i] {processes[i] -> launch();});
                 i++;
             }
         } while (!call_queue.finished());  // Wait for queue to be emptied
@@ -91,14 +93,13 @@ int main(int argc, char const ** argv) {
 
     /////////////////////////////////////////////////////////////
     // Write Results
-    std::cerr << "// Writing Results.......\n";
+    std::cerr << "//Writing Results:\n";
 
     // Output read cluster gtf if specified
     if (ImpaqtArguments::Args.gtf_output != "") {
 
-        std::cerr << "//     GTF File..........\n";
-
-        // Open GTF File
+         // Open GTF File
+        std::cerr << "//    GTF File...........\n";
         std::ofstream gtfFile;
         gtfFile.open(ImpaqtArguments::Args.gtf_output);
 
@@ -114,6 +115,10 @@ int main(int argc, char const ** argv) {
     }
 
 
+    // Output Counts
+    std::cerr << "//    Counts Data........\n";
+    annotation -> print_gene_counts();
+
     // Summary Statistics
     long double total_assigned = 0.0;
     long double total_unassigned = 0.0;
@@ -123,7 +128,6 @@ int main(int argc, char const ** argv) {
     size_t total_reads = 0;
     size_t total_transcripts = 0;
 
-    std::cerr << "//     Counts Data.......\n";
     for (int i = 0; i < n; i++) {
         if (!(processes[i] -> is_ignored())) {
             total_assigned += processes[i] -> get_assigned_reads();
@@ -137,15 +141,13 @@ int main(int argc, char const ** argv) {
         delete processes[i];
     }
 
-    // Report Counts
-    processes[0] -> print_counts();
-    std::cout << "// assigned\t" << std::fixed << std::setprecision(2) << total_assigned << "\n"
-              << "// unassigned\t" << std::fixed << std::setprecision(2) << total_unassigned << "\n"
-              << "// ambiguous\t" << std::fixed << std::setprecision(2) << total_ambiguous << "\n"
-              << "// multimapping\t" << total_multimapping << "\n"
-              << "// low_quality\t" << total_low_quality << "\n"
-              << "// total\t" << total_reads << "\n"
-              << "// transcripts\t" << total_transcripts << std::endl;
+    std::cout << "//assigned\t" << std::fixed << std::setprecision(2) << total_assigned << "\n"
+              << "//unassigned\t" << std::fixed << std::setprecision(2) << total_unassigned << "\n"
+              << "//ambiguous\t" << std::fixed << std::setprecision(2) << total_ambiguous << "\n"
+              << "//multimapping\t" << total_multimapping << "\n"
+              << "//low_quality\t" << total_low_quality << "\n"
+              << "//total\t" << total_reads << "\n"
+              << "//transcripts\t" << total_transcripts << std::endl;
 
 
     /////////////////////////////////////////////////////////////
@@ -154,8 +156,8 @@ int main(int argc, char const ** argv) {
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
 
     // Say goodbye :)
-    std::cerr << "// Program Complete!\n";
-    std::cerr << "// Runtime: " << duration.count() << " seconds" << std::endl;
+    std::cerr << "//Program: Complete!\n";
+    std::cerr << "//Runtime: " << duration.count() << " seconds" << std::endl;
 
     return 0;
 }

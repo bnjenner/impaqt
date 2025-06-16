@@ -19,12 +19,13 @@ private:
 	ClusterNode *neg_tail;					// last negative ClusterNode
 
 	// Summary
-	long double assigned_reads = 0.0;
-	long double ambiguous_reads = 0.0;
-	long double unassigned_reads = 0.0;
-	size_t assigned_singles = 0;
-	size_t ambiguous_singles = 0;
-	size_t unassigned_singles = 0;
+	long double assigned_reads = 0.0;			// Assigned Transcript counts
+	long double ambiguous_reads = 0.0;			// Unassigned Transcript counts
+	long double unassigned_reads = 0.0;			// Ambigous Transcript counts
+	size_t assigned_singles = 0;			// Assigned read counts
+	size_t ambiguous_singles = 0;			// Unssigned read counts
+	size_t unassigned_singles = 0;			// Ambigous read counts
+
 	size_t multimapped_reads = 0;
 	size_t low_quality_reads = 0;
 
@@ -33,8 +34,6 @@ private:
 	size_t passing_neg_reads = 0;
 	size_t transcript_num = 0;
 
-	// For Checks
-	uint16_t NH_tag;					// NH tag to determine number of mappings
 
 
 	/////////////////////////////////////////////////////////////
@@ -44,10 +43,8 @@ private:
 		int n_offset = 0;
 		int curr_pos = alignment.Position;
 		int n = alignment.CigarData.size();
+		positions.emplace_back(curr_pos);
 
-		positions.push_back(curr_pos);
-
-		// Iterate Through Cigar String
 		for (int i = 0; i < alignment.CigarData.size(); i++) {
 
 			// If gapped alignment, get start and ends of neighbor aligned regions 
@@ -56,7 +53,6 @@ private:
 				n_offset = alignment.CigarData[i].Length;
 				curr_pos += n_offset;
 
-				// update current position
 			} else if (alignment.CigarData[i].Type == 'M') {
 				curr_pos += alignment.CigarData[i].Length;
 
@@ -70,14 +66,13 @@ private:
 						continue;
 					}
 
-					positions.push_back(curr_pos - 1);
-					positions.push_back(curr_pos - alignment.CigarData[i].Length);
+					positions.emplace_back(curr_pos - 1);
+					positions.emplace_back(curr_pos - alignment.CigarData[i].Length);
 					n_offset = 0;
 				}
 			}
 
-			// Add last element
-			if (i == n - 1) { positions.push_back(curr_pos - 1); }
+			if (i == n - 1) { positions.emplace_back(curr_pos - 1); }
 		}
 	}
 
@@ -88,6 +83,7 @@ private:
 		if (!alignment.IsMapped()) { return false; }
 
 		// Multimappers
+		uint16_t NH_tag;
 		alignment.GetTag("NH", NH_tag);
 		if ((!(ImpaqtArguments::Args.nonunique_alignments)) && (NH_tag > 1)) {
 			++multimapped_reads;
@@ -114,9 +110,35 @@ private:
 		return true;
 	}
 
+
+	void initialize_strand(ClusterNode *&head, ClusterNode *&tail, const int strand, const int &zones) {
+
+		int pos = 0;
+		ClusterNode *temp = new ClusterNode(pos,
+							   				this -> window_size,
+							   				strand, 
+							   				this -> chrom_index,
+							   				this -> contig_name);
+
+		head = temp; tail = temp;
+		for (int i = 1; i < zones; i++) {
+			pos += this -> window_size;
+			tail -> set_next(new ClusterNode(pos, 
+											 this -> window_size, 
+											 strand, 
+											 this -> chrom_index,
+											 this -> contig_name));
+			tail -> get_next() -> set_prev(tail);
+			tail = tail -> get_next();
+		}
+	}
+
+
 	/////////////////////////////////////////////////////////////
 	// Delete Empty Nodes (These node operations could likely simplified in functions...)
-	void delete_nodes(ClusterNode *&curr_node, ClusterNode *&temp_node,  ClusterNode *&temp_head, ClusterNode *&temp_tail) {
+	void delete_nodes(ClusterNode *&curr_node, ClusterNode *&temp_head, ClusterNode *&temp_tail) {
+
+		ClusterNode *temp_node;
 
 		// If last node
 		if (curr_node -> get_next() == NULL) {
@@ -153,12 +175,12 @@ private:
 	}
 
 	// Merge Neighboring Non-Zero Nodes
-	void merge_nodes(ClusterNode *&curr_node, ClusterNode *&temp_node, ClusterNode *&temp_head, ClusterNode *&temp_tail) {
+	void merge_nodes(ClusterNode *&curr_node, ClusterNode *&temp_head, ClusterNode *&temp_tail) {
 
-		// Create new Node
 		ClusterNode *next_node = curr_node -> get_next();
-		curr_node -> get_next() -> shrink_vectors();
-		temp_node = new ClusterNode(*curr_node, *next_node);
+		next_node -> shrink_vectors();
+
+		ClusterNode *temp_node = new ClusterNode(*curr_node, *next_node);
 		temp_node -> set_prev(curr_node -> get_prev());
 
 		// If not first node
@@ -181,16 +203,7 @@ private:
 		curr_node = temp_node;
 	}
 
-
-public:
-
-	/////////////////////////////////////////////////////////////
-	// Empty
-	ClusterList() {}
-
-	// Destroy
-	~ClusterList() {
-
+	void delete_list() {
 		ClusterNode *curr_node = pos_head;
 		ClusterNode *temp_node = NULL;
 
@@ -208,7 +221,19 @@ public:
 			curr_node = curr_node -> get_next();
 			delete temp_node;
 		}
+		pos_head = NULL;
+		neg_head = NULL;
 	}
+
+
+public:
+
+	/////////////////////////////////////////////////////////////
+	// Empty
+	ClusterList() {}
+
+	// Destroy
+	~ClusterList() { this -> delete_list(); }
 
 	/////////////////////////////////////////////////////////////
 	// Get Chrom Name
@@ -263,45 +288,26 @@ public:
 	/////////////////////////////////////////////////////////////
 	// Initialize empty object
 	void initialize(const int t_chrom_index, const std::string t_contig_name, const int t_chrom_length) {
-
-		// Set info
 		chrom_index = t_chrom_index;
 		contig_name = t_contig_name;
 		chrom_length = t_chrom_length;
+		const int zones = (chrom_length / window_size) + 1;
+		initialize_strand(pos_head, pos_tail, 0, zones); // Positive Strand
+		initialize_strand(neg_head, neg_tail, 1, zones); // Negative Strand
+	}
 
-		ClusterNode *temp;
-		int temp_pos = 0;
-		int zones = (chrom_length / window_size) + 1; // Extend past length of chrom
-
-		// Create Positive list
-		temp = new ClusterNode(temp_pos, window_size, 0, chrom_index, contig_name);
-		pos_head = temp; pos_tail = temp;
-		for (int i = 1; i < zones; i++) {
-			temp_pos += window_size;
-			pos_tail -> set_next(new ClusterNode(temp_pos, window_size, 0, chrom_index, contig_name));
-			pos_tail -> get_next() -> set_prev(pos_tail);
-			pos_tail = pos_tail -> get_next();
-		}
-
-		// Create Negative list
-		temp_pos = 0;
-		temp = new ClusterNode(temp_pos, window_size, 1, chrom_index, contig_name);
-		neg_head = temp; neg_tail = temp;
-		for (int i = 1; i < zones; i++) {
-			temp_pos += window_size;
-			neg_tail -> set_next(new ClusterNode(temp_pos, window_size, 1, chrom_index, contig_name));
-			neg_tail -> get_next() -> set_prev(neg_tail);
-			neg_tail = neg_tail -> get_next();
-		}
+	// Find Nearest Region in List
+	void jump_to_cluster(ClusterNode *&node, const int &pos) {
+		while (node -> get_next() != NULL) {
+			if (pos > node -> get_stop()) {
+				node = node -> get_next();
+			} else { break; }
+		}	
 	}
 
 	/////////////////////////////////////////////////////////////
 	// Create read clusters
 	bool create_clusters(BamTools::BamReader &inFile, BamTools::BamAlignment &alignment) {
-
-		/*
-		BNJ: 5/2/2025 - There's probably a better way to do this, will revisit...
-		*/
 
 		int t_5end, t_3end, t_strand;
 		bool found_reads = false;
@@ -331,32 +337,12 @@ public:
 				passing_neg_reads += 1;
 
 				// Advance to correct node based on left position
-				while (neg_curr_node -> get_next() != NULL) {
-					if (alignment.Position > neg_curr_node -> get_stop()) {
-						neg_curr_node = neg_curr_node -> get_next();
-					} else {
-						break;
-					}
-				}
-
+				jump_to_cluster(neg_curr_node, alignment.Position);
 				neg_temp_node = neg_curr_node;
 
-				// Get Correct node for 5' end (necessary because reverse strand)
-				while (neg_temp_node -> get_next() != NULL) {
-					if (t_5end > neg_temp_node -> get_stop()) {
-						neg_temp_node = neg_temp_node -> get_next();
-					} else {
-						break;
-					}
-				}
-
-				// add read
-				if (t_5end < neg_temp_node -> get_start()) {
-					std::cerr << "ERROR: Alignment is not in a cluster. This should not happen.\n";
-					throw "ERROR: Alignment is not in a cluster. This should not happen.";
-				} else {
-					neg_temp_node -> add_alignment(positions);
-				}
+				// Advance based on 5' position (right most)
+				jump_to_cluster(neg_temp_node, t_5end);
+				neg_temp_node -> add_alignment(positions);
 
 			} else {
 
@@ -364,26 +350,10 @@ public:
 				t_3end = positions[positions.size() - 1];
 				passing_pos_reads += 1;
 
-				// Get Correct node
-				while (pos_curr_node -> get_next() != NULL) {
-					if (t_5end > pos_curr_node -> get_stop()) {
-						pos_curr_node = pos_curr_node -> get_next();
-					} else {
-						break;
-					}
-				}
-
-				// Add read
-				if (t_5end < pos_curr_node -> get_start()) {
-					std::cerr << "ERROR: Alignment is not in a cluster. This should not happen.\n";
-					throw "ERROR: Alignment is not in a cluster. This should not happen.";
-				} else {
-					pos_curr_node -> add_alignment(positions);
-				}
+				jump_to_cluster(pos_curr_node, t_5end);
+				pos_curr_node -> add_alignment(positions);
 			}
-
 		}
-
 		return found_reads;
 	}
 
@@ -391,7 +361,6 @@ public:
 	// combines clusters with nonzero neighbors
 	void collapse_clusters(int t_strand) {
 
-		ClusterNode *temp_node;
 		ClusterNode *temp_head = get_head(t_strand);
 		ClusterNode *temp_tail = get_tail(t_strand);
 		ClusterNode *curr_node = temp_head;
@@ -408,13 +377,13 @@ public:
 					if (curr_node -> get_next() == NULL) { break; }
 					if (curr_node -> get_next() -> get_read_count() == 0) { break; }
 
-					merge_nodes(curr_node, temp_node, temp_head, temp_tail);
+					merge_nodes(curr_node, temp_head, temp_tail);
 				}
 				curr_node = curr_node -> get_next();
 
 				// Empty
 			} else {
-				delete_nodes(curr_node, temp_node, temp_head, temp_tail);
+				delete_nodes(curr_node, temp_head, temp_tail);
 			}
 		}
 
@@ -427,6 +396,20 @@ public:
 	}
 
 	/////////////////////////////////////////////////////////////
+	ClusterNode* get_first_cluster(ClusterNode *pos, ClusterNode *neg, bool &strand) {
+		if (pos == NULL && neg != NULL) {
+			strand = 1; return neg;
+		} else if (neg == NULL && pos != NULL) {
+			strand = 0; return pos;
+		} else {
+			if (pos -> get_start() < neg -> get_start()) {
+				strand = 0; return pos;
+			} else {
+				strand = 1; return neg;
+			}
+		}
+	}
+
 	// Write Clusters to GTF File
 	void write_clusters_as_GTF(std::ofstream &gtfFile) {
 
@@ -434,23 +417,9 @@ public:
 		if (pos_head == NULL && neg_head == NULL) { return; }
 
 		bool strand;
-		ClusterNode *curr_node;
 		ClusterNode *prev_pos_node = pos_head;
 		ClusterNode *prev_neg_node = neg_head;
-
-
-		// Get First Cluster
-		if (pos_head == NULL && neg_head != NULL) {
-			curr_node = neg_head; strand = 1;
-		} else if (neg_head == NULL && pos_head != NULL) {
-			curr_node = pos_head; strand = 0;
-		} else {
-			if (pos_head -> get_start() < neg_head -> get_start()) {
-				curr_node = pos_head; strand = 0;
-			} else {
-				curr_node = neg_head; strand = 1;
-			}
-		}
+		ClusterNode *curr_node = get_first_cluster(pos_head, neg_head, strand);
 
 		// Iterate Through Clusters
 		while (true) {
@@ -458,7 +427,6 @@ public:
 			// If no more clusters
 			if (prev_pos_node == NULL && prev_neg_node == NULL) { break; }
 
-			// Write transcripts into GTF
 			curr_node -> write_transcripts(gtfFile);
 
 			// Strand switching conditions :(
@@ -476,9 +444,7 @@ public:
 					curr_node = prev_pos_node; strand = 0;
 
 					// If positives are after negatives, switch strands
-				} else {
-					curr_node = prev_neg_node; strand = 1;
-				}
+				} else { curr_node = prev_neg_node; strand = 1; }
 
 			} else {
 				prev_neg_node = curr_node -> get_next();
@@ -494,9 +460,7 @@ public:
 					curr_node = prev_neg_node; strand = 1;
 
 					// If negatives are after positives, switch strands
-				} else {
-					curr_node = prev_pos_node; strand = 0;
-				}
+				} else { curr_node = prev_pos_node; strand = 0; }
 			}
 		}
 	}

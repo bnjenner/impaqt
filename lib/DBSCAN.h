@@ -72,8 +72,8 @@ std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<
 
 		// If section of A precedes B
 		if (i != n && j == 0 && (a[(i*2)+1] < b[(j*2)])) {
-			merged.push_back(a[(i*2)]);
-			merged.push_back(a[(i*2)+1]);
+			merged.emplace_back(a[(i*2)]);
+			merged.emplace_back(a[(i*2)+1]);
 			i += 1;
 
 			// If remaining sections in B, but A is spent
@@ -83,15 +83,15 @@ std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<
 				merged.back() = std::max(merged.back(), b[(j*2)+1]);
 				appended = true;
 			} else {
-				merged.push_back(b[(j*2)]);
-				merged.push_back(b[(j*2)+1]);
+				merged.emplace_back(b[(j*2)]);
+				merged.emplace_back(b[(j*2)+1]);
 			}
 			j += 1;
 		
 			// Merge Overlapping sections
 		} else {
-			merged.push_back(std::min(a[(i*2)], b[(j*2)]));
-			merged.push_back(std::max(a[(i*2)+1], b[(j*2)+1]));
+			merged.emplace_back(std::min(a[(i*2)], b[(j*2)]));
+			merged.emplace_back(std::max(a[(i*2)+1], b[(j*2)+1]));
 			i += 1;
 			j += 1;
 		}
@@ -99,8 +99,8 @@ std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<
 
 	// If remaining sections of A
 	while (i < n) {
-		merged.push_back(a[(i*2)]);
-		merged.push_back(a[(i*2)+1]);
+		merged.emplace_back(a[(i*2)]);
+		merged.emplace_back(a[(i*2)+1]);
 		i += 1;
 	}
 	
@@ -146,7 +146,7 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 				if (check_subset(transcripts[i], transcripts[j])) {
 
 					overlap = true;
-					absorbed.push_back(j);
+					absorbed.emplace_back(j);
 					tmp = merge_transcripts(transcripts[i], transcripts[j]);
 					
 					// If new transcript not already in results, add
@@ -157,7 +157,7 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 
 			// If unique transcripts and not absorbed, add. If not, add another iteration
 			if (!overlap && std::find(absorbed.begin(), absorbed.end(), i) == absorbed.end()) {
-				result.push_back(transcripts[i]);
+				result.emplace_back(transcripts[i]);
 			} else {
 				all_unique = false;
 			}
@@ -178,11 +178,6 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 	int core_points = 0;
 	for (int i = 0; i < result.size(); i++) {
 		core_points = get_quant(result[i], init_copy, counts);
-		if (core_points == 0) {
-			std::cerr << "ERROR: No core points found for transcript: "
-					  << curr_node -> get_contig_name() << ":"
-					  << result[i][0] << "-" << result[i].back() << "\n";
-		} // Skip if no core points
 		curr_node -> add_transcript(result[i], core_points);
 	}
 }
@@ -230,8 +225,8 @@ void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &p
 			// swap variables if necessary
 			if (min_pos > max_pos) { variable_swap(min_pos, max_pos); } 
 
-			tmp_vec.push_back(min_pos);
-			tmp_vec.push_back(max_pos);
+			tmp_vec.emplace_back(min_pos);
+			tmp_vec.emplace_back(max_pos);
 		}
 
 		// add 3' region
@@ -245,8 +240,8 @@ void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &p
 			// swap variables if necessary
 			if (min_pos > max_pos) { variable_swap(min_pos, max_pos); } 
 
-			tmp_vec.push_back(min_pos);
-			tmp_vec.push_back(max_pos);
+			tmp_vec.emplace_back(min_pos);
+			tmp_vec.emplace_back(max_pos);
 		}
 
 		// If two regions and they are close or out of order, merge
@@ -258,8 +253,8 @@ void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &p
 			}
 		}
 
-		transcripts -> push_back(tmp_vec);
-		counts -> push_back(p.second);
+		transcripts -> emplace_back(tmp_vec);
+		counts -> emplace_back(p.second);
 	}
 }
 
@@ -384,7 +379,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 						// Check if member of cluster
 						for (int k = 0; k < points; k++) {
 							if (std::abs((*adj_vec)[index] - (*adj_vec)[k]) <= epsilon) {
-								sub_neighbors.push_back(k);
+								sub_neighbors.emplace_back(k);
 								assign_vec.at(k) = clust_num;
 							}
 						}
@@ -393,7 +388,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 						if (sub_neighbors.size() >= min_counts) {
 							std::copy(sub_neighbors.begin(), sub_neighbors.end(), std::back_inserter(neighbors));
 						}
-						cluster_indexes.push_back(index);
+						cluster_indexes.emplace_back(index);
 					}
 				}
 
@@ -406,13 +401,13 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 }
 
 // Initiate Transcript Identifying Procedure
-void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
+void find_transcripts_DBSCAN(ClusterList *cluster,  const int &strand) {
 
 	float density;
 	int expr, points, min_counts;
 	int count_threshold = std::max(ImpaqtArguments::Args.min_count, 10);
 
-	ClusterNode *curr_node = cluster.get_head(strand);
+	ClusterNode *curr_node = cluster -> get_head(strand);
 
 	while (curr_node != NULL) {
 
@@ -428,12 +423,11 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 			std::vector<int> assign_vec_5, assign_vec_3;
 			std::vector<std::vector<int>> assignments_5,  assignments_3;
 
-			// Read Density and Min Counts for DBSCAN
+			// BNJ - 6/16/2025: Pleaseeeeee fix this casting
 			density = (float)expr / (float)(curr_node -> get_stop() - curr_node -> get_start());
 			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
 
 
-			// Run DBSCAN
 			if (density < 1.5) {
 				assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, true, false);
 				assign_vec_3 = dbscan(curr_node, points, min_counts, assignments_3, false, false);
@@ -454,10 +448,8 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 			
 			} else {
 
-				// Find all linked DBSCAN clusters
 				get_linked_clusters(curr_node, paths, assign_vec_5, assign_vec_3);
 
-				// Get Transcript Coords and Core Points
 				get_coordinates(curr_node, paths,
 				                assignments_5, assignments_3,
 				                &transcripts, &counts);
@@ -472,12 +464,10 @@ void find_transcripts_DBSCAN(ClusterList &cluster,  const int &strand) {
 					report_transcripts(curr_node, transcripts, counts);
 				}
 
-				// Determine abundance of each transcript
 				curr_node -> quantify_transcripts();
 			}
 
 		}
-
 		curr_node = curr_node -> get_next();
 	}
 }

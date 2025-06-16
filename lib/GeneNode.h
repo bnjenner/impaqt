@@ -40,26 +40,27 @@ private:
 	void close_gap(const int &t_start, const int &t_stop) {
 
 		// Jut populate new vector with exons that are unique
-		std::vector<int> tmp_vec; // New exon vec
+		std::vector<int> tmp_vec(exons * 2); // New exon vec
 
 		for (int i = 0; i < exons; i++) {
 
 			if (exon_vec[(2*i) + 1] < t_start) {
-				tmp_vec.push_back(exon_vec[(2*i)]);
-				tmp_vec.push_back(exon_vec[(2*i) + 1]);
+				tmp_vec.emplace_back(exon_vec[(2*i)]);
+				tmp_vec.emplace_back(exon_vec[(2*i) + 1]);
 			
 			} else if (exon_vec[(2*i)] > t_stop) {
-				tmp_vec.push_back(exon_vec[(2*i)]);
-				tmp_vec.push_back(exon_vec[(2*i) + 1]);
+				tmp_vec.emplace_back(exon_vec[(2*i)]);
+				tmp_vec.emplace_back(exon_vec[(2*i) + 1]);
 
 			} else {
-				tmp_vec.push_back(std::min(exon_vec[(2*i)], t_start));
-				tmp_vec.push_back(std::max(exon_vec[(2*i) + 1], t_stop));
+				tmp_vec.emplace_back(std::min(exon_vec[(2*i)], t_start));
+				tmp_vec.emplace_back(std::max(exon_vec[(2*i) + 1], t_stop));
 				i += 1;
 			}
 
 		}
 
+		tmp_vec.shrink_to_fit(); // shrink to fit 
 		exon_vec = tmp_vec; // update exon vector
 		exons = exon_vec.size() / 2;
 	}
