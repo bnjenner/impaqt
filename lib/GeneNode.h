@@ -11,7 +11,7 @@ private:
 	int start;								// beginning of window
 	int stop;								// end of window
 	int exons = 0;								// number of exons (or features)
-	long double read_count = 0;							// number of associated reads
+	long double read_count = 0;						// number of associated reads
 	std::vector<int> exon_vec = {0, 0};					// vector for bounds
 
 	// Links
@@ -39,7 +39,7 @@ private:
 	// Join exons
 	void close_gap(const int &t_start, const int &t_stop) {
 
-		// Jut populate new vector with exons that are unique
+		// Just populate new vector with exons that are unique
 		std::vector<int> tmp_vec(exons * 2); // New exon vec
 
 		for (int i = 0; i < exons; i++) {
