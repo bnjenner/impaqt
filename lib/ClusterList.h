@@ -22,9 +22,9 @@ private:
 	long double assigned_reads = 0.0;			// Assigned Transcript counts
 	long double ambiguous_reads = 0.0;			// Unassigned Transcript counts
 	long double unassigned_reads = 0.0;			// Ambigous Transcript counts
-	size_t assigned_singles = 0;			// Assigned read counts
-	size_t ambiguous_singles = 0;			// Unssigned read counts
-	size_t unassigned_singles = 0;			// Ambigous read counts
+	size_t assigned_singles = 0;				// Assigned read counts
+	size_t ambiguous_singles = 0;				// Unssigned read counts
+	size_t unassigned_singles = 0;				// Ambigous read counts
 
 	size_t multimapped_reads = 0;
 	size_t low_quality_reads = 0;
@@ -115,19 +115,19 @@ private:
 
 		int pos = 0;
 		ClusterNode *temp = new ClusterNode(pos,
-							   				this -> window_size,
-							   				strand, 
-							   				this -> chrom_index,
-							   				this -> contig_name);
+						    this -> window_size,
+						    strand, 
+						    this -> chrom_index,
+						    this -> contig_name);
 
 		head = temp; tail = temp;
 		for (int i = 1; i < zones; i++) {
 			pos += this -> window_size;
 			tail -> set_next(new ClusterNode(pos, 
-											 this -> window_size, 
-											 strand, 
-											 this -> chrom_index,
-											 this -> contig_name));
+							 this -> window_size, 
+							 strand, 
+							 this -> chrom_index,
+							 this -> contig_name));
 			tail -> get_next() -> set_prev(tail);
 			tail = tail -> get_next();
 		}
