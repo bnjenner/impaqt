@@ -78,6 +78,8 @@ OPTIONS
           Count primary and secondary read alignments.
     -q, --mapq-min INTEGER
           Minimum mapping quality score to consider for counts. Default: 1.
+    -w, --window-size INTEGER
+          Window size to use to parition genome for read collection. Default: 2500.
     -m, --min-count INTEGER
           Minimum read count to initiate DBSCAN transcript identification algorithm. (Minimum of 10) Default: 10.
     -p, --count-percentage INTEGER
