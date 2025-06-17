@@ -1,26 +1,26 @@
 # IMPAQT
-Currently only performs transcript identification, gene assignment, and naive quantification.  A more sophisticated quantification method remain on the TO-DO list.
+Currently performs transcript identification, gene assignment, and naive quantification. 
+A more sophisticated quantification method remain on the TO-DO list.
+
+![ ](../example.png)
 
 ## Introduction
 
-IMPAQT (Identifies Multiple Peaks and Quantifies Transcripts) is an
-expression quantification method for TAGseq experiments developed 
-by Bradley Jenner for his Undergraduate Honors Thesis at UC Davis. 
-It operates on assumptions made about the distribution of sequencing reads
-along the 3' UTR of a gene. Clustering these reads enables identification 
-and quantification of gene level and transcript level expression for 
-isoforms with distinct terminal exon usage. This method is particularly
-useful in non-model organisms where 3' UTRs for most genes are poorly
-annotated, resulting in massive data loss. It also can generate a GTF file
-defining the boundaries and expression levels for each identified cluster. 
-It relies partially on the bamtools and seqan C++ libraries, although mainly 
-for argument parsing and reading in bam/gtf files. 
+IMPAQT (Identifies Multiple Peaks and Quantifies Transcripts) is a transcript
+identification and gene expression quantification method for TAGseq and
+3' mRNAseq experiments. It operates on assumptions about the distribution 
+of sequencing reads along the 3' UTR of expressed genes. Clustering these reads 
+enables transcript identification and quantification of expression at the gene
+and transcript level for isoforms utilizing distinct terminal exons. 
 
-Additionally, the threadsafe queue and DBSCAN implementations were made possible 
-due to the great work of github users EmbeddedArtistry and user Eleobert. 
+It generates a gene expression counts table based on the assignment of the 
+identified transcripts, and optionally, a GTF file defining the boundaries 
+of each transcript and their expression level. 
 
-For questions or comments, please contact
-Bradley Jenner at <bnjenner@ucdavis.edu>
+This method is particularly useful in non-model organisms where 3' UTRs for 
+most genes are poorly annotated (resulting in massive data loss). Increased
+gene density also tends to hurt the assignment of transcripts by this 
+aglorithm, as it increases assignment ambiguity. 
 
 ## Installation
 
@@ -101,3 +101,12 @@ VERSION
     impaqt version: dev0
     SeqAn version: 2.4.0
 ```
+
+## Dependencies
+Utilizes libraries like [bamtools](https://github.com/pezmaster31/bamtools) and [seqan](https://github.com/seqan/seqan) and contains algorithms inspired by [EmbeddedArtistry](https://github.com/embeddedartistry/embedded-resources/blob/master/examples/cpp/dispatch.cpp) and github user [Eleobert](https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp).
+
+## Contact
+For questions or comments, please contact
+Bradley Jenner at <bnjenner@bu.edu>
+
+
