@@ -10,7 +10,7 @@ private:
 	int chrom_index;					// chromosome number in index
 	std::string contig_name;				// name of contig
 	int chrom_length = 0;					// length of chromosome
-	int window_size = 5000;					// window size
+	int window_size;						// window size
 
 	// Links
 	ClusterNode *pos_head;					// first positive ClusterNode
@@ -291,6 +291,7 @@ public:
 		chrom_index = t_chrom_index;
 		contig_name = t_contig_name;
 		chrom_length = t_chrom_length;
+		window_size = ImpaqtArguments::Args.window_size;
 		const int zones = (chrom_length / window_size) + 1;
 		initialize_strand(pos_head, pos_tail, 0, zones); // Positive Strand
 		initialize_strand(neg_head, neg_tail, 1, zones); // Negative Strand

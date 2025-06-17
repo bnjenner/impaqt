@@ -50,6 +50,12 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 
     // Define DBSCAN Options
     seqan::addOption(parser, seqan::ArgParseOption(
+                  "w", "window-size",
+                  "Window size to use to parition genome for read collection.",
+                  seqan::ArgParseArgument::INTEGER, "INT"));
+    seqan::setDefaultValue(parser, "window-size", "2500");
+
+    seqan::addOption(parser, seqan::ArgParseOption(
                   "m", "min-count",
                   "Minimum read count to initiate DBSCAN transcript identification algorithm. (Minimum of 10)",
                   seqan::ArgParseArgument::INTEGER, "INT"));
@@ -124,6 +130,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     seqan::getOptionValue(ImpaqtArguments::Args.stranded, parser, "strandedness");
     ImpaqtArguments::Args.nonunique_alignments = seqan::isSet(parser, "nonunique-alignments");
     seqan::getOptionValue(ImpaqtArguments::Args.mapq, parser, "mapq-min");
+    seqan::getOptionValue(ImpaqtArguments::Args.window_size, parser, "window-size");
     seqan::getOptionValue(ImpaqtArguments::Args.min_count, parser, "min-count");
     seqan::getOptionValue(ImpaqtArguments::Args.count_percentage, parser, "count-percentage");
     seqan::getOptionValue(ImpaqtArguments::Args.epsilon, parser, "epsilon");

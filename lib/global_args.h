@@ -33,6 +33,7 @@ struct GlobalArgs {
     std::string stranded;               // strandedness
     bool nonunique_alignments;          // count primary and secondary alignments
     int mapq;                           // minimum mapq score
+    int window_size;                    // window size
     int min_count;                      // min read count for dbscan
     int count_percentage;                // read count percentage for core reads
     int epsilon;                        // epsilon for dbscan

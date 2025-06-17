@@ -22,6 +22,7 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/test.bam",   
                                                      "SE",                         // library type
                                                      "forward",                    // stranded
                                                      false,                        // nonunique
+                                                     2500,                         // window size
                                                      0,                            // mapq
                                                      1,                            // min_count
                                                      25,                           // count_percentage
