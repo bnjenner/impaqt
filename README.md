@@ -2,7 +2,7 @@
 Currently performs transcript identification, gene assignment, and naive quantification. 
 A more sophisticated quantification method remain on the TO-DO list.
 
-![ ](../example.png)
+![ ](../docs/example.png)
 
 ## Introduction
 
