@@ -133,7 +133,7 @@ public:
 
 			pos += this -> window_size;
 			tail -> set_next(new ClusterNode(pos, 
-		                                     this -> window_size, 
+			                                 this -> window_size, 
 			                                 strand, 
 			                                 this -> chrom_index,
 			                                 this -> contig_name));
@@ -293,8 +293,11 @@ public:
 	size_t get_multimapped_reads() { return multimapped_reads; }
 	size_t get_low_quality_reads() { return low_quality_reads; }
 	size_t get_total_reads() { return total_reads; }
-	size_t get_pos_reads() { return passing_pos_reads; }
-	size_t get_neg_reads() { return passing_neg_reads; }
+	size_t get_passing_reads(const int &strand) {
+		if (strand == 0) { return passing_pos_reads; }
+		return passing_neg_reads;
+	}
+
 
 	// Get Transcript Number
 	size_t get_transcript_num() {

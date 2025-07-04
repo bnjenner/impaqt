@@ -448,6 +448,7 @@ void find_transcripts_DBSCAN(ClusterList *cluster,  const int &strand) {
 			
 			} else {
 
+				// If clusters were  found
 				get_linked_clusters(curr_node, paths, assign_vec_5, assign_vec_3);
 
 				get_coordinates(curr_node, paths,
