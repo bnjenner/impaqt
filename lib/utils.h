@@ -12,12 +12,12 @@ bool compare_length(const std::vector<int>& a, const std::vector<int>& b) { retu
 std::vector<int> reverse_and_negate(const std::vector<int> &vec) {
 	int x = 0;
 	int n = vec.size();
-	std::vector<int> tmp_vec(n);
+	std::vector<int> t_vec(n);
 	for (int j = n - 1; j > -1; j--) {
-		tmp_vec[x] = vec[j] * -1;
+		t_vec[x] = vec[j] * -1;
 		++x;
 	}
-	return tmp_vec;
+	return t_vec;
 }
 
 // Reverse Transcripts

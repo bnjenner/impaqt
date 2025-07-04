@@ -11,7 +11,7 @@ private:
 	int chrom_index;					// chromosome number in index
 	std::string contig_name;				// name of contig
 	int chrom_length = 0;					// length of chromosome
-	int window_size;						// window size
+	int window_size;					// window size
 
 	// Links
 	ClusterNode *pos_head;					// first positive ClusterNode
@@ -123,20 +123,20 @@ public:
 
 		int pos = 0;
 		ClusterNode *temp = new ClusterNode(pos,
-						    this -> window_size,
-						    strand, 
-						    this -> chrom_index,
-						    this -> contig_name);
+		                                    this -> window_size,
+		                                    strand, 
+		                                    this -> chrom_index,
+		                                    this -> contig_name);
 
 		head = temp; tail = temp;
 		for (int i = 1; i < zones; i++) {
 
 			pos += this -> window_size;
 			tail -> set_next(new ClusterNode(pos, 
-							 this -> window_size, 
-							 strand, 
-							 this -> chrom_index,
-							 this -> contig_name));
+		                                     this -> window_size, 
+			                                 strand, 
+			                                 this -> chrom_index,
+			                                 this -> contig_name));
 			tail -> get_next() -> set_prev(tail);
 			tail = tail -> get_next();
 		}
@@ -208,7 +208,7 @@ public:
 		c_node = t_node;
 	}
 
-	// Delete every node in cluster
+	// Delete every node in list
 	void delete_list() {
 		ClusterNode *c_node = pos_head;
 		ClusterNode *t_node = NULL;
@@ -289,6 +289,7 @@ public:
 	long double get_assigned_reads() { return assigned_reads + (long double)assigned_singles; }
 	long double get_unassigned_reads() { return unassigned_reads + (long double)unassigned_singles; }
 	long double get_ambiguous_reads() { return ambiguous_reads + (long double)ambiguous_singles; }
+
 	size_t get_multimapped_reads() { return multimapped_reads; }
 	size_t get_low_quality_reads() { return low_quality_reads; }
 	size_t get_total_reads() { return total_reads; }
@@ -325,11 +326,11 @@ public:
 	/* List Functions */
 
 	// Initialize empty object
-	void initialize(const int t_chrom_index, const std::string t_contig_name, const int t_chrom_length) {
-		chrom_index = t_chrom_index;
-		contig_name = t_contig_name;
-		chrom_length = t_chrom_length;
-		window_size = ImpaqtArguments::Args.window_size;
+	void initialize(const int chrom_index, const std::string contig_name, const int chrom_length) {
+		this -> chrom_index = chrom_index;
+		this -> contig_name = contig_name;
+		this -> chrom_length = chrom_length;
+		this -> window_size = ImpaqtArguments::Args.window_size;
 		const int zones = (chrom_length / window_size) + 1;
 		initialize_strand(pos_head, pos_tail, 0, zones); // Positive Strand
 		initialize_strand(neg_head, neg_tail, 1, zones); // Negative Strand

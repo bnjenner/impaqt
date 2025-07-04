@@ -62,6 +62,7 @@ public:
 	long double get_assigned_reads() { return assigned_reads; }
 	long double get_unassigned_reads() { return unassigned_reads; }
 	long double get_ambiguous_reads() { return ambiguous_reads; }
+
 	size_t get_multimapped_reads() { return multimapped_reads; }
 	size_t get_low_quality_reads() { return low_quality_reads; }
 	size_t get_total_reads() { return total_reads; }
@@ -194,7 +195,7 @@ public:
 	void launch() {
 		this -> open_alignment_file();				// open files
 		this -> create_clusters();				// find clusters
-		this -> close_alignment_file();			// close files
+		this -> close_alignment_file();				// close files
 		if (!ignore_chr) {
 			this -> collapse_clusters();			// collapse clusters
 			this -> find_transcripts();			// dbscan clustering algorithm

@@ -1,5 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Gene Node Class (node in a doubly linked list)
+/* Gene Node Class (node in a doubly linked list) */
+
 class GeneNode {
 
 private:
@@ -19,13 +20,14 @@ private:
 	GeneNode *prev = NULL;							// pevsious ClusterNode
 
 	/////////////////////////////////////////////////////////////
+	/* Private Gene Functions */
+
 	// If two exons overlap
 	bool overlap(const int &e1, const int &e2, const int &t1, const int &t2) {
 		if (e1 > t2 || e2 < t1) { return false; }
 		return true;
 	}
 
-	/////////////////////////////////////////////////////////////
 	// Insert exon
 	void insert_exon(const int &t1, const int &t2) {
 		int new_size = exon_vec.size() + 2;
@@ -40,28 +42,28 @@ private:
 	void close_gap(const int &t_start, const int &t_stop) {
 
 		// Just populate new vector with exons that are unique
-		std::vector<int> tmp_vec(exons * 2); // New exon vec
+		std::vector<int> t_vec(exons * 2); // New exon vec
 
 		for (int i = 0; i < exons; i++) {
 
 			if (exon_vec[(2*i) + 1] < t_start) {
-				tmp_vec.emplace_back(exon_vec[(2*i)]);
-				tmp_vec.emplace_back(exon_vec[(2*i) + 1]);
+				t_vec.emplace_back(exon_vec[(2*i)]);
+				t_vec.emplace_back(exon_vec[(2*i) + 1]);
 			
 			} else if (exon_vec[(2*i)] > t_stop) {
-				tmp_vec.emplace_back(exon_vec[(2*i)]);
-				tmp_vec.emplace_back(exon_vec[(2*i) + 1]);
+				t_vec.emplace_back(exon_vec[(2*i)]);
+				t_vec.emplace_back(exon_vec[(2*i) + 1]);
 
 			} else {
-				tmp_vec.emplace_back(std::min(exon_vec[(2*i)], t_start));
-				tmp_vec.emplace_back(std::max(exon_vec[(2*i) + 1], t_stop));
+				t_vec.emplace_back(std::min(exon_vec[(2*i)], t_start));
+				t_vec.emplace_back(std::max(exon_vec[(2*i) + 1], t_stop));
 				i += 1;
 			}
 
 		}
 
-		tmp_vec.shrink_to_fit(); // shrink to fit 
-		exon_vec = tmp_vec; // update exon vector
+		t_vec.shrink_to_fit(); // shrink to fit 
+		exon_vec = t_vec; // update exon vector
 		exons = exon_vec.size() / 2;
 	}
 
@@ -69,23 +71,29 @@ private:
 public:
 
 	/////////////////////////////////////////////////////////////
+	/* Constructors */
+
 	// Empty
 	GeneNode() {}
 
 	// Initialize
-	GeneNode(const std::string &t_geneID, const std::string &t_chrom, const std::string &t_strand,
-	         const std::string &t_start, const std::string &t_stop) {
+	GeneNode(const std::string &geneID, const std::string &chrom, const std::string &strand,
+	         const std::string &start, const std::string &stop) {
+		
 		// Set info
-		geneID = t_geneID;
-		chrom = t_chrom;
-		strand = 0;
-		if (t_strand == "-") { strand = 1; } // swtich if gene is on reverse
+		this -> geneID = geneID;
+		this -> chrom = chrom;
+		this -> start = std::stoi(start) - 1;
+		this -> stop = std::stoi(stop) - 1;
+		
+		if (strand == "+") {
+			this -> strand = 0;
+		} else {
+			this -> strand = 1;
+		}
 
-		// Set exons'
-		exon_vec[0] = std::stoi(t_start) - 1;
-		exon_vec[1] = std::stoi(t_stop) - 1;
-		start = exon_vec[0];
-		stop = exon_vec[1];
+		exon_vec[0] = this -> start;
+		exon_vec[1] = this -> stop;
 		exons += 1;
 	}
 
@@ -95,31 +103,36 @@ public:
 		prev = NULL;
 	}
 
+
 	/////////////////////////////////////////////////////////////
-	// Get Details
+	/* Get Functions */
+
 	std::string get_chrom() { return chrom; }
-
+	std::string get_geneID() { return geneID; }
+	
 	int get_strand() { return strand; }
-
 	int get_start() { return start; }
 	int get_stop() { return stop; }
 	int get_exon_num() { return exons; }
-
-	std::string get_geneID() { return geneID; }
+	
 	float get_read_count() { return read_count; }
 
 	std::vector<int> get_exon_vec() { return exon_vec; }
 	std::vector<int>* get_exon_ref() { return &exon_vec; }
 
-	/////////////////////////////////////////////////////////////
-	// Linking functions
-	void set_next(GeneNode *node) { next = node; }
-	void set_prev(GeneNode *node) { prev = node; }
-
 	GeneNode* get_next() { return next; }
 	GeneNode* get_prev() { return prev; }
 
 	/////////////////////////////////////////////////////////////
+	/* Set functions */
+
+	void set_next(GeneNode *node) { next = node; }
+	void set_prev(GeneNode *node) { prev = node; }
+
+	
+	/////////////////////////////////////////////////////////////
+	/* Gene Functions */
+
 	// Add exon to exon vector
 	void add_region(const std::string &str_start, const std::string &str_stop) {
 

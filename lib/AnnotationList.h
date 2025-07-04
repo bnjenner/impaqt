@@ -1,7 +1,8 @@
 #include "GeneNode.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Annotation Class (doubley linked list)
+/* Annotation Class (doubley linked list) */
+
 class AnnotationList {
 
 private:
@@ -23,9 +24,12 @@ private:
 	GeneNode *neg_head = NULL;
 	GeneNode *neg_tail = NULL;
 
+
 	/////////////////////////////////////////////////////////////
+	/* Private Gene Methods */
+
 	// Create new gene node
-	GeneNode* create_new_node(std::vector<std::string> &columns) {
+	GeneNode* create_new_node(const std::vector<std::string> &columns) {
 		GeneNode *temp = new GeneNode(columns[8], 	// Feature ID
 		                              columns[0], 	// Chrom
 		                              columns[6],	// Strand
@@ -34,32 +38,6 @@ private:
 		return temp;
 	}
 
-	void set_pos_head(std::vector<std::string> &columns) {
-		pos_head = create_new_node(columns);
-		pos_tail = pos_head;
-	}
-
-	void set_neg_head(std::vector<std::string> &columns) {
-		neg_head = create_new_node(columns);
-		neg_tail = neg_head;
-	}
-
-	void pos_extend(std::vector<std::string> &columns) {
-		// Create new gene node
-		GeneNode *temp = create_new_node(columns);
-		pos_tail -> set_next(temp);
-		temp -> set_prev(pos_tail);
-		pos_tail = temp;
-	}
-
-	void neg_extend(std::vector<std::string> &columns) {
-		GeneNode *temp = create_new_node(columns);
-		neg_tail -> set_next(temp);
-		temp -> set_prev(neg_tail);
-		neg_tail = temp;
-	}
-
-	/////////////////////////////////////////////////////////////
 	// Get feature ID
 	bool set_feature_id(std::vector<std::string> &t_columns) {
 
@@ -84,15 +62,72 @@ private:
 				i++;
 			}
 		}
-
 		return false;
 	}
 
 
+	/////////////////////////////////////////////////////////////
+	/* Private List Methods */
+
+	void set_head(const std::vector<std::string> &columns) {
+		if (columns[6] == "+") {
+			pos_head = create_new_node(columns);
+			pos_tail = pos_head;
+		} else {
+			neg_head = create_new_node(columns);
+			neg_tail = neg_head;
+		}
+	}
+
+	void extend(const std::vector<std::string> &columns) {
+		GeneNode *t_gene = create_new_node(columns);
+		if (columns[6] == "+") {
+			pos_tail -> set_next(t_gene);
+			t_gene -> set_prev(pos_tail);
+			pos_tail = t_gene;
+		} else {
+			neg_tail -> set_next(t_gene);
+			t_gene -> set_prev(neg_tail);
+			neg_tail = t_gene;
+		}
+	}
+
+	void add_line(const std::vector<std::string> &columns) {
+
+		// Get proper strand
+		GeneNode **head = &pos_head;
+		GeneNode **tail = &pos_tail;
+		std::unordered_map<std::string, GeneNode*> *chrom_map = &pos_chrom_map;
+		if (columns[6] == "-") {
+			head = &neg_head; tail = &neg_tail;
+			chrom_map = &neg_chrom_map;
+		}
+
+		// If first gene on strand
+		if ((*head) == NULL) {
+			set_head(columns);
+		} else {
+			// If same gene ID
+			if (columns[8] == (*tail) -> get_geneID()) {
+				(*tail) -> add_region(columns[3], columns[4]);
+			} else {
+				extend(columns); // create new gene node
+			}
+		}	
+
+		// If new chrom add to chrom map
+		if (chrom_map -> find(columns[0]) == chrom_map -> end()) {
+			(*chrom_map)[columns[0]] = *tail;
+		}
+
+	}
+
 public:
 
 	/////////////////////////////////////////////////////////////
-	// Proper Constructor
+	/* Constructors */
+
+	// Proper
 	AnnotationList() {
 		annotation_file = ImpaqtArguments::Args.annotation_file;
 		feature_id = ImpaqtArguments::Args.feature_id;
@@ -101,30 +136,26 @@ public:
 		isGFF = ImpaqtArguments::Args.isGFF;
 	}
 
-	// Proper Destructor
+	// Destrpy
 	~AnnotationList() {
-
-		GeneNode *curr_node = pos_head;
-		GeneNode *temp_node = NULL;
-
-		while (curr_node != NULL) {
-			temp_node = curr_node;
-			curr_node = curr_node -> get_next();
-			delete temp_node;
-		}
-
-		curr_node = neg_head;
-		temp_node = NULL;
-
-		while (curr_node != NULL) {
-			temp_node = curr_node;
-			curr_node = curr_node -> get_next();
-			delete temp_node;
+		GeneNode *c_node = pos_head;
+		GeneNode *t_node = NULL;
+		for (int i = 0; i < 2; i ++) {
+			if (i != 0) { c_node = neg_head; t_node = NULL; }
+			while (c_node != NULL) {
+				t_node = c_node;
+				c_node = c_node -> get_next();
+				delete t_node;
+			}
 		}
 	}
 
+
 	/////////////////////////////////////////////////////////////
-	// Get Head Node
+	/* Get Functions */
+
+	int get_features() { return features; }
+
 	GeneNode* get_head(const int t_strand) {
 		if (t_strand == 0) { return pos_head; }
 		return neg_head;
@@ -146,11 +177,42 @@ public:
 		}
 	}
 
-	/////////////////////////////////////////////////////////////
-	// Get Features
-	int get_features() { return features; }
+	// Get first gene by position (just trust me on this one)
+	GeneNode* get_first_gene(GeneNode *pos, GeneNode *neg, bool &strand) {
+		if (pos == NULL && neg != NULL) {
+			strand = 1; return neg;
+		} else if (neg == NULL && pos != NULL) {
+			strand = 0; return pos;
+		} else {
+			if (pos -> get_start() < neg -> get_start()) {
+				strand = 0; return pos;
+			} else {
+				strand = 1; return neg;
+			}
+		}
+	}
+
+	// Get next gene by position
+	GeneNode* get_next_gene(GeneNode *&c_node, GeneNode *&a_prev, GeneNode *&b_prev, bool &strand) {
+		
+		a_prev = c_node -> get_next();
+		if (a_prev == NULL) {
+			c_node = b_prev; strand = !strand;
+
+			// If oppostie strand exhausted or this strand first, continue
+		} else if (b_prev == NULL || a_prev -> get_start() < b_prev -> get_start()) {
+			c_node = a_prev;
+
+			// If positives are after negatives, switch strands
+		} else { c_node = b_prev; strand = !strand; }
+
+		return c_node;
+	}
+
 
 	/////////////////////////////////////////////////////////////
+	/* List Functions */
+
 	// Create Gene Graph Structure
 	void create_gene_list() {
 
@@ -184,56 +246,15 @@ public:
 				throw "ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.";
 			}
 
+			add_line(columns);
 			features += 1;
-
-			// If positive strand
-			if (columns[6] == "+") {
-
-				// If first gene on positive strand
-				if (pos_head == NULL) {
-					set_pos_head(columns);
-				} else {
-					// If same gene ID
-					if (columns[8] == pos_tail -> get_geneID()) {
-						pos_tail -> add_region(columns[3], columns[4]);
-					} else {
-						pos_extend(columns); // create new gene node
-					}
-				}	
-
-				// If New Chrom add to chrom map
-				if (pos_chrom_map.find(columns[0]) == pos_chrom_map.end()) {
-					pos_chrom_map[columns[0]] = pos_tail;
-				}
-
-				// If negative strand
-			} else if (columns[6] == "-") {
-
-				// If first gene on positive strand
-				if (neg_head == NULL) {
-					set_neg_head(columns);
-				} else {
-					// If same gene ID
-					if (columns[8] == neg_tail -> get_geneID()) {
-						neg_tail -> add_region(columns[3], columns[4]);
-					} else {
-						neg_extend(columns); // create new gene node
-					}
-				}
-
-				// If New Chrom add to chrom map
-				if (neg_chrom_map.find(columns[0]) == neg_chrom_map.end()) {
-					neg_chrom_map[columns[0]] = neg_tail;
-				}
-
-			} else {
-				std::cerr << "ERROR: Unrecognized symbol in strand column:\n" << line << "\n";
-				throw "ERROR: Unrecognized symbol in strand column of annotation file. Check consistency of formatting.";
-			}
 		}
 	}
 
+
 	/////////////////////////////////////////////////////////////
+	/* Output Functions */
+
 	// Print genes and counts
 	void print_gene_counts() {
 
@@ -243,24 +264,10 @@ public:
 			return;
 		}
 
-
 		bool strand;
-		GeneNode *curr_node;
 		GeneNode *prev_pos_node = pos_head;
 		GeneNode *prev_neg_node = neg_head;
-
-		// Get First Gene
-		if (pos_head == NULL && neg_head != NULL) {
-			curr_node = neg_head; strand = 1;
-		} else if (neg_head == NULL && pos_head != NULL) {
-			curr_node = pos_head; strand = 0;
-		} else {
-			if (pos_head -> get_start() < neg_head -> get_start()) {
-				curr_node = pos_head; strand = 0;
-			} else {
-				curr_node = neg_head; strand = 1;
-			}
-		}
+		GeneNode *c_node = get_first_gene(pos_head, neg_head, strand) ;
 
 		// Iterate Throught Genes
 		while (true) {
@@ -269,61 +276,31 @@ public:
 			if (prev_neg_node == NULL && prev_pos_node == NULL) { break; }
 
 			// Report Gene and Counts
-			std::cout << curr_node -> get_geneID() << "\t" 
-					  << curr_node -> get_read_count() << "\n";
+			std::cout << c_node -> get_geneID() << "\t" 
+					  << c_node -> get_read_count() << "\n";
 			
-			// Strand switching conditions :(
+			// Get Next Cluster by position
 			if (strand == 0) {
-				prev_pos_node = curr_node -> get_next();
-
-				// If positives exhausted, switch strands
-				if (prev_pos_node == NULL) {
-					curr_node = prev_neg_node; strand = 1;
-					continue;
-				}
-
-				// If negatives exhausted, continue with positives
-				if (prev_neg_node == NULL || prev_pos_node -> get_start() < prev_neg_node -> get_start()) {
-					curr_node = prev_pos_node; strand = 0;
-
-					// If positives are after negatives, switch strands
-				} else {
-					curr_node = prev_neg_node; strand = 1;
-				}
-
+				c_node = get_next_gene(c_node, prev_pos_node, prev_neg_node, strand);
 			} else {
-				prev_neg_node = curr_node -> get_next();
-
-				// If negatives exhausted, switch strands
-				if (prev_neg_node == NULL) { 
-					curr_node = prev_pos_node; strand = 0;
-					continue;
-				}
-
-				// If positives exhausted, continue with negatives
-				if (prev_pos_node == NULL || prev_neg_node -> get_start() < prev_pos_node -> get_start()) {
-					curr_node = prev_neg_node; strand = 1;
-
-					// If negatives are after positives, switch strands
-				} else {
-					curr_node = prev_pos_node; strand = 0;
-				}
+				c_node = get_next_gene(c_node, prev_neg_node, prev_pos_node, strand);
 			}
 		}
 	}
 
 
 	/////////////////////////////////////////////////////////////
-	// Mainly for Test Suite
+	/* Cluster Functions */
+
 	// Print genes into strings for tests
 	std::string string_genes(const int &strand) {
 		std::stringstream ss;
-		GeneNode *curr_node = get_head(strand);
-		while (curr_node != NULL) {
-			ss << curr_node -> get_chrom() << "\t" << curr_node -> get_geneID() << "\t";
-			for (const auto &region : curr_node -> get_exon_vec()) { ss << region << "\t"; }
+		GeneNode *c_node = get_head(strand);
+		while (c_node != NULL) {
+			ss << c_node -> get_chrom() << "\t" << c_node -> get_geneID() << "\t";
+			for (const auto &region : c_node -> get_exon_vec()) { ss << region << "\t"; }
 			ss << "\n";
-			curr_node = curr_node -> get_next();
+			c_node = c_node -> get_next();
 		}
 		return ss.str();
 	}
@@ -331,14 +308,14 @@ public:
 
 	// Print genes 
 	void print_genes(const int &strand) {
-		GeneNode *curr_node = get_head(strand);
-		while (curr_node != NULL) {
-			std::cerr << curr_node -> get_chrom() << ": " << curr_node -> get_geneID() << "\n";
-			for (int i = 0; i < curr_node -> get_exon_num(); i++) {
-				std::cerr << "\t" << curr_node -> get_exon_vec()[(2*i)] << "\t"
-								  << curr_node -> get_exon_vec()[(2*i)+1] << "\n";
+		GeneNode *c_node = get_head(strand);
+		while (c_node != NULL) {
+			std::cerr << c_node -> get_chrom() << ": " << c_node -> get_geneID() << "\n";
+			for (int i = 0; i < c_node -> get_exon_num(); i++) {
+				std::cerr << "\t" << c_node -> get_exon_vec()[(2*i)] << "\t"
+								  << c_node -> get_exon_vec()[(2*i)+1] << "\n";
 			}
-			curr_node = curr_node -> get_next();
+			c_node = c_node -> get_next();
 		}
 	}
 

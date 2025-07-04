@@ -179,7 +179,7 @@ public:
 			       [&](int i, int j) -> bool {
 			            return five_vec[i] < five_vec[j];
 			        }
-			     );
+		         );
 		sort_vectors(indices);
 	}
 
@@ -191,7 +191,7 @@ public:
 			       [&](int i, int j) -> bool {
 			            return index_vec[i] < index_vec[j];
 			        }
-				 );
+		         );
 		sort_vectors(indices);
 	}
 
