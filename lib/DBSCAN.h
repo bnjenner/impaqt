@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// DBSCAN and Related Functions
+/* DBSCAN and Related Functions */
 
 // Check if transcripts overlap / are contained in another transcript
 bool check_subset(const std::vector<int>& a, const std::vector<int>& b) {
@@ -128,6 +128,7 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 	if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
 
 	// Merge transcripts until all are unique
+	int x = 0;
 	while (true) {
 
 		// Reset Checks
@@ -158,9 +159,8 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 			// If unique transcripts and not absorbed, add. If not, add another iteration
 			if (!overlap && std::find(absorbed.begin(), absorbed.end(), i) == absorbed.end()) {
 				result.emplace_back(transcripts[i]);
-			} else {
-				all_unique = false;
-			}
+			
+			} else { all_unique = false; }
 		}
 
 		if (!all_unique) {
@@ -170,29 +170,44 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 		}
 	}
 
-
 	// Reverse and Negative Results if Necessary
 	if (curr_node -> get_strand() == 1) { reverse_transcripts(result); }
 	
-	// Report Final Transcripts
+	// Get Final Transcripts + Counts
 	int core_points = 0;
+	std::vector<int> new_counts(result.size(), 0);
 	for (int i = 0; i < result.size(); i++) {
 		core_points = get_quant(result[i], init_copy, counts);
-		curr_node -> add_transcript(result[i], core_points);
+		new_counts[i] = core_points;
 	}
+
+	transcripts = result;
+	counts = new_counts;
 }
 
 
 // Report Unique Transcripts (no overlapping, used for Mitochrondria)
-void report_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &result, std::vector<int> &counts) {
-	
-	// Reverse and Negative Results if Necessary
-	if (curr_node -> get_strand() == 1) { reverse_transcripts(result); }
+void report_transcripts(ClusterNode *node, std::vector<std::vector<int>> &result, std::vector<int> &counts) {
+	for (int i = 0; i < result.size(); i++) { node -> add_transcript(result[i], counts[i]); }
+}
 
-	// Report Final Transcripts
-	for (int i = 0; i < result.size(); i++) {
-		curr_node -> add_transcript(result[i], counts[i]);
+
+void merge_final_transcripts(ClusterNode *c_node, ClusterNode *n_node) {
+
+	std::vector<std::vector<int>> transcripts = *(c_node -> get_transcripts());
+	std::vector<int> counts(c_node -> get_transcript_num(), 0);
+
+	// Populate New Transcript and Count Vecs
+	for (int i = 0; i < c_node -> get_transcript_num(); i++) { counts[(int)(c_node -> get_transcript_expr(i))]; }
+	for (int i = 0; i < n_node -> get_transcript_num(); i++) {
+		transcripts.push_back(n_node -> get_transcripts() -> at(i));
+		counts.push_back((int)(n_node -> get_transcript_expr(i)));
 	}
+	c_node -> clear_transcripts();
+
+	// Merge Final Transcripts
+	get_final_transcripts(c_node, transcripts, counts);
+	report_transcripts(c_node, transcripts, counts);
 }
 
 
@@ -318,11 +333,13 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 
 
 // DBSCAN Clustering Function, inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
-//		This function EATS time... I should cash the bounds for each point, make it obvious where to search.
-//			That being said, would only work for the 5' end cause it's ordered.
-//			Could also address the resizing vector issue... 
 std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &min_counts,
                         std::vector<std::vector<int>> &assignment, const bool &five, const bool &mito) {
+
+
+	//  BNJ: 7/4/2025 - This function EATS time... I should cache the bounds for each point, make it obvious where to search.
+	//						That being said, would only work for the 5' end cause it's ordered.
+	//						Could also address the resizing vector issue... 
 
 	int index;
 	int dist;
@@ -461,14 +478,53 @@ void find_transcripts_DBSCAN(ClusterList *cluster,  const int &strand) {
 					// Merge overlapping transcripts 
 					get_final_transcripts(curr_node, transcripts, counts);
 				} else {
-					// Handle Mitochrondria, do not merge
-					report_transcripts(curr_node, transcripts, counts);
+					// Reverse and Negative Results if Necessary
+					if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
 				}
 
-				curr_node -> quantify_transcripts();
+				report_transcripts(curr_node, transcripts, counts);
 			}
 
 		}
 		curr_node = curr_node -> get_next();
+	}
+}
+
+
+// Combine clusters with nonzero neighbors
+void collapse_final_transcripts(ClusterList *cluster, int t_strand) {
+
+	ClusterNode *c_node = cluster -> get_head(t_strand);
+	ClusterNode *n_node = NULL;
+
+	while (c_node != NULL) {
+
+		// Only Collapse transcripts
+		if (c_node -> get_transcript_num() != 0) {
+
+			n_node = c_node -> get_next();
+
+			while (n_node != NULL) {
+
+				if (n_node -> get_transcript_num() != 0) {
+
+					if (c_node -> get_transcript_stop() >= n_node -> get_transcript_start()) {
+
+						merge_final_transcripts(c_node, n_node);
+						c_node -> update_read_counts(n_node -> get_read_count());
+						c_node -> update_vec_counts(n_node -> get_vec_count());
+						c_node -> update_stop(n_node -> get_stop());
+						n_node -> set_skip();
+
+					} else { break; }
+				}
+				
+				n_node = n_node -> get_next();
+			}
+			c_node -> quantify_transcripts();
+
+		} else { n_node = c_node -> get_next(); }
+
+		c_node = n_node;
 	}
 }

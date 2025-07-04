@@ -60,3 +60,11 @@ bool check_point_overlap(const int &p, const int &e1, const int &e2) {
 	if (p >= e1 && p <= e2) { return true; } 
 	return false;
 }
+
+// For Debugging
+void print_transcripts(const std::vector<std::vector<int>> &transcripts) {
+	for (const auto &t : transcripts) {
+		for (const auto &e : t) { std::cerr << e << " "; }
+		std::cerr << "\n";
+	}
+}

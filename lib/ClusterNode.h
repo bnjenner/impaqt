@@ -1,3 +1,5 @@
+#pragma once 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Cluster Node Class (really just a node in a doubly linked list) */
 
@@ -11,6 +13,7 @@ private:
 	int strand = -1;					// standedness
 	int start;						// beginning of window
 	int stop;						// end of window
+	bool skip = false;
 
 	// Read Details
 	std::string headID;					// read ID of first read in cluster
@@ -108,12 +111,33 @@ public:
 	std::vector<int>* get_three_ref() { return &three_vec; }
 	std::vector<int>* get_index_ref() { return &index_vec; }
 	
+	// Reset trancript vars
+	void clear_transcripts() {
+		transcript_vec.clear();
+		transcript_expression.clear();
+		transcript_assignments.clear();
+		transcript_num = 0;
+		total_core_points = 0;
+	}
+
 	size_t get_transcript_num() { return transcript_num; }
 	long double get_transcript_expr(const int &i) { return transcript_expression.at(i); }
 	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
+	std::vector<long double> get_transexpr_vec() { return transcript_expression; }
+
+	int get_transcript_start() { return transcript_vec[0][0]; }
+	int get_transcript_stop() { 
+		int last = transcript_vec[0].back();
+		for (const auto &t: transcript_vec) {
+			if (t.back() > last) { last = t.back(); }
+		}
+		return last;
+	}
 
 	ClusterNode* get_next() { return next; }
 	ClusterNode* get_prev() { return prev; }
+
+	bool is_skipped() { return skip; }
 
 
 	/////////////////////////////////////////////////////////////
@@ -122,6 +146,11 @@ public:
 	void set_next(ClusterNode *node) { next = node; }
 	void set_prev(ClusterNode *node) { prev = node; }
 	void set_chrom_index(int t_chrom_index) { chrom_index = t_chrom_index; }
+	void set_skip() { skip = true; }
+	void update_read_counts(size_t count) { read_count += count; }
+	void update_vec_counts(size_t count) { vec_count += count; }
+	void update_start(int t_start) { start = t_start; }
+	void update_stop(int t_stop) { stop = t_stop; }
 
 
 	/////////////////////////////////////////////////////////////
@@ -233,6 +262,9 @@ public:
 
 	// Print Transcripts
 	void write_transcripts(std::ofstream &gtfFile) {
+
+		// Skip if swallowed by neighboring cluster
+		if (this -> is_skipped()) { return; }
 
 		int start, stop, x_start, x_stop;
 		int regions = 0;

@@ -24,10 +24,10 @@ GeneNode* get_closest_gene(const int &t, GeneNode *gene, ClusterNode *clust) {
 // Resolve Read Assignment To Genes
 void resolve_read_assignment(GeneNode *gene, const int &max, std::vector<size_t> &read_assignments) {
 
-    	if (gene == NULL && max != 0) {
+	if (gene == NULL && max != 0) {
 		read_assignments[2] += 1; // Add to ambiguous
 
-    	} else if (max == 0) {
+	} else if (max == 0) {
 		read_assignments[1] += 1; // Add to Unassigned
 
 	} else if (gene != NULL) {
@@ -59,9 +59,9 @@ void resolve_transcript_assignment(ClusterList *list, ClusterNode *cluster, Gene
 		list -> add_assigned_reads(expr);
 
 	} else {
- 		std::cerr << "ERROR: No best overlap found for read assignment.\n"
- 			  << "Cluster: " << cluster -> get_contig_name() << ":" 
- 			  << cluster -> get_start() << "-" << cluster -> get_stop() << "\n";
+		std::cerr << "ERROR: No best overlap found for read assignment.\n"
+				  << "Cluster: " << cluster -> get_contig_name() << ":" 
+				  << cluster -> get_start() << "-" << cluster -> get_stop() << "\n";
  		throw "ERROR: No best overlap found for read assignment.";
  	}
 }
@@ -273,35 +273,39 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 
 	while (cluster != NULL) {
 
-		t_num = cluster -> get_transcript_num();
-		
-		// If transcripts to assign
-		if (t_num != 0) {
+		// Skip not swallowed by neighboring cluster
+		if (!(cluster -> is_skipped())) {
 
-			// Advance to Potential Gene
-			start = (*(cluster -> get_transcripts()))[0][0];
-			prev_gene = get_closest_gene(start, prev_gene, cluster);
-			
-			if (prev_gene != NULL) {
-				assign_transcripts_to_genes(cluster, prev_gene, list, annotation, t_num);
+			t_num = cluster -> get_transcript_num();
+
+			// If transcripts to assign
+			if (t_num != 0) {
+
+				// Advance to Potential Gene
+				start = cluster -> get_transcript_start();
+				prev_gene = get_closest_gene(start, prev_gene, cluster);
+				
+				if (prev_gene != NULL) {
+					assign_transcripts_to_genes(cluster, prev_gene, list, annotation, t_num);
+				}
+
+			} else {
+
+				// May not be necessary, but just in case
+				cluster -> index_sort_vectors();
+
+				// Advance to Potential Gene
+				start = (cluster -> get_five_vec())[0];
+				prev_gene = get_closest_gene(start, prev_gene, cluster);
+
+				if (prev_gene != NULL) {
+					assign_reads_to_genes(cluster, prev_gene, list, annotation);				
+				}
 			}
 
-		} else {
-
-			// May not be necessary, but just in case
-			cluster -> index_sort_vectors();
-
-			// Advance to Potential Gene
-			start = (cluster -> get_five_vec())[0];
-			prev_gene = get_closest_gene(start, prev_gene, cluster);
-
-			if (prev_gene != NULL) {
-				assign_reads_to_genes(cluster, prev_gene, list, annotation);				
+			if (prev_gene == NULL) {
+				list -> add_unassigned_singles(cluster -> get_read_count());
 			}
-		}
-
-		if (prev_gene == NULL) {
-			list -> add_unassigned_singles(cluster -> get_read_count());
 		}
 
 		cluster = cluster -> get_next();

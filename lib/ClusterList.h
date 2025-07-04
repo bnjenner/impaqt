@@ -1,3 +1,5 @@
+#pragma once 
+
 #include "ClusterNode.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -305,7 +307,7 @@ public:
 		for (int i = 0; i < 2; i ++) {
 			if (i != 0) { node = neg_head; }
 			while (node != NULL) {
-				transcript_num += node -> get_transcript_num();
+				if (!(node -> is_skipped())) { transcript_num += node -> get_transcript_num(); }
 				node = node -> get_next();
 			}
 		}
@@ -428,7 +430,7 @@ public:
 
 				// Empty
 			} else {
-				delete_nodes(c_node, t_head, t_tail);
+				delete_nodes(c_node, t_head, t_tail); // also updates pointers
 			}
 		}
 
