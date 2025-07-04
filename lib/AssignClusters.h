@@ -24,17 +24,14 @@ GeneNode* get_closest_gene(const int &t, GeneNode *gene, ClusterNode *clust) {
 // Resolve Read Assignment To Genes
 void resolve_read_assignment(GeneNode *gene, const int &max, std::vector<size_t> &read_assignments) {
 
-	// If multiple assignments, mark ambiguous
     	if (gene == NULL && max != 0) {
 		read_assignments[2] += 1; // Add to ambiguous
 
-		// If no overlap, add to unassigned reads
     	} else if (max == 0) {
 		read_assignments[1] += 1; // Add to Unassigned
 
-	// Add Expression to best overlapping gene
 	} else if (gene != NULL) {
-		gene -> add_expression(1.0f); // May be an issue
+		gene -> add_expression(1.0f); // add expression
 		read_assignments[0] += 1;
 
  	} else {
@@ -49,16 +46,13 @@ void resolve_transcript_assignment(ClusterList *list, ClusterNode *cluster, Gene
 	
 	long double expr = cluster -> get_transcript_expr(i);
 
-	// If multiple assignments, mark ambiguous
 	if (gene == NULL && max != 0) {
 		cluster -> assign_ambiguous(i);
 		list -> add_ambiguous_reads(expr);
-
-		// If no overlap, add to unassigned reads
+		
 	} else if (max == 0) {
 		list -> add_unassigned_reads(expr);
 
-		// Add Expression to best overlapping gene
 	} else if (gene != NULL) {
 		cluster -> assign_transcript(gene -> get_geneID(), i);
 		gene -> add_expression(expr);
