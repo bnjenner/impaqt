@@ -25,11 +25,11 @@ GeneNode* get_closest_gene(const int &t, GeneNode *gene, ClusterNode *clust) {
 void resolve_read_assignment(GeneNode *gene, const int &max, std::vector<size_t> &read_assignments) {
 
 	// If multiple assignments, mark ambiguous
-	if (gene == NULL && max != 0) {
+    	if (gene == NULL && max != 0) {
 		read_assignments[2] += 1; // Add to ambiguous
 
 		// If no overlap, add to unassigned reads
-    } else if (max == 0) {
+    	} else if (max == 0) {
 		read_assignments[1] += 1; // Add to Unassigned
 
 	// Add Expression to best overlapping gene
@@ -66,8 +66,8 @@ void resolve_transcript_assignment(ClusterList *list, ClusterNode *cluster, Gene
 
 	} else {
  		std::cerr << "ERROR: No best overlap found for read assignment.\n"
- 				  << "Cluster: " << cluster -> get_contig_name() << ":" 
- 				  << cluster -> get_start() << "-" << cluster -> get_stop() << "\n";
+ 			  << "Cluster: " << cluster -> get_contig_name() << ":" 
+ 			  << cluster -> get_start() << "-" << cluster -> get_stop() << "\n";
  		throw "ERROR: No best overlap found for read assignment.";
  	}
 }
