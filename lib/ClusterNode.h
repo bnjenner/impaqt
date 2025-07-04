@@ -1,5 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Cluster Node Class (node in a doubly linked list)
+/* Cluster Node Class (really just a node in a doubly linked list) */
+
 class ClusterNode {
 
 private:
@@ -35,67 +36,66 @@ private:
 public:
 
 	/////////////////////////////////////////////////////////////
+	/* Constructors */
+
 	// Empty
 	ClusterNode() {}
 
 	// Initialize
-	ClusterNode(int &t_start, int &t_window_size, int t_strand, int &t_chrom_index, std::string &t_contig_name) {
-		start = t_start;
-		stop = t_start + t_window_size;
-		strand = t_strand;
-		chrom_index = t_chrom_index;
-		contig_name = t_contig_name;
+	ClusterNode(const int &start, const int &window_size, const int strand, const int &chrom_index, const std::string &contig_name) {
+		this -> start = start;
+		this -> stop = start + window_size;
+		this -> strand = strand;
+		this -> chrom_index = chrom_index;
+		this -> contig_name = contig_name;
 		five_vec.resize(1000, 0);
 		three_vec.resize(1000, 0);
 		index_vec.resize(1000, 0);
 	}
 
-	// For combined Nodes
-	ClusterNode(ClusterNode curr_node, ClusterNode next_node) {
+	// For combined Nodes 
+	ClusterNode(ClusterNode *c_node, ClusterNode *n_node) {
 
-		std::vector<int> tmp_vec; // For copies
+		// BNJ (7/4/2023): replace with a swallow function. Avoid making an entirely new object
 
-		start = curr_node.get_start();
-		stop = next_node.get_stop();
-		strand = curr_node.get_strand();
-		contig_name = curr_node.get_contig_name();
-		chrom_index = curr_node.get_chrom_index();
+		int c_vec = c_node -> get_vec_count();
+		int n_vec = n_node -> get_vec_count();
 
-		// BNJ - 6/16/26: These vector copies needs to be changed. Copies + resizes not necessary.
-		five_vec = curr_node.get_five_vec();
-		tmp_vec = next_node.get_five_vec();
-		five_vec.insert(five_vec.end(), tmp_vec.begin(), tmp_vec.end());
+		start = c_node -> get_start();
+		stop = n_node -> get_stop();
+		strand = c_node -> get_strand();
+		contig_name = c_node -> get_contig_name();
+		chrom_index = c_node -> get_chrom_index();
+		vec_count = c_vec + n_vec;
+		read_count = c_node -> get_read_count() + n_node -> get_read_count();
 
-		three_vec = curr_node.get_three_vec(); 
-		tmp_vec = next_node.get_three_vec();
-		three_vec.insert(three_vec.end(), tmp_vec.begin(), tmp_vec.end());
+		// Necessary Copy, Resize, Overwrite
+		five_vec = c_node -> get_five_vec();
+		five_vec.resize(vec_count, 0);
+		for (int i = 0; i < n_vec; i++) { five_vec.at(c_vec + i) = n_node -> get_five_vec()[i]; }
 
-		index_vec = curr_node.get_index_vec(); 
-		tmp_vec = next_node.get_index_vec();
-		for (int i = 0; i < tmp_vec.size(); i++) { tmp_vec[i] += curr_node.get_vec_count(); } 
-		index_vec.insert(index_vec.end(), tmp_vec.begin(), tmp_vec.end());
+		three_vec = c_node -> get_three_vec();
+		three_vec.resize(vec_count, 0); // Resize to fit both nodes
+		for (int i = 0; i < n_vec; i++) { three_vec.at(c_vec + i) = n_node -> get_three_vec()[i]; }
 
-		read_count = curr_node.get_read_count() + next_node.get_read_count();
-		vec_count = curr_node.get_vec_count() + next_node.get_vec_count(); 
+		index_vec = c_node -> get_index_vec(); 
+		index_vec.resize(vec_count, 0);
+		for (int i = 0; i < n_vec; i++) { index_vec.at(c_vec + i) = c_vec + n_node -> get_index_vec()[i]; }
 	}
 
 	// Destroy
-	~ClusterNode() {
-		next = NULL;
-		prev = NULL;
-	}
+	~ClusterNode() { next = NULL; prev = NULL; }
+
 
 	/////////////////////////////////////////////////////////////
-	// Get Details
-	void set_chrom_index(int t_chrom_index) { chrom_index = t_chrom_index; }
+	/* Get Functions */
+
 	int get_chrom_index() { return chrom_index; }
-	std::string get_contig_name() { return contig_name; }
-
 	int get_strand() { return strand; }
-
 	int get_start() { return start; }
 	int get_stop() { return stop; }
 
+	std::string get_contig_name() { return contig_name; }
 	std::string get_headID() { return headID; }
 
 	size_t get_read_count() { return read_count; }
@@ -108,18 +108,25 @@ public:
 	std::vector<int>* get_three_ref() { return &three_vec; }
 	std::vector<int>* get_index_ref() { return &index_vec; }
 	
-	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
-	long double get_transcript_expr(const int &i) { return transcript_expression.at(i); }
 	size_t get_transcript_num() { return transcript_num; }
+	long double get_transcript_expr(const int &i) { return transcript_expression.at(i); }
+	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
 
-	/////////////////////////////////////////////////////////////
-	// Linking functions
-	void set_next(ClusterNode *node) { next = node; }
-	void set_prev(ClusterNode *node) { prev = node; }
 	ClusterNode* get_next() { return next; }
 	ClusterNode* get_prev() { return prev; }
 
+
 	/////////////////////////////////////////////////////////////
+	/* Set Functions */
+
+	void set_next(ClusterNode *node) { next = node; }
+	void set_prev(ClusterNode *node) { prev = node; }
+	void set_chrom_index(int t_chrom_index) { chrom_index = t_chrom_index; }
+
+
+	/////////////////////////////////////////////////////////////
+	/* Read Vector Functions */
+
 	// Add alignment to cluster
 	void add_alignment(const std::vector<int> &positions) {
 
@@ -156,11 +163,10 @@ public:
 	}
 
 	// Sort Vectors
-	void sort_vectors(std::vector<int> &indices) {
+	void sort_vectors(const std::vector<int> &indices) {
 		std::vector<int> tmp_vec(vec_count);
 		for (int i = 0; i < vec_count; i++) { tmp_vec[i] = five_vec[indices[i]]; }
 		five_vec = tmp_vec;
-
 		for (int i = 0; i < vec_count; i++) { tmp_vec[i] = three_vec[indices[i]]; }
 		three_vec = tmp_vec;
 	}
@@ -172,8 +178,8 @@ public:
 		std::sort(indices.begin(), indices.end(),
 			       [&](int i, int j) -> bool {
 			            return five_vec[i] < five_vec[j];
-			        });
-
+			        }
+			     );
 		sort_vectors(indices);
 	}
 
@@ -184,18 +190,21 @@ public:
 		std::sort(indices.begin(), indices.end(),
 			       [&](int i, int j) -> bool {
 			            return index_vec[i] < index_vec[j];
-			        });
-
+			        }
+				 );
 		sort_vectors(indices);
 	}
 
+
 	/////////////////////////////////////////////////////////////
+	/* Transcript Functions */
+
 	// add transcript
-	void add_transcript(const std::vector<int> &t_transcript, const int &t_expression) {
-		transcript_vec.push_back(t_transcript);
-		transcript_expression.push_back((long double)t_expression);
-		transcript_assignments.push_back("Unassigned");
-		total_core_points += t_expression;
+	void add_transcript(const std::vector<int> &t_trans, const int &t_expr) {
+		transcript_vec.push_back(t_trans); // Copy, I know
+		transcript_expression.push_back((long double)t_expr);
+		transcript_assignments.emplace_back("Unassigned");
+		total_core_points += t_expr;
 		transcript_num += 1;
 	}
 
@@ -217,6 +226,10 @@ public:
 	// assign transcripts
 	void assign_transcript(const std::string &t_gene_id, const int &i) { transcript_assignments[i] = t_gene_id; }
 	void assign_ambiguous(const int &i) { transcript_assignments[i] = "Ambiguous"; }
+
+
+	/////////////////////////////////////////////////////////////
+	/* Output Functions */
 
 	// Print Transcripts
 	void write_transcripts(std::ofstream &gtfFile) {

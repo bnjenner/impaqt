@@ -5,7 +5,8 @@
 #include "AssignClusters.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Impaqt Process Class
+/* Impaqt Process Class */
+
 class Impaqt {
 
 private:
@@ -38,23 +39,25 @@ private:
 public:
 
 	/////////////////////////////////////////////////////////////
+	/* Constructors */
+
 	// Empty
 	Impaqt() {};
 
 	// Initialized
-	Impaqt(int ref) {
+	Impaqt(const int &chrom_index) {
 		alignment_file_name = ImpaqtArguments::Args.alignment_file;
 		index = ImpaqtArguments::Args.index_file;
-		chrom_index = ref;
+		this -> chrom_index = chrom_index;
 	}
 
 	// Destructor
-	~Impaqt() {
-		if (!ignore_chr) { delete cluster_list; }
-	}
+	~Impaqt() { if (!ignore_chr) { delete cluster_list; } }
 
 
 	/////////////////////////////////////////////////////////////
+	/* Get Functions */
+
 	// Get Reads Stats
 	long double get_assigned_reads() { return assigned_reads; }
 	long double get_unassigned_reads() { return unassigned_reads; }
@@ -78,6 +81,8 @@ public:
 	
 
 	/////////////////////////////////////////////////////////////
+	/* Thread Initilizers */
+
 	void open_alignment_file() {
 		// Open alignment file
 		if (!inFile.Open(alignment_file_name)) {
@@ -125,8 +130,11 @@ public:
 		annotation.create_gene_list();
 	}
 
+
 	/////////////////////////////////////////////////////////////
-	// Grab Alignments within Interval Using Bam Index
+	/* Cluster Related Functions */
+
+	// Create cluster list
 	void create_clusters() {
 
 		cluster_list = new ClusterList();
@@ -159,6 +167,10 @@ public:
 		assign_to_genes(annotation, cluster_list, contig_map[chrom_index], 1); // Forward
 	}
 
+
+	/////////////////////////////////////////////////////////////
+	/* Output Functions */
+
 	// Print Clusters as GTF
 	void write_gtf(std::ofstream &gtfFile) {
 		if (ignore_chr) { return; }
@@ -177,7 +189,8 @@ public:
 
 
 	/////////////////////////////////////////////////////////////
-	// Launch thread
+	/* Thread Launcher */
+
 	void launch() {
 		this -> open_alignment_file();				// open files
 		this -> create_clusters();				// find clusters

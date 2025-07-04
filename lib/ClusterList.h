@@ -1,7 +1,8 @@
 #include "ClusterNode.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Cluster Class (really just a doubly linked list)
+/* Cluster Class (really just a doubly linked list) */
+
 class ClusterList {
 
 private:
@@ -35,9 +36,12 @@ private:
 	size_t transcript_num = 0;
 
 
+public:
 
 	/////////////////////////////////////////////////////////////
-	// Calculate splice
+	/* Private Alignment Methods */
+
+	// Process CIGAR Strings
 	void calculate_splice(BamTools::BamAlignment &alignment, std::vector<int> &positions) {
 
 		int n_offset = 0;
@@ -111,6 +115,10 @@ private:
 	}
 
 
+	/////////////////////////////////////////////////////////////
+	/* Private Node Methods */
+
+	// Create Empty Clusters
 	void initialize_strand(ClusterNode *&head, ClusterNode *&tail, const int strand, const int &zones) {
 
 		int pos = 0;
@@ -122,6 +130,7 @@ private:
 
 		head = temp; tail = temp;
 		for (int i = 1; i < zones; i++) {
+
 			pos += this -> window_size;
 			tail -> set_next(new ClusterNode(pos, 
 							 this -> window_size, 
@@ -133,109 +142,102 @@ private:
 		}
 	}
 
+	// Delete Empty Nodes
+	void delete_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail) {
 
-	/////////////////////////////////////////////////////////////
-	// Delete Empty Nodes (These node operations could likely simplified in functions...)
-	void delete_nodes(ClusterNode *&curr_node, ClusterNode *&temp_head, ClusterNode *&temp_tail) {
-
-		ClusterNode *temp_node;
+		ClusterNode *t_node;
 
 		// If last node
-		if (curr_node -> get_next() == NULL) {
-			temp_node = curr_node -> get_prev();
+		if (c_node -> get_next() == NULL) {
+			t_node = c_node -> get_prev();
 
 			// If curr_node is also not first node
-			if (temp_node != NULL) {
-				temp_node -> set_next(NULL);
-			} else {
-				temp_head = NULL;
-			}
-
-			temp_tail = temp_node;
-			delete curr_node;
-			curr_node = NULL;
-
-			// If first node
-		} else if (curr_node -> get_prev() == NULL) {
-			temp_node = curr_node;
-			curr_node = curr_node -> get_next();
-			curr_node -> set_prev(NULL);
-			temp_head = curr_node;
-			delete temp_node;
-
-			// else
-		} else {
-			temp_node = curr_node -> get_prev();
-			temp_node -> set_next(curr_node -> get_next());
-			temp_node -> get_next() -> set_prev(temp_node);
-
-			delete curr_node;
-			curr_node = temp_node -> get_next();
+			if (t_node != NULL) {
+				t_node -> set_next(NULL);
+			
+			} else { t_head = NULL; }
+			
+			delete c_node; c_node = NULL;
+			t_tail = t_node;
+			return;
 		}
+
+		// If first node
+		if (c_node -> get_prev() == NULL) {
+			t_node = c_node -> get_next();
+
+			t_node -> set_prev(NULL);
+			delete c_node;
+
+			c_node = t_node;
+			t_head = c_node;
+			return;
+		}
+
+		t_node = c_node -> get_prev();
+		t_node -> set_next(c_node -> get_next());
+		t_node -> get_next() -> set_prev(t_node);
+		delete c_node;
+
+		c_node = t_node -> get_next();
 	}
 
 	// Merge Neighboring Non-Zero Nodes
-	void merge_nodes(ClusterNode *&curr_node, ClusterNode *&temp_head, ClusterNode *&temp_tail) {
+	void merge_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail) {
 
-		ClusterNode *next_node = curr_node -> get_next();
-		next_node -> shrink_vectors();
+		ClusterNode *n_node = c_node -> get_next();
+		n_node -> shrink_vectors();
 
-		ClusterNode *temp_node = new ClusterNode(*curr_node, *next_node);
-		temp_node -> set_prev(curr_node -> get_prev());
+		ClusterNode *t_node = new ClusterNode(c_node, n_node);
+		t_node -> set_prev(c_node -> get_prev());
 
 		// If not first node
-		if (curr_node -> get_prev() != NULL) {
-			curr_node -> get_prev() -> set_next(temp_node);
-		} else {
-			temp_head = temp_node;
-		}
+		if (c_node -> get_prev() != NULL) {
+			c_node -> get_prev() -> set_next(t_node);
+		
+		} else { t_head = t_node; }
 
 		// If not last node
-		if (curr_node -> get_next() -> get_next() != NULL) {
-			temp_node -> set_next(curr_node -> get_next() -> get_next());
-			temp_node -> get_next() -> set_prev(temp_node);
-		} else {
-			temp_tail = temp_node;
-		}
+		if (n_node -> get_next() != NULL) {
+			t_node -> set_next(c_node -> get_next() -> get_next());
+			t_node -> get_next() -> set_prev(t_node);
+		
+		} else { t_tail = t_node; }
 
-		delete curr_node -> get_next();
-		delete curr_node;
-		curr_node = temp_node;
+		delete n_node; delete c_node;
+		c_node = t_node;
 	}
 
+	// Delete every node in cluster
 	void delete_list() {
-		ClusterNode *curr_node = pos_head;
-		ClusterNode *temp_node = NULL;
-
-		while (curr_node != NULL) {
-			temp_node = curr_node;
-			curr_node = curr_node -> get_next();
-			delete temp_node;
+		ClusterNode *c_node = pos_head;
+		ClusterNode *t_node = NULL;
+		for (int i = 0; i < 2; i ++) {
+			if (i != 0) { c_node = neg_head; t_node = NULL; }
+			while (c_node != NULL) {
+				t_node = c_node;
+				c_node = c_node -> get_next();
+				delete t_node;
+			}
 		}
-
-		curr_node = neg_head;
-		temp_node = NULL;
-
-		while (curr_node != NULL) {
-			temp_node = curr_node;
-			curr_node = curr_node -> get_next();
-			delete temp_node;
-		}
-		pos_head = NULL;
-		neg_head = NULL;
 	}
 
 
 public:
 
 	/////////////////////////////////////////////////////////////
+	/* Constructors */
+
 	// Empty
 	ClusterList() {}
 
 	// Destroy
 	~ClusterList() { this -> delete_list(); }
 
+
 	/////////////////////////////////////////////////////////////
+	/* Get Functions */
+
 	// Get Chrom Name
 	std::string get_contig_name() { return contig_name; } // BNJ: 5/9/2025 - should probably keep name consistent with chrom, not contig
 
@@ -251,6 +253,38 @@ public:
 		return neg_tail;
 	}
 
+	// Get First cluster by position (just trust me on this one)
+	ClusterNode* get_first_cluster(ClusterNode *pos, ClusterNode *neg, bool &strand) {
+		if (pos == NULL && neg != NULL) {
+			strand = 1; return neg;
+		} else if (neg == NULL && pos != NULL) {
+			strand = 0; return pos;
+		} else {
+			if (pos -> get_start() < neg -> get_start()) {
+				strand = 0; return pos;
+			} else {
+				strand = 1; return neg;
+			}
+		}
+	}
+
+	// Get Next cluster by position
+	ClusterNode* get_next_cluster(ClusterNode *&c_node, ClusterNode *&a_prev, ClusterNode *&b_prev, bool &strand) {
+		
+		a_prev = c_node -> get_next();
+		if (a_prev == NULL) {
+			c_node = b_prev; strand = !strand;
+
+			// If oppostie strand exhausted or this strand first, continue
+		} else if (b_prev == NULL || a_prev -> get_start() < b_prev -> get_start()) {
+			c_node = a_prev;
+
+			// If positives are after negatives, switch strands
+		} else { c_node = b_prev; strand = !strand; }
+
+		return c_node;
+	}
+
 	// Get Reads Stats
 	long double get_assigned_reads() { return assigned_reads + (long double)assigned_singles; }
 	long double get_unassigned_reads() { return unassigned_reads + (long double)unassigned_singles; }
@@ -261,21 +295,22 @@ public:
 	size_t get_pos_reads() { return passing_pos_reads; }
 	size_t get_neg_reads() { return passing_neg_reads; }
 
-
 	// Get Transcript Number
 	size_t get_transcript_num() {
-		ClusterNode *curr_node = pos_head;
-		while (curr_node != NULL) {
-			transcript_num += curr_node -> get_transcript_num();
-			curr_node = curr_node -> get_next();
-		}
-		curr_node = neg_head;
-		while (curr_node != NULL) {
-			transcript_num += curr_node -> get_transcript_num();
-			curr_node = curr_node -> get_next();
+		ClusterNode *node = pos_head;
+		for (int i = 0; i < 2; i ++) {
+			if (i != 0) { node = neg_head; }
+			while (node != NULL) {
+				transcript_num += node -> get_transcript_num();
+				node = node -> get_next();
+			}
 		}
 		return transcript_num;
 	}
+
+
+	/////////////////////////////////////////////////////////////
+	/* Counting Functions */
 		
 	// Set Read Stats
 	void add_assigned_reads(const long double &expr) { assigned_reads += expr; }
@@ -285,7 +320,10 @@ public:
 	void add_unassigned_singles(const size_t &expr) { unassigned_reads += expr; }
 	void add_ambiguous_singles(const size_t &expr) { ambiguous_reads += expr; }
 
+
 	/////////////////////////////////////////////////////////////
+	/* List Functions */
+
 	// Initialize empty object
 	void initialize(const int t_chrom_index, const std::string t_contig_name, const int t_chrom_length) {
 		chrom_index = t_chrom_index;
@@ -306,16 +344,19 @@ public:
 		}	
 	}
 
+
 	/////////////////////////////////////////////////////////////
+	/* Cluster Functions */
+
 	// Create read clusters
 	bool create_clusters(BamTools::BamReader &inFile, BamTools::BamAlignment &alignment) {
 
 		int t_5end, t_3end, t_strand;
 		bool found_reads = false;
 		std::vector<int> positions;
-		ClusterNode *pos_curr_node = get_head(0);
-		ClusterNode *neg_curr_node = get_head(1);
-		ClusterNode *neg_temp_node = neg_curr_node; // This needs to exist because the file is ordered according to the left most point
+		ClusterNode *pos_node = get_head(0);
+		ClusterNode *neg_node = get_head(1);
+		ClusterNode *t_node = neg_node; // This needs to exist because BAM is ordered by left most position
 
 		while (true) {
 
@@ -338,12 +379,12 @@ public:
 				passing_neg_reads += 1;
 
 				// Advance to correct node based on left position
-				jump_to_cluster(neg_curr_node, alignment.Position);
-				neg_temp_node = neg_curr_node;
+				jump_to_cluster(neg_node, alignment.Position);
+				t_node = neg_node;
 
 				// Advance based on 5' position (right most)
-				jump_to_cluster(neg_temp_node, t_5end);
-				neg_temp_node -> add_alignment(positions);
+				jump_to_cluster(t_node, t_5end);
+				t_node -> add_alignment(positions);
 
 			} else {
 
@@ -351,65 +392,53 @@ public:
 				t_3end = positions[positions.size() - 1];
 				passing_pos_reads += 1;
 
-				jump_to_cluster(pos_curr_node, t_5end);
-				pos_curr_node -> add_alignment(positions);
+				jump_to_cluster(pos_node, t_5end);
+				pos_node -> add_alignment(positions);
 			}
 		}
 		return found_reads;
 	}
 
-	/////////////////////////////////////////////////////////////
-	// combines clusters with nonzero neighbors
+	// Combine clusters with nonzero neighbors
 	void collapse_clusters(int t_strand) {
 
-		ClusterNode *temp_head = get_head(t_strand);
-		ClusterNode *temp_tail = get_tail(t_strand);
-		ClusterNode *curr_node = temp_head;
+		ClusterNode *t_head = get_head(t_strand);
+		ClusterNode *t_tail = get_tail(t_strand);
+		ClusterNode *c_node = t_head;
 
-		while (curr_node != NULL) {
+		while (c_node != NULL) {
 
-			curr_node -> shrink_vectors();
+			c_node -> shrink_vectors();
 
 			// Not Empty Node
-			if (curr_node -> get_read_count() != 0) {
+			if (c_node -> get_read_count() != 0) {
 				while (true) {
 
 					// If no merging needed
-					if (curr_node -> get_next() == NULL) { break; }
-					if (curr_node -> get_next() -> get_read_count() == 0) { break; }
+					if (c_node -> get_next() == NULL) { break; }
+					if (c_node -> get_next() -> get_read_count() == 0) { break; }
 
-					merge_nodes(curr_node, temp_head, temp_tail);
+					merge_nodes(c_node, t_head, t_tail);
 				}
-				curr_node = curr_node -> get_next();
+				c_node = c_node -> get_next();
 
 				// Empty
 			} else {
-				delete_nodes(curr_node, temp_head, temp_tail);
+				delete_nodes(c_node, t_head, t_tail);
 			}
 		}
 
 		// Adjust head and tail nodes by strand
 		if (t_strand == 0) {
-			pos_head = temp_head; pos_tail = temp_tail;
+			pos_head = t_head; pos_tail = t_tail;
 		} else {
-			neg_head = temp_head; neg_tail = temp_tail;
+			neg_head = t_head; neg_tail = t_tail;
 		}
 	}
 
+
 	/////////////////////////////////////////////////////////////
-	ClusterNode* get_first_cluster(ClusterNode *pos, ClusterNode *neg, bool &strand) {
-		if (pos == NULL && neg != NULL) {
-			strand = 1; return neg;
-		} else if (neg == NULL && pos != NULL) {
-			strand = 0; return pos;
-		} else {
-			if (pos -> get_start() < neg -> get_start()) {
-				strand = 0; return pos;
-			} else {
-				strand = 1; return neg;
-			}
-		}
-	}
+	/* Output Functions */
 
 	// Write Clusters to GTF File
 	void write_clusters_as_GTF(std::ofstream &gtfFile) {
@@ -420,7 +449,7 @@ public:
 		bool strand;
 		ClusterNode *prev_pos_node = pos_head;
 		ClusterNode *prev_neg_node = neg_head;
-		ClusterNode *curr_node = get_first_cluster(pos_head, neg_head, strand);
+		ClusterNode *c_node = get_first_cluster(pos_head, neg_head, strand);
 
 		// Iterate Through Clusters
 		while (true) {
@@ -428,66 +457,41 @@ public:
 			// If no more clusters
 			if (prev_pos_node == NULL && prev_neg_node == NULL) { break; }
 
-			curr_node -> write_transcripts(gtfFile);
+			c_node -> write_transcripts(gtfFile);
 
-			// Strand switching conditions :(
+			// Get Next Cluster by position
 			if (strand == 0) {
-				prev_pos_node = curr_node -> get_next();
-
-				// If positives exhausted, switch strands
-				if (prev_pos_node == NULL) {
-					curr_node = prev_neg_node; strand = 1;
-					continue;
-				}
-
-				// If negatives exhausted, continue with positives
-				if (prev_neg_node == NULL || prev_pos_node -> get_start() < prev_neg_node -> get_start()) {
-					curr_node = prev_pos_node; strand = 0;
-
-					// If positives are after negatives, switch strands
-				} else { curr_node = prev_neg_node; strand = 1; }
-
+				c_node = get_next_cluster(c_node, prev_pos_node, prev_neg_node, strand);
 			} else {
-				prev_neg_node = curr_node -> get_next();
-
-				// If negatives exhausted, switch strands
-				if (prev_neg_node == NULL) { 
-					curr_node = prev_pos_node; strand = 0;
-					continue;
-				}
-
-				// If positives exhausted, continue with negatives
-				if (prev_pos_node == NULL || prev_neg_node -> get_start() < prev_pos_node -> get_start()) {
-					curr_node = prev_neg_node; strand = 1;
-
-					// If negatives are after positives, switch strands
-				} else { curr_node = prev_pos_node; strand = 0; }
+				c_node = get_next_cluster(c_node, prev_neg_node, prev_pos_node, strand);
 			}
 		}
 	}
 
+
 	/////////////////////////////////////////////////////////////
-	// Functions for Test Suite
+	/* Functions for Testing Suite */
+
 	// Print Clusters
 	void print_clusters(int t_strand) {
-		ClusterNode *curr_node = get_head(t_strand);
-		while (curr_node != NULL) {
+		ClusterNode *node = get_head(t_strand);
+		while (node != NULL) {
 			std::cout << get_contig_name() << "\t"
-			          << curr_node -> get_start() << "\t" << curr_node -> get_stop() << "\t"
-			          << curr_node -> get_read_count() << "\n";
-			curr_node = curr_node -> get_next();
+			          << node -> get_start() << "\t" << node -> get_stop() << "\t"
+			          << node -> get_read_count() << "\n";
+			node = node -> get_next();
 		}
 	}
 
 	// Print clusters into strings for tests
 	std::string string_clusters(int t_strand) {
 		std::stringstream ss;
-		ClusterNode *curr_node = get_head(t_strand);
-		while (curr_node != NULL) {
+		ClusterNode *node = get_head(t_strand);
+		while (node != NULL) {
 			ss << get_contig_name() << "\t"
-			   << curr_node -> get_start() << "\t" << curr_node -> get_stop() << "\t"
-			   << curr_node -> get_read_count() << "\n";
-			curr_node = curr_node -> get_next();
+			   << node -> get_start() << "\t" << node -> get_stop() << "\t"
+			   << node -> get_read_count() << "\n";
+			node = node -> get_next();
 		}
 		return ss.str();
 	}

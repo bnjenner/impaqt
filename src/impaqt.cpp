@@ -35,7 +35,8 @@ bool MAIN_THREAD = false;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Main
+/* IMPAQT */
+
 int main(int argc, char const ** argv) {
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -45,7 +46,6 @@ int main(int argc, char const ** argv) {
     if (res != seqan::ArgumentParser::PARSE_OK) { return res; }
 
 
-    /////////////////////////////////////////////////////////////
     // Welcome!
     std::cerr << "//IMPAQT\n";
     std::cerr << "//Parsing Input Files:\n";
@@ -56,13 +56,11 @@ int main(int argc, char const ** argv) {
     processes[0] -> open_alignment_file();
     processes[0] -> set_chrom_order();
 
-    // Add Annotation Info
     std::cerr << "//    Annotation File....\n";
     processes[0] -> add_annotation();
     AnnotationList* annotation = processes[0] -> get_annotation();
 
 
-    /////////////////////////////////////////////////////////////
     // Multithreading Initialization
     size_t n = processes[0] -> get_chrom_num();
     if (n > 1) {
@@ -73,12 +71,10 @@ int main(int argc, char const ** argv) {
     // Launch Threads
     std::cerr << "//Processing Data:\n";
     std::cerr << "//    Contigs: " << n << "\n";
-
-    int i = 0;
     const int proc = std::max(ImpaqtArguments::Args.threads - 1, 1);
     {
-        // initialize dispatch queue with N threads
-        thread_queue call_queue(proc); 
+        int i = 0;
+        thread_queue call_queue(proc); // initialize dispatch queue with N threads
         do {
             while (i < n) {
                 call_queue.dispatch([&, i] {processes[i] -> launch();});
@@ -91,7 +87,6 @@ int main(int argc, char const ** argv) {
     main_lock.unlock();                                 // unlock thread
 
 
-    /////////////////////////////////////////////////////////////
     // Write Results
     std::cerr << "//Writing Results:\n";
 
@@ -119,7 +114,7 @@ int main(int argc, char const ** argv) {
     std::cerr << "//    Counts Data........\n";
     annotation -> print_gene_counts();
 
-    // Summary Statistics
+    // Summary Statistics (could potentially make this a struct)
     long double total_assigned = 0.0;
     long double total_unassigned = 0.0;
     long double total_ambiguous = 0.0;
@@ -150,7 +145,6 @@ int main(int argc, char const ** argv) {
               << "//transcripts\t" << total_transcripts << std::endl;
 
 
-    /////////////////////////////////////////////////////////////
     // The longest line of "get the time" I have ever seen.
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
