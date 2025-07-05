@@ -94,18 +94,18 @@ bool ClusterList::read_check(const BamTools::BamAlignment &alignment) {
 void ClusterList::initialize_strand(ClusterNode *&head, ClusterNode *&tail, const int strand, const int &zones) {
 	int pos = 0;
 	ClusterNode *node = new ClusterNode(pos, 
-									    ClusterList::window_size,
-									    strand, 
-									    ClusterList::contig_index, 
-									    ClusterList::contig_name);
+					    ClusterList::window_size,
+                                            strand, 
+                                            ClusterList::contig_index, 
+                                            ClusterList::contig_name);
 	head = node; tail = node;
 	for (int i = 1; i < zones; i++) {
 		pos += ClusterList::window_size;
 		tail -> set_next(new ClusterNode(pos, 
-										 ClusterList::window_size, 
-										 strand, 
-										 ClusterList::contig_index, 
-										 ClusterList::contig_name));
+                                                 ClusterList::window_size, 
+                                                 strand, 
+                                                 ClusterList::contig_index, 
+                                                 ClusterList::contig_name));
 		tail -> get_next() -> set_prev(tail);
 		tail = tail -> get_next();
 	}
