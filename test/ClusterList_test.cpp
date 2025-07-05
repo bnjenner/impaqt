@@ -36,7 +36,7 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/SpliceTest.ba
 
 // Static Member Defintions
 std::string Impaqt::alignment_file_name;
-std::string Impaqt::index;
+std::string Impaqt::index_file_name;
 AnnotationList Impaqt::annotation;
 std::unordered_map<int, std::string> Impaqt::contig_map;
 std::unordered_map<int, int> Impaqt::contig_lengths;

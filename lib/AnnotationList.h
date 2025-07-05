@@ -1,3 +1,10 @@
+#pragma once
+
+#include <sstream>
+#include <algorithm>
+#include <unordered_map>
+
+#include "global_args.h"
 #include "GeneNode.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,88 +46,14 @@ private:
 	}
 
 	// Get feature ID
-	bool set_feature_id(std::vector<std::string> &t_columns) {
-
-		int i;
-		char sep = '"';
-		std::string tag;
-		std::string value;
-
-		// if gff, different separator.
-		if (ImpaqtArguments::Args.isGFF) { sep = '='; }
-
-		// Iterate through annotation features
-		std::istringstream anno_stream(t_columns.at(8));
-		while (std::getline(anno_stream, tag, ';')) {
-
-			if (tag.find(feature_id) == std::string::npos) { continue; }
-
-			i = 0;
-			std::istringstream feature_stream(tag);
-			while (std::getline(feature_stream, value, sep)) {
-				if (i % 2 == 1) { t_columns[8] = value; return true; }
-				i++;
-			}
-		}
-		return false;
-	}
-
+	bool set_feature_id(std::vector<std::string> &t_columns);
 
 	/////////////////////////////////////////////////////////////
 	/* Private List Methods */
 
-	void set_head(const std::vector<std::string> &columns) {
-		if (columns[6] == "+") {
-			pos_head = create_new_node(columns);
-			pos_tail = pos_head;
-		} else {
-			neg_head = create_new_node(columns);
-			neg_tail = neg_head;
-		}
-	}
-
-	void extend(const std::vector<std::string> &columns) {
-		GeneNode *t_gene = create_new_node(columns);
-		if (columns[6] == "+") {
-			pos_tail -> set_next(t_gene);
-			t_gene -> set_prev(pos_tail);
-			pos_tail = t_gene;
-		} else {
-			neg_tail -> set_next(t_gene);
-			t_gene -> set_prev(neg_tail);
-			neg_tail = t_gene;
-		}
-	}
-
-	void add_line(const std::vector<std::string> &columns) {
-
-		// Get proper strand
-		GeneNode **head = &pos_head;
-		GeneNode **tail = &pos_tail;
-		std::unordered_map<std::string, GeneNode*> *chrom_map = &pos_chrom_map;
-		if (columns[6] == "-") {
-			head = &neg_head; tail = &neg_tail;
-			chrom_map = &neg_chrom_map;
-		}
-
-		// If first gene on strand
-		if ((*head) == NULL) {
-			set_head(columns);
-		} else {
-			// If same gene ID
-			if (columns[8] == (*tail) -> get_geneID()) {
-				(*tail) -> add_region(columns[3], columns[4]);
-			} else {
-				extend(columns); // create new gene node
-			}
-		}	
-
-		// If new chrom add to chrom map
-		if (chrom_map -> find(columns[0]) == chrom_map -> end()) {
-			(*chrom_map)[columns[0]] = *tail;
-		}
-
-	}
+	void set_head(const std::vector<std::string> &columns);
+	void extend(const std::vector<std::string> &columns);
+	void add_line(const std::vector<std::string> &columns);
 
 public:
 
@@ -150,7 +83,6 @@ public:
 		}
 	}
 
-
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
@@ -178,19 +110,20 @@ public:
 	}
 
 	// Get first gene by position (just trust me on this one)
-	GeneNode* get_first_gene(GeneNode *pos, GeneNode *neg, bool &strand) {
-		if (pos == NULL && neg != NULL) {
-			strand = 1; return neg;
-		} else if (neg == NULL && pos != NULL) {
-			strand = 0; return pos;
+	GeneNode* get_first_gene(bool &strand) {
+		if (pos_head == NULL && neg_head != NULL) {
+			strand = 1; return neg_head;
+		} else if (neg_head == NULL && pos_head != NULL) {
+			strand = 0; return pos_head;
 		} else {
-			if (pos -> get_start() < neg -> get_start()) {
-				strand = 0; return pos;
+			if (pos_head -> get_start() < neg_head -> get_start()) {
+				strand = 0; return pos_head;
 			} else {
-				strand = 1; return neg;
+				strand = 1; return neg_head;
 			}
 		}
 	}
+
 
 	// Get next gene by position
 	GeneNode* get_next_gene(GeneNode *&c_node, GeneNode *&a_prev, GeneNode *&b_prev, bool &strand) {
@@ -214,83 +147,16 @@ public:
 	/* List Functions */
 
 	// Create Gene Graph Structure
-	void create_gene_list() {
-
-		// Open file
-		std::ifstream infile(annotation_file);
-		if (!infile) { throw "ERROR: Could not read annotation file."; }
-
-		// Iterate through lines in file
-		std::string col;
-		std::string line;
-		std::vector<std::string> columns{9, ""};
-		while (std::getline(infile, line)) {
-
-			// skip headers
-			if (line[0] == '#') { continue; }
-
-			// populate column vector
-			int i = 0;
-			std::istringstream column_stream(line);
-			while (std::getline(column_stream, col, '\t')) {
-				columns.at(i) = col;
-				i += 1;
-			}
-
-			// if not feature tag
-			if (columns[2] != ImpaqtArguments::Args.feature_tag) { continue; }
-
-			// if feature id not found
-			if (!set_feature_id(columns)) {
-				std::cerr << "ERROR: Could not find feature tag in line:\n" << line << "\n";
-				throw "ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.";
-			}
-
-			add_line(columns);
-			features += 1;
-		}
-	}
-
+	void create_gene_list();
 
 	/////////////////////////////////////////////////////////////
 	/* Output Functions */
 
 	// Print genes and counts
-	void print_gene_counts() {
-
-		// Return if empty GTF?
-		if (pos_head == NULL && neg_head == NULL) {
-			std::cerr << "// NOTICE: No genes found in annotation file.\n";
-			return;
-		}
-
-		bool strand;
-		GeneNode *prev_pos_node = pos_head;
-		GeneNode *prev_neg_node = neg_head;
-		GeneNode *c_node = get_first_gene(pos_head, neg_head, strand) ;
-
-		// Iterate Throught Genes
-		while (true) {
-
-			// Break When all genes have been exhausted
-			if (prev_neg_node == NULL && prev_pos_node == NULL) { break; }
-
-			// Report Gene and Counts
-			std::cout << c_node -> get_geneID() << "\t" 
-					  << c_node -> get_read_count() << "\n";
-			
-			// Get Next Cluster by position
-			if (strand == 0) {
-				c_node = get_next_gene(c_node, prev_pos_node, prev_neg_node, strand);
-			} else {
-				c_node = get_next_gene(c_node, prev_neg_node, prev_pos_node, strand);
-			}
-		}
-	}
-
+	void print_gene_counts();
 
 	/////////////////////////////////////////////////////////////
-	/* Cluster Functions */
+	/* Functions For Test Suite */
 
 	// Print genes into strings for tests
 	std::string string_genes(const int &strand) {
@@ -304,7 +170,6 @@ public:
 		}
 		return ss.str();
 	}
-
 
 	// Print genes 
 	void print_genes(const int &strand) {

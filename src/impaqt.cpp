@@ -1,29 +1,23 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <string>
 #include <vector>
 #include <thread>
 #include <memory>
 #include <condition_variable>
-#include <mutex>
+// #include <mutex>
 #include <chrono>
 
-#include "api/BamAux.h"
-#include "api/BamReader.h"
-#include <global_args.h>
+#include "global_args.h"
 #include "ArgParser.h"
 #include "ThreadQueue.h"
 #include "impaqt.h"
-
 
 // Globals
 ImpaqtArguments::GlobalArgs ImpaqtArguments::Args;
 
 // Static Member Defintions
 std::string Impaqt::alignment_file_name;
-std::string Impaqt::index;
+std::string Impaqt::index_file_name;
 AnnotationList Impaqt::annotation;
 std::unordered_map<int, std::string> Impaqt::contig_map;
 std::unordered_map<int, int> Impaqt::contig_lengths;
@@ -80,11 +74,11 @@ int main(int argc, char const ** argv) {
                 call_queue.dispatch([&, i] {processes[i] -> launch();});
                 i++;
             }
-        } while (!call_queue.finished());  // Wait for queue to be emptied
+        } while (!call_queue.finished()); // Wait for queue to be emptied
     }
-    std::unique_lock<std::mutex> main_lock(main_mut);   // lock main thread
-    main_cv.wait(main_lock, [] {return MAIN_THREAD;});  // wait for thread_queue destructor to let go
-    main_lock.unlock();                                 // unlock thread
+    std::unique_lock<std::mutex> main_lock(main_mut);      // lock main thread
+    main_cv.wait(main_lock, [] {return MAIN_THREAD;});     // wait for thread_queue destructor to let go
+    main_lock.unlock();                                    // unlock thread
 
 
     // Write Results

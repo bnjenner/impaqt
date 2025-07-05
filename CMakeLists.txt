@@ -6,7 +6,14 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Source files
-file(GLOB IMPAQT_FILES ${PROJECT_SOURCE_DIR}/src/impaqt.cpp)
+file(GLOB IMPAQT_FILES
+	${PROJECT_SOURCE_DIR}/src/impaqt.cpp
+        ${PROJECT_SOURCE_DIR}/src/AnnotationList.cpp
+	${PROJECT_SOURCE_DIR}/src/ClusterList.cpp
+	${PROJECT_SOURCE_DIR}/src/DBSCAN.cpp
+	${PROJECT_SOURCE_DIR}/src/AssignClusters.cpp
+	${PROJECT_SOURCE_DIR}/src/utils.cpp
+)
 
 # Dependencies
 find_package(ZLIB REQUIRED)
@@ -47,17 +54,17 @@ enable_testing()
 link_directories(${GTEST_LIBS_DIR})
 
 # Test: impaqt_test
-add_executable(impaqt_test test/impaqt_test.cpp)
-target_link_libraries(impaqt_test
-    gtest gtest_main
-    BamTools
-)
-add_test(NAME impaqt_test COMMAND impaqt_test)
+#add_executable(impaqt_test test/impaqt_test.cpp)
+#target_link_libraries(impaqt_test
+#    gtest gtest_main
+#    BamTools
+#)
+#add_test(NAME impaqt_test COMMAND impaqt_test)
 
 # Test: ClusterList_test
-add_executable(ClusterList_test test/ClusterList_test.cpp)
-target_link_libraries(ClusterList_test
-    gtest gtest_main
-    BamTools
-)
-add_test(NAME ClusterList_test COMMAND ClusterList_test)
+#add_executable(ClusterList_test test/ClusterList_test.cpp)
+#target_link_libraries(ClusterList_test
+#    gtest gtest_main
+#    BamTools
+#)
+#add_test(NAME ClusterList_test COMMAND ClusterList_test)

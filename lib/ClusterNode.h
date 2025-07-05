@@ -1,4 +1,9 @@
-#pragma once 
+#pragma once
+
+#include <fstream>
+#include <numeric>
+#include <vector>
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Cluster Node Class (really just a node in a doubly linked list) */
@@ -8,32 +13,31 @@ class ClusterNode {
 private:
 
 	// Node Details
-	std::string contig_name;				// name of contig
-	int chrom_index;					// chromosome number in index
-	int strand = -1;					// standedness
-	int start;						// beginning of window
-	int stop;						// end of window
+	std::string contig_name;                           // name of contig
+	int chrom_index;                                   // chromosome number in index
+	int strand = -1;                                   // standedness
+	int start;                                         // beginning of window
+	int stop;                                          // end of window
 	bool skip = false;
 
 	// Read Details
-	std::string headID;					// read ID of first read in cluster
-	size_t read_count = 0;					// number of associated reads
+	std::string headID;                                // read ID of first read in cluster
+	size_t read_count = 0;                             // number of associated reads
 	size_t vec_count = 0;
-	size_t total_core_points = 0;				// number of total core points
-	std::vector<int> five_vec;				// vector for 5' ends
-	std::vector<int> three_vec;				// vector for 3' ends
-	std::vector<int> index_vec;				// vector for read indexes
-
+	size_t total_core_points = 0;                      // number of total core points
+	std::vector<int> five_vec;                         // vector for 5' ends
+	std::vector<int> three_vec;                        // vector for 3' ends
+	std::vector<int> index_vec;                        // vector for read indexes
 
 	// Links
-	ClusterNode *next = NULL;				// next ClusterNode
-	ClusterNode *prev = NULL;				// pevsious ClusterNode
+	ClusterNode *next = NULL;                          // next ClusterNode
+	ClusterNode *prev = NULL;                          // pevsious ClusterNode
 
 	// Transcript Results
-	size_t transcript_num = 0;				// number of transcripts identified
-	std::vector<std::vector<int>> transcript_vec;		// vector of transcript regions
-	std::vector<long double> transcript_expression;		// vector of transcript expression
-	std::vector<std::string> transcript_assignments;	// vector of transcript assignments
+	size_t transcript_num = 0;                         // number of transcripts identified
+	std::vector<std::vector<int>> transcript_vec;      // vector of transcript regions
+	std::vector<long double> transcript_expression;    // vector of transcript expression
+	std::vector<std::string> transcript_assignments;   // vector of transcript assignments
 
 
 public:
@@ -88,7 +92,6 @@ public:
 
 	// Destroy
 	~ClusterNode() { next = NULL; prev = NULL; }
-
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
@@ -151,7 +154,6 @@ public:
 	void update_vec_counts(size_t count) { vec_count += count; }
 	void update_start(int t_start) { start = t_start; }
 	void update_stop(int t_stop) { stop = t_stop; }
-
 
 	/////////////////////////////////////////////////////////////
 	/* Read Vector Functions */
@@ -255,7 +257,6 @@ public:
 	// assign transcripts
 	void assign_transcript(const std::string &t_gene_id, const int &i) { transcript_assignments[i] = t_gene_id; }
 	void assign_ambiguous(const int &i) { transcript_assignments[i] = "Ambiguous"; }
-
 
 	/////////////////////////////////////////////////////////////
 	/* Output Functions */
