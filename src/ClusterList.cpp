@@ -124,10 +124,8 @@ void ClusterList::delete_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared
 		// If curr_node is also not first node
 		if (t_node != NULL) {
 			t_node -> set_next(NULL);
-		
 		} else { t_head = NULL; }
-		
-		// delete c_node;
+
 		c_node = NULL; t_tail = t_node;
 		return;
 	}
@@ -135,10 +133,7 @@ void ClusterList::delete_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared
 	// If first node
 	if (c_node -> get_prev() == NULL) {
 		t_node = c_node -> get_next();
-
 		t_node -> set_prev(NULL);
-		// delete c_node;
-
 		c_node = t_node; t_head = c_node;
 		return;
 	}
@@ -146,8 +141,6 @@ void ClusterList::delete_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared
 	t_node = c_node -> get_prev();
 	t_node -> set_next(c_node -> get_next());
 	t_node -> get_next() -> set_prev(t_node);
-	// delete c_node;
-
 	c_node = t_node -> get_next();
 }
 
@@ -163,7 +156,6 @@ void ClusterList::merge_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared_
 	// If not first node
 	if (c_node -> get_prev() != NULL) {
 		c_node -> get_prev() -> set_next(new_node);
-	
 	} else { t_head = new_node; }
 
 	// If not last node
@@ -173,7 +165,6 @@ void ClusterList::merge_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared_
 	
 	} else { t_tail = new_node; }
 
-	// delete n_node; delete c_node;
 	c_node = new_node;
 }
 
@@ -224,6 +215,7 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 			t_3end = positions[positions.size() - 1];
 			passing_pos_reads += 1;
 
+			// Advance based on 5' position (left most)
 			ClusterList::jump_to_cluster(pos_node, t_5end);
 			pos_node -> add_alignment(positions);
 		}
@@ -242,11 +234,9 @@ void ClusterList::collapse_clusters(int t_strand) {
 
 		node -> shrink_vectors();
 
-		// Not Empty Node
 		if (node -> get_read_count() != 0) {
 			while (true) {
 
-				// If no merging needed
 				if (node -> get_next() == NULL) { break; }
 				if (node -> get_next() -> get_read_count() == 0) { break; }
 
@@ -275,7 +265,6 @@ void ClusterList::collapse_clusters(int t_strand) {
 // Write Clusters to GTF File
 void ClusterList::write_clusters_as_GTF(std::ofstream &gtfFile) {
 
-	// Cancel if empty chromosome
 	if (ClusterList::pos_head == NULL && ClusterList::neg_head == NULL) { return; }
 
 	bool strand;
@@ -283,15 +272,12 @@ void ClusterList::write_clusters_as_GTF(std::ofstream &gtfFile) {
 	std::shared_ptr<ClusterNode> prev_neg = ClusterList::neg_head;
 	std::shared_ptr<ClusterNode> node = ClusterList::get_first_cluster(strand);
 
-	// Iterate Through Clusters
 	while (true) {
 
-		// If no more clusters
 		if (prev_pos == NULL && prev_neg == NULL) { break; }
 
 		node -> ClusterNode::write_transcripts(gtfFile);
 
-		// Get Next Cluster by position
 		if (strand == 0) {
 			node = ClusterList::get_next_cluster(node, prev_pos, prev_neg, strand);
 		} else {

@@ -20,7 +20,6 @@ bool AnnotationList::set_feature_id(std::vector<std::string> &t_columns) {
 	// if gff, different separator.
 	if (ImpaqtArguments::Args.isGFF) { sep = '='; }
 
-	// Iterate through annotation features
 	std::istringstream anno_stream(t_columns.at(8));
 	while (std::getline(anno_stream, tag, ';')) {
 
@@ -103,17 +102,14 @@ void AnnotationList::add_line(const std::vector<std::string> &columns) {
 // Create Gene Graph Structure
 void AnnotationList::create_gene_list() {
 
-	// Open file
 	std::ifstream infile(AnnotationList::annotation_file);
 	if (!infile) { throw "ERROR: Could not read annotation file."; }
 
-	// Iterate through lines in file
 	std::string col;
 	std::string line;
 	std::vector<std::string> columns{9, ""};
 	while (std::getline(infile, line)) {
 
-		// skip headers
 		if (line[0] == '#') { continue; }
 
 		// populate column vector
@@ -124,10 +120,7 @@ void AnnotationList::create_gene_list() {
 			i += 1;
 		}
 
-		// if not feature tag
 		if (columns[2] != ImpaqtArguments::Args.feature_tag) { continue; }
-
-		// if feature id not found
 		if (!AnnotationList::set_feature_id(columns)) {
 			std::cerr << "ERROR: Could not find feature tag in line:\n" << line << "\n";
 			throw "ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.";
@@ -144,7 +137,6 @@ void AnnotationList::create_gene_list() {
 // Print genes and counts
 void  AnnotationList::print_gene_counts() {
 
-	// Return if empty GTF?
 	if (AnnotationList::pos_head == NULL &&  AnnotationList::neg_head == NULL) {
 		std::cerr << "// NOTICE: No genes found in annotation file.\n";
 		return;
@@ -155,17 +147,13 @@ void  AnnotationList::print_gene_counts() {
 	std::shared_ptr<GeneNode> prev_neg = AnnotationList::get_head(1);
 	std::shared_ptr<GeneNode> node = AnnotationList::get_first_gene(strand);
 
-	// Iterate Throught Genes
 	while (true) {
 
-		// Break When all genes have been exhausted
 		if (prev_neg == NULL && prev_pos == NULL) { break; }
 
-		// Report Gene and Counts
 		std::cout << node -> GeneNode::get_geneID() << "\t" 
 				  << node -> GeneNode::get_read_count() << "\n";
 		
-		// Get Next Cluster by position
 		if (strand == 0) {
 			node = AnnotationList::get_next_gene(node, prev_pos, prev_neg, strand);
 		} else {

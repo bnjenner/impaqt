@@ -14,31 +14,31 @@ class ClusterNode {
 private:
 
 	// Node Details
-	std::string contig_name;                           // name of contig
-	int chrom_index;                                   // chromosome number in index
-	int strand = -1;                                   // standedness
-	int start;                                         // beginning of window
-	int stop;                                          // end of window
+	std::string contig_name;                            // name of contig
+	int chrom_index;                                    // chromosome number in index
+	int strand = -1;                                    // standedness
+	int start;                                          // beginning of window
+	int stop;                                           // end of window
 	bool skip = false;
 
 	// Read Details
-	std::string headID;                                // read ID of first read in cluster
-	size_t read_count = 0;                             // number of associated reads
+	std::string headID;                                 // read ID of first read in cluster
+	size_t read_count = 0;                              // number of associated reads
 	size_t vec_count = 0;
-	size_t total_core_points = 0;                      // number of total core points
-	std::vector<int> five_vec;                         // vector for 5' ends
-	std::vector<int> three_vec;                        // vector for 3' ends
-	std::vector<int> index_vec;                        // vector for read indexes
+	size_t total_core_points = 0;                       // number of total core points
+	std::vector<int> five_vec;                          // vector for 5' ends
+	std::vector<int> three_vec;                         // vector for 3' ends
+	std::vector<int> index_vec;                         // vector for read indexes
 
 	// Links
-	std::shared_ptr<ClusterNode> next;                 // next ClusterNode
-	std::shared_ptr<ClusterNode> prev;                 // pevsious ClusterNode
+	std::shared_ptr<ClusterNode> next;                  // next ClusterNode
+	std::shared_ptr<ClusterNode> prev;                  // pevsious ClusterNode
 
 	// Transcript Results
-	size_t transcript_num = 0;                         // number of transcripts identified
-	std::vector<std::vector<int>> transcript_vec;      // vector of transcript regions
-	std::vector<long double> transcript_expression;    // vector of transcript expression
-	std::vector<std::string> transcript_assignments;   // vector of transcript assignments
+	size_t transcript_num = 0;                          // number of transcripts identified
+	std::vector<std::vector<int>> transcript_vec;       // vector of transcript regions
+	std::vector<long double> transcript_expression;     // vector of transcript expression
+	std::vector<std::string> transcript_assignments;    // vector of transcript assignments
 
 
 public:
@@ -90,9 +90,6 @@ public:
 		index_vec.resize(vec_count, 0);
 		for (int i = 0; i < n_vec; i++) { index_vec.at(c_vec + i) = c_vec + n_node -> get_index_vec()[i]; }
 	}
-
-	// Destroy
-	// ~ClusterNode() { next = NULL; prev = NULL; }
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
@@ -265,17 +262,15 @@ public:
 	// Print Transcripts
 	void write_transcripts(std::ofstream &gtfFile) {
 
-		// Skip if swallowed by neighboring cluster
 		if (this -> is_skipped()) { return; }
 
 		int start, stop, x_start, x_stop;
 		int regions = 0;
 		float quant;
 		std::string gene_id;
-
-		// Set Strand
 		char strand = '+';
 		if (this -> get_strand() == 1) { strand = '-'; }
+
 
 		for (int i = 0; i < transcript_vec.size(); i++) {
 

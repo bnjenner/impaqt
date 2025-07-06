@@ -93,7 +93,7 @@ public:
 												  std::shared_ptr<ClusterNode> &a_prev,
 												  std::shared_ptr<ClusterNode> &b_prev, 
 												  bool &strand) {
-
+		
 		a_prev = c_node -> get_next();
 		if (a_prev == NULL) {
 			c_node = b_prev; strand = !strand;
@@ -154,8 +154,8 @@ public:
 		this -> window_size = ImpaqtArguments::Args.window_size;
 
 		const int zones = (contig_length / window_size) + 1;
-		initialize_strand(pos_head, pos_tail, 0, zones); // Positive Strand
-		initialize_strand(neg_head, neg_tail, 1, zones); // Negative Strand
+		initialize_strand(pos_head, pos_tail, 0, zones);
+		initialize_strand(neg_head, neg_tail, 1, zones);
 	}
 
 	// Find Nearest Region in List
@@ -178,6 +178,7 @@ public:
 
 	/////////////////////////////////////////////////////////////
 	/* Functions for Testing Suite */
+
 	void print_clusters(int t_strand) {
 		std::shared_ptr<ClusterNode> node = get_head(t_strand);
 		while (node != NULL) {

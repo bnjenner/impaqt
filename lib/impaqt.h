@@ -86,12 +86,10 @@ public:
 	/* Thread Initilizers */
 
 	void open_alignment_file() {
-		// Open alignment file
 		if (!inFile.Open(alignment_file_name)) {
 			std::cerr << "ERROR: Could not read alignment file: " << alignment_file_name << "\n";
 			throw "ERROR: Make sure alignment file exists.";
 		}
-		// Open index file
 		if (!inFile.OpenIndex(index_file_name)) {
 			std::cerr << "ERROR: Could not read index file: " << index_file_name << "\n";
 			throw "ERROR: Make sure index is present in BAM file location.";
@@ -144,33 +142,29 @@ public:
 			throw "ERROR: Could not jump to region. Make sure BAM header is correct.";
 		}
 
-		// If failed to create clusters, flag to ignore
+		// Attempt to create clusters, flag to ignore if failed
 		if (!(cluster -> create_clusters(inFile, alignment))) { ignore = true; }
 	}
 
 	// Merge neighboring clusters and remove zeroes
 	void collapse_clusters(std::shared_ptr<ClusterList> &cluster) {
-		cluster -> collapse_clusters(0); // Forward 
-		cluster -> collapse_clusters(1); // Reverse
+		cluster -> collapse_clusters(0);
+		cluster -> collapse_clusters(1);
 	}
 
 	// Differentiate Transcripts
 	void find_transcripts(std::shared_ptr<ClusterList> &cluster) {
 		if (ignore) { return; }
-
-		// Forward
 		find_transcripts_DBSCAN(cluster, 0);
 		collapse_final_transcripts(cluster, 0);
-
-		// Reverse
 		find_transcripts_DBSCAN(cluster, 1);
 		collapse_final_transcripts(cluster, 1);
 	}
 
 	// Assign Transcripts to Genes
 	void assign_transcripts(std::shared_ptr<ClusterList> &cluster) {
-		assign_to_genes(annotation, cluster, this -> get_contig_name(), 0); // Forward
-		assign_to_genes(annotation, cluster, this -> get_contig_name(), 1); // Forward
+		assign_to_genes(annotation, cluster, this -> get_contig_name(), 0);
+		assign_to_genes(annotation, cluster, this -> get_contig_name(), 1);
 	}
 
 	/////////////////////////////////////////////////////////////

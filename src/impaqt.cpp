@@ -46,7 +46,7 @@ int main(int argc, char const ** argv) {
     // Set Up Impaqt Threads
     std::vector<std::shared_ptr<Impaqt>> processes;
     processes.emplace_back(std::make_shared<Impaqt>(0));
-    
+
     std::cerr << "//    Alignment File.....\n";
     processes[0] -> open_alignment_file();
     processes[0] -> set_chrom_order();
@@ -88,7 +88,6 @@ int main(int argc, char const ** argv) {
     // Output read cluster gtf if specified
     if (ImpaqtArguments::Args.gtf_output != "") {
 
-         // Open GTF File
         std::cerr << "//    GTF File...........\n";
         std::ofstream gtfFile;
         gtfFile.open(ImpaqtArguments::Args.gtf_output);
@@ -99,7 +98,6 @@ int main(int argc, char const ** argv) {
                 << "##bam: " << ImpaqtArguments::Args.alignment_file << "\n"
                 << "##annotation: " << ImpaqtArguments::Args.annotation_file << "\n";
 
-        // Write Transcripts
         for (const auto &p : processes) { p -> write_gtf(gtfFile); }
         gtfFile.close();
     }

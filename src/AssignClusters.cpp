@@ -114,7 +114,6 @@ int get_transcript_overlap(const std::vector<int> &transcript, std::shared_ptr<G
 	int m = gene -> get_exon_num();
 	std::vector<int> exons = gene -> get_exon_vec();
 
-	// Iterate through exons, see if match is complete 
 	while (i < n) {
 
 		j = 0;
@@ -128,7 +127,6 @@ int get_transcript_overlap(const std::vector<int> &transcript, std::shared_ptr<G
 			} else if (transcript[(2*i)] > exons[(2*j) + 1]) {
 				j += 1;
 
-				// If potential match
 			} else {
 				if (check_bounds(transcript[(2*i)], transcript[(2*i)+1], exons[(2*j)], exons[(2*j)+1])) {
 					matches += 1; break;
@@ -267,21 +265,16 @@ void assign_to_genes(AnnotationList &annotation, std::shared_ptr<ClusterList> li
 
 	while (node != NULL) {
 
-		// Skip not swallowed by neighboring cluster
 		if (!(node -> is_skipped())) {
 
 			t_num = node -> get_transcript_num();
-
-			// If transcripts to assign
 			if (t_num != 0) {
 
 				// Advance to Potential Gene
 				start = node -> get_transcript_start();
 				prev_gene = get_closest_gene(start, prev_gene, node);
 				
-				if (prev_gene != NULL) {
-					assign_transcripts_to_genes(node, prev_gene, list, annotation, t_num);
-				}
+				if (prev_gene != NULL) { assign_transcripts_to_genes(node, prev_gene, list, annotation, t_num); }
 
 			} else {
 
@@ -292,14 +285,10 @@ void assign_to_genes(AnnotationList &annotation, std::shared_ptr<ClusterList> li
 				start = (node -> get_five_vec())[0];
 				prev_gene = get_closest_gene(start, prev_gene, node);
 
-				if (prev_gene != NULL) {
-					assign_reads_to_genes(node, prev_gene, list, annotation);				
-				}
+				if (prev_gene != NULL) { assign_reads_to_genes(node, prev_gene, list, annotation); }
 			}
 
-			if (prev_gene == NULL) {
-				list -> add_unassigned_singles(node -> get_read_count());
-			}
+			if (prev_gene == NULL) { list -> add_unassigned_singles(node -> get_read_count()); }
 		}
 
 		node = node -> get_next();

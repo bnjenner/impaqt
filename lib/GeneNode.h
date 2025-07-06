@@ -136,7 +136,6 @@ public:
 		const int t_start = std::stoi(str_start) - 1;
 		const int t_stop = std::stoi(str_stop) - 1;
 
-		// For all recorded exons
 		for (int i = 0; i < n; i++) {
 
 			// If intersection
