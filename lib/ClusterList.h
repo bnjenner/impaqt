@@ -55,6 +55,20 @@ private:
 
 public:
 
+	~ClusterList() {
+		std::shared_ptr<ClusterNode> c_node = pos_head;
+		std::shared_ptr<ClusterNode> t_node = NULL;
+		for (int i = 0; i < 2; i ++) {
+			if (i != 0) { c_node = neg_head; t_node = NULL; }
+	        while (c_node != NULL) {
+	        	t_node = c_node -> get_next();
+	        	c_node -> get_next().reset();
+	        	c_node -> get_next().reset();
+	        	c_node = t_node;
+	        }
+		}
+	}
+
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
@@ -154,8 +168,8 @@ public:
 		this -> window_size = ImpaqtArguments::Args.window_size;
 
 		const int zones = (contig_length / window_size) + 1;
-		initialize_strand(pos_head, pos_tail, 0, zones);
-		initialize_strand(neg_head, neg_tail, 1, zones);
+		initialize_strand(this -> pos_head, this -> pos_tail, 0, zones);
+		initialize_strand(this -> neg_head, this -> neg_tail, 1, zones);
 	}
 
 	// Find Nearest Region in List

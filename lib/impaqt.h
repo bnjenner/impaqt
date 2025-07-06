@@ -154,7 +154,6 @@ public:
 
 	// Differentiate Transcripts
 	void find_transcripts(std::shared_ptr<ClusterList> &cluster) {
-		if (ignore) { return; }
 		find_transcripts_DBSCAN(cluster, 0);
 		collapse_final_transcripts(cluster, 0);
 		find_transcripts_DBSCAN(cluster, 1);
@@ -204,6 +203,7 @@ public:
 			}
 			this -> get_stats(cluster);                  // Get Read Stats
 		}
+		std::cerr << "Scope End\n";
 	}
 };
 

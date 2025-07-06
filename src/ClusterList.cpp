@@ -107,8 +107,9 @@ void ClusterList::initialize_strand(std::shared_ptr<ClusterNode> &head, std::sha
                                                        ClusterList::window_size, 
                                                        ClusterList::contig_index, 
                                                        ClusterList::contig_name));
-		tail -> get_next() -> set_prev(tail);
 		tail = tail -> get_next();
+		std::weak_ptr<ClusterNode> tmp_ptr = tail -> get_prev();
+		tail -> set_prev(tmp_ptr);
 	}
 }
 
@@ -133,11 +134,11 @@ void ClusterList::delete_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared
 	// If first node
 	if (c_node -> get_prev() == NULL) {
 		t_node = c_node -> get_next();
-		t_node -> set_prev(NULL);
 		c_node = t_node; t_head = c_node;
 		return;
 	}
 
+	// t_node = c_node -> get_prev();
 	t_node = c_node -> get_prev();
 	t_node -> set_next(c_node -> get_next());
 	t_node -> get_next() -> set_prev(t_node);
@@ -150,12 +151,13 @@ void ClusterList::merge_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared_
 	std::shared_ptr<ClusterNode> n_node = c_node -> get_next();
 	n_node -> shrink_vectors();
 
-	std::shared_ptr<ClusterNode> new_node = std::make_shared<ClusterNode>(c_node, n_node);;
-	new_node -> set_prev(c_node -> get_prev());
+	std::shared_ptr<ClusterNode> new_node = std::make_shared<ClusterNode>(c_node, n_node);
+	std::shared_ptr<ClusterNode> shr_ptr = c_node -> get_prev();
+	new_node -> set_prev(shr_ptr);
 
 	// If not first node
-	if (c_node -> get_prev() != NULL) {
-		c_node -> get_prev() -> set_next(new_node);
+	if (shr_ptr != NULL) {
+		shr_ptr -> set_next(new_node);
 	} else { t_head = new_node; }
 
 	// If not last node

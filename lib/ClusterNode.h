@@ -32,7 +32,7 @@ private:
 
 	// Links
 	std::shared_ptr<ClusterNode> next;                  // next ClusterNode
-	std::shared_ptr<ClusterNode> prev;                  // pevsious ClusterNode
+	std::weak_ptr<ClusterNode> prev;                    // pevsious ClusterNode
 
 	// Transcript Results
 	size_t transcript_num = 0;                          // number of transcripts identified
@@ -48,6 +48,11 @@ public:
 
 	// Empty
 	ClusterNode() {}
+	~ClusterNode() {
+		std::cerr << "\tDestroying ClusterNode: " << contig_name << ":" 
+		          << start << "-" << stop << " with " << read_count << " reads.\n";
+	}
+
 
 	// Initialize
 	ClusterNode(const int &start, const int strand,  const int &window_size, const int &chrom_index, const std::string &contig_name) {
@@ -111,6 +116,11 @@ public:
 	std::vector<int>* get_five_ref() { return &five_vec; }
 	std::vector<int>* get_three_ref() { return &three_vec; }
 	std::vector<int>* get_index_ref() { return &index_vec; }
+
+	std::shared_ptr<ClusterNode> get_next() { return next; }
+	std::shared_ptr<ClusterNode> get_prev() { return prev.lock(); }
+
+	bool is_skipped() { return skip; }
 	
 	// Reset trancript vars
 	void clear_transcripts() {
@@ -135,17 +145,11 @@ public:
 		return last;
 	}
 
-	std::shared_ptr<ClusterNode> get_next() { return next; }
-	std::shared_ptr<ClusterNode> get_prev() { return prev; }
-
-	bool is_skipped() { return skip; }
-
-
 	/////////////////////////////////////////////////////////////
 	/* Set Functions */
 
 	void set_next(std::shared_ptr<ClusterNode> node) { next = node; }
-	void set_prev(std::shared_ptr<ClusterNode> node) { prev = node; }
+	void set_prev(std::weak_ptr<ClusterNode> node) { prev = node; }
 	void set_chrom_index(int t_chrom_index) { chrom_index = t_chrom_index; }
 	void set_skip() { skip = true; }
 	void update_read_counts(size_t count) { read_count += count; }
