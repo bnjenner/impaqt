@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <numeric>
+#include <memory>
 #include <vector>
 #include <algorithm>
 
@@ -30,8 +31,8 @@ private:
 	std::vector<int> index_vec;                        // vector for read indexes
 
 	// Links
-	ClusterNode *next = NULL;                          // next ClusterNode
-	ClusterNode *prev = NULL;                          // pevsious ClusterNode
+	std::shared_ptr<ClusterNode> next;                 // next ClusterNode
+	std::shared_ptr<ClusterNode> prev;                 // pevsious ClusterNode
 
 	// Transcript Results
 	size_t transcript_num = 0;                         // number of transcripts identified
@@ -49,7 +50,7 @@ public:
 	ClusterNode() {}
 
 	// Initialize
-	ClusterNode(const int &start, const int &window_size, const int strand, const int &chrom_index, const std::string &contig_name) {
+	ClusterNode(const int &start, const int strand,  const int &window_size, const int &chrom_index, const std::string &contig_name) {
 		this -> start = start;
 		this -> stop = start + window_size;
 		this -> strand = strand;
@@ -61,7 +62,7 @@ public:
 	}
 
 	// For combined Nodes 
-	ClusterNode(ClusterNode *c_node, ClusterNode *n_node) {
+	ClusterNode(std::shared_ptr<ClusterNode> c_node, std::shared_ptr<ClusterNode> n_node) {
 
 		// BNJ (7/4/2023): replace with a swallow function. Avoid making an entirely new object
 
@@ -91,7 +92,7 @@ public:
 	}
 
 	// Destroy
-	~ClusterNode() { next = NULL; prev = NULL; }
+	// ~ClusterNode() { next = NULL; prev = NULL; }
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
@@ -137,8 +138,8 @@ public:
 		return last;
 	}
 
-	ClusterNode* get_next() { return next; }
-	ClusterNode* get_prev() { return prev; }
+	std::shared_ptr<ClusterNode> get_next() { return next; }
+	std::shared_ptr<ClusterNode> get_prev() { return prev; }
 
 	bool is_skipped() { return skip; }
 
@@ -146,8 +147,8 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Set Functions */
 
-	void set_next(ClusterNode *node) { next = node; }
-	void set_prev(ClusterNode *node) { prev = node; }
+	void set_next(std::shared_ptr<ClusterNode> node) { next = node; }
+	void set_prev(std::shared_ptr<ClusterNode> node) { prev = node; }
 	void set_chrom_index(int t_chrom_index) { chrom_index = t_chrom_index; }
 	void set_skip() { skip = true; }
 	void update_read_counts(size_t count) { read_count += count; }

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 
 #include "ClusterList.h"
 #include "DBSCAN.h"
@@ -114,7 +115,7 @@ std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<
 }
 
 // Reduce Transcript Number by Overlapping. Report Unique Transcripts
-void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts) {
+void get_final_transcripts(std::shared_ptr<ClusterNode> curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts) {
 
 	int n;
 	bool all_unique, overlap;
@@ -190,12 +191,12 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 
 
 // Report Unique Transcripts (no overlapping, used for Mitochrondria)
-void report_transcripts(ClusterNode *node, std::vector<std::vector<int>> &result, std::vector<int> &counts) {
+void report_transcripts(std::shared_ptr<ClusterNode> node, std::vector<std::vector<int>> &result, std::vector<int> &counts) {
 	for (int i = 0; i < result.size(); i++) { node -> add_transcript(result[i], counts[i]); }
 }
 
 
-void merge_final_transcripts(ClusterNode *c_node, ClusterNode *n_node) {
+void merge_final_transcripts(std::shared_ptr<ClusterNode> c_node, std::shared_ptr<ClusterNode> n_node) {
 
 	std::vector<std::vector<int>> transcripts = *(c_node -> get_transcripts());
 	std::vector<int> counts(c_node -> get_transcript_num(), 0);
@@ -215,7 +216,7 @@ void merge_final_transcripts(ClusterNode *c_node, ClusterNode *n_node) {
 
 
 // Get Transcript Coordinates
-void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &paths,
+void get_coordinates(std::shared_ptr<ClusterNode> curr_node, const std::map<std::string, int> &paths,
                      std::vector<std::vector<int>> &core_5, std::vector<std::vector<int>> &core_3,
                      std::vector<std::vector<int>> *transcripts, std::vector<int> *counts) {
 
@@ -278,7 +279,7 @@ void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &p
 
 
 // Find all linked DBSCAN clusters
-void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &path_map,
+void get_linked_clusters(std::shared_ptr<ClusterNode> curr_node, std::map<std::string, int> &path_map,
                          const std::vector<int> &assign_5, const std::vector<int> &assign_3) {
 
 	std::string path;
@@ -336,7 +337,7 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 
 
 // DBSCAN Clustering Function, inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
-std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &min_counts,
+std::vector<int> dbscan(std::shared_ptr<ClusterNode> curr_node, const int &points, const int &min_counts,
                         std::vector<std::vector<int>> &assignment, const bool &five, const bool &mito) {
 
 
@@ -421,13 +422,13 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 }
 
 // Initiate Transcript Identifying Procedure
-void find_transcripts_DBSCAN(ClusterList *cluster,  const int &strand) {
+void find_transcripts_DBSCAN(std::shared_ptr<ClusterList> &cluster,  const int &strand) {
 
 	float density;
 	int expr, points, min_counts;
 	int count_threshold = std::max(ImpaqtArguments::Args.min_count, 10);
 
-	ClusterNode *curr_node = cluster -> get_head(strand);
+	std::shared_ptr<ClusterNode> curr_node = cluster -> get_head(strand);
 
 	while (curr_node != NULL) {
 
@@ -494,10 +495,10 @@ void find_transcripts_DBSCAN(ClusterList *cluster,  const int &strand) {
 
 
 // Combine clusters with nonzero neighbors
-void collapse_final_transcripts(ClusterList *cluster, int t_strand) {
+void collapse_final_transcripts(std::shared_ptr<ClusterList> &cluster, int t_strand) {
 
-	ClusterNode *c_node = cluster -> get_head(t_strand);
-	ClusterNode *n_node = NULL;
+	std::shared_ptr<ClusterNode> c_node = cluster -> get_head(t_strand);
+	std::shared_ptr<ClusterNode> n_node = NULL;
 
 	while (c_node != NULL) {
 

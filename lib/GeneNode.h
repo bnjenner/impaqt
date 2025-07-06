@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Gene Node Class (node in a doubly linked list) */
 
@@ -18,8 +20,8 @@ private:
 	std::vector<int> exon_vec = {0, 0};          // vector for bounds
 
 	// Links
-	GeneNode *next = NULL;                       // next ClusterNode
-	GeneNode *prev = NULL;                       // pevsious ClusterNode
+	std::shared_ptr<GeneNode> next;              // next ClusterNode
+	std::shared_ptr<GeneNode> prev;              // pevsious ClusterNode
 
 	/////////////////////////////////////////////////////////////
 	/* Private Gene Functions */
@@ -99,13 +101,6 @@ public:
 		exons += 1;
 	}
 
-	// Destroy
-	~GeneNode() {
-		next = NULL;
-		prev = NULL;
-	}
-
-
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
@@ -122,16 +117,15 @@ public:
 	std::vector<int> get_exon_vec() { return exon_vec; }
 	std::vector<int>* get_exon_ref() { return &exon_vec; }
 
-	GeneNode* get_next() { return next; }
-	GeneNode* get_prev() { return prev; }
+	std::shared_ptr<GeneNode> get_next() { return next; }
+	std::shared_ptr<GeneNode> get_prev() { return prev; }
 
 	/////////////////////////////////////////////////////////////
 	/* Set functions */
 
-	void set_next(GeneNode *node) { next = node; }
-	void set_prev(GeneNode *node) { prev = node; }
+	void set_next(std::shared_ptr<GeneNode> node) { next = node; }
+	void set_prev(std::shared_ptr<GeneNode> node) { prev = node; }
 
-	
 	/////////////////////////////////////////////////////////////
 	/* Gene Functions */
 

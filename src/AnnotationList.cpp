@@ -1,6 +1,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <memory>
 #include <vector>
 #include <unordered_map>
 
@@ -50,7 +51,7 @@ void AnnotationList::set_head(const std::vector<std::string> &columns) {
 }
 
 void AnnotationList::extend(const std::vector<std::string> &columns) {
-	GeneNode *gene = create_new_node(columns);
+	std::shared_ptr<GeneNode> gene = create_new_node(columns);
 	if (columns[6] == "+") {
 		AnnotationList::pos_tail -> set_next(gene);
 		gene -> set_prev(AnnotationList::pos_tail);
@@ -64,11 +65,15 @@ void AnnotationList::extend(const std::vector<std::string> &columns) {
 
 void AnnotationList::add_line(const std::vector<std::string> &columns) {
 
+	/*
+	BNJ (7/6/26): this is horrible. Ptr to a shared ptr? Maddening
+	*/
+
 	// Get proper strand
-	GeneNode **head = &(AnnotationList::pos_head);
-	GeneNode **tail = &(AnnotationList::pos_tail);
-	std::unordered_map<std::string, GeneNode*> *chrom_map = &(AnnotationList::pos_chrom_map);
-	
+	std::shared_ptr<GeneNode> *head = &(AnnotationList::pos_head);
+	std::shared_ptr<GeneNode> *tail = &(AnnotationList::pos_tail);
+	std::unordered_map<std::string, std::shared_ptr<GeneNode>> *chrom_map = &(AnnotationList::pos_chrom_map); // C-Style ptr, sorry
+
 	if (columns[6] == "-") {
 		head = &(AnnotationList::neg_head); tail = &(AnnotationList::neg_tail);
 		chrom_map = &(AnnotationList::neg_chrom_map);
@@ -88,7 +93,7 @@ void AnnotationList::add_line(const std::vector<std::string> &columns) {
 
 	// If new chrom add to chrom map
 	if (chrom_map -> find(columns[0]) == chrom_map -> end()) {
-		(*chrom_map)[columns[0]] = *tail;
+		(*chrom_map)[columns[0]] = (*tail);
 	}
 }
 
@@ -146,9 +151,9 @@ void  AnnotationList::print_gene_counts() {
 	}
 
 	bool strand;
-	GeneNode *prev_pos = AnnotationList::pos_head;
-	GeneNode *prev_neg = AnnotationList::neg_head;
-	GeneNode *node = AnnotationList::get_first_gene(strand);
+	std::shared_ptr<GeneNode> prev_pos = AnnotationList::get_head(0);
+	std::shared_ptr<GeneNode> prev_neg = AnnotationList::get_head(1);
+	std::shared_ptr<GeneNode> node = AnnotationList::get_first_gene(strand);
 
 	// Iterate Throught Genes
 	while (true) {

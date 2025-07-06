@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <memory>
 #include <algorithm>
 #include <api/BamAux.h>
 #include <api/BamReader.h>
@@ -91,30 +92,30 @@ bool ClusterList::read_check(const BamTools::BamAlignment &alignment) {
 /* Private Node Methods */
 
 // Create Empty Clusters
-void ClusterList::initialize_strand(ClusterNode *&head, ClusterNode *&tail, const int strand, const int &zones) {
+void ClusterList::initialize_strand(std::shared_ptr<ClusterNode> &head, std::shared_ptr<ClusterNode> &tail, const int strand, const int &zones) {
 	int pos = 0;
-	ClusterNode *node = new ClusterNode(pos, 
-					    ClusterList::window_size,
-                                            strand, 
-                                            ClusterList::contig_index, 
-                                            ClusterList::contig_name);
+	std::shared_ptr<ClusterNode> node = std::make_shared<ClusterNode>(pos,
+                                                                      strand,
+                                                                      ClusterList::window_size, 
+                                                                      ClusterList::contig_index, 
+                                                                      ClusterList::contig_name);
 	head = node; tail = node;
 	for (int i = 1; i < zones; i++) {
 		pos += ClusterList::window_size;
-		tail -> set_next(new ClusterNode(pos, 
-                                                 ClusterList::window_size, 
-                                                 strand, 
-                                                 ClusterList::contig_index, 
-                                                 ClusterList::contig_name));
+		tail -> set_next(std::make_shared<ClusterNode>(pos,
+                                                       strand,
+                                                       ClusterList::window_size, 
+                                                       ClusterList::contig_index, 
+                                                       ClusterList::contig_name));
 		tail -> get_next() -> set_prev(tail);
 		tail = tail -> get_next();
 	}
 }
 
 // Delete Empty Nodes
-void ClusterList::delete_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail) {
+void ClusterList::delete_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared_ptr<ClusterNode> &t_head, std::shared_ptr<ClusterNode> &t_tail) {
 
-	ClusterNode *t_node;
+	std::shared_ptr<ClusterNode> t_node;
 
 	// If last node
 	if (c_node -> get_next() == NULL) {
@@ -126,7 +127,7 @@ void ClusterList::delete_nodes(ClusterNode *&c_node, ClusterNode *&t_head, Clust
 		
 		} else { t_head = NULL; }
 		
-		delete c_node;
+		// delete c_node;
 		c_node = NULL; t_tail = t_node;
 		return;
 	}
@@ -136,7 +137,7 @@ void ClusterList::delete_nodes(ClusterNode *&c_node, ClusterNode *&t_head, Clust
 		t_node = c_node -> get_next();
 
 		t_node -> set_prev(NULL);
-		delete c_node;
+		// delete c_node;
 
 		c_node = t_node; t_head = c_node;
 		return;
@@ -145,18 +146,18 @@ void ClusterList::delete_nodes(ClusterNode *&c_node, ClusterNode *&t_head, Clust
 	t_node = c_node -> get_prev();
 	t_node -> set_next(c_node -> get_next());
 	t_node -> get_next() -> set_prev(t_node);
-	delete c_node;
+	// delete c_node;
 
 	c_node = t_node -> get_next();
 }
 
 // Merge Neighboring Non-Zero Nodes
-void ClusterList::merge_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail) {
+void ClusterList::merge_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared_ptr<ClusterNode> &t_head, std::shared_ptr<ClusterNode> &t_tail) {
 
-	ClusterNode *n_node = c_node -> get_next();
+	std::shared_ptr<ClusterNode> n_node = c_node -> get_next();
 	n_node -> shrink_vectors();
 
-	ClusterNode *new_node = new ClusterNode(c_node, n_node);
+	std::shared_ptr<ClusterNode> new_node = std::make_shared<ClusterNode>(c_node, n_node);;
 	new_node -> set_prev(c_node -> get_prev());
 
 	// If not first node
@@ -172,22 +173,8 @@ void ClusterList::merge_nodes(ClusterNode *&c_node, ClusterNode *&t_head, Cluste
 	
 	} else { t_tail = new_node; }
 
-	delete n_node; delete c_node;
+	// delete n_node; delete c_node;
 	c_node = new_node;
-}
-
-// Delete every node in list
-void ClusterList::delete_list() {
-	ClusterNode *c_node = pos_head;
-	ClusterNode *t_node = NULL;
-	for (int i = 0; i < 2; i ++) {
-		if (i != 0) { c_node = neg_head; t_node = NULL; }
-		while (c_node != NULL) {
-			t_node = c_node;
-			c_node = c_node -> get_next();
-			delete t_node;
-		}
-	}
 }
 
 /////////////////////////////////////////////////////////////
@@ -199,9 +186,9 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 	int t_5end, t_3end, t_strand;
 	bool found_reads = false;
 	std::vector<int> positions;
-	ClusterNode *pos_node = ClusterList::get_head(0);
-	ClusterNode *neg_node = ClusterList::get_head(1);
-	ClusterNode *t_node = neg_node; // This needs to exist because BAM is ordered by left most position
+	std::shared_ptr<ClusterNode> pos_node = ClusterList::get_head(0);
+	std::shared_ptr<ClusterNode> neg_node = ClusterList::get_head(1);
+	std::shared_ptr<ClusterNode> t_node = neg_node; // This needs to exist because BAM is ordered by left most position
 
 	while (true) {
 
@@ -247,9 +234,9 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 // Combine clusters with nonzero neighbors
 void ClusterList::collapse_clusters(int t_strand) {
 
-	ClusterNode *t_head = ClusterList::get_head(t_strand);
-	ClusterNode *t_tail = ClusterList::get_tail(t_strand);
-	ClusterNode *node = t_head;
+	std::shared_ptr<ClusterNode> t_head = ClusterList::get_head(t_strand);
+	std::shared_ptr<ClusterNode> t_tail = ClusterList::get_tail(t_strand);
+	std::shared_ptr<ClusterNode> node = t_head;
 
 	while (node != NULL) {
 
@@ -292,9 +279,9 @@ void ClusterList::write_clusters_as_GTF(std::ofstream &gtfFile) {
 	if (ClusterList::pos_head == NULL && ClusterList::neg_head == NULL) { return; }
 
 	bool strand;
-	ClusterNode *prev_pos = ClusterList::pos_head;
-	ClusterNode *prev_neg = ClusterList::neg_head;
-	ClusterNode *node = ClusterList::get_first_cluster(strand);
+	std::shared_ptr<ClusterNode> prev_pos = ClusterList::pos_head;
+	std::shared_ptr<ClusterNode> prev_neg = ClusterList::neg_head;
+	std::shared_ptr<ClusterNode> node = ClusterList::get_first_cluster(strand);
 
 	// Iterate Through Clusters
 	while (true) {

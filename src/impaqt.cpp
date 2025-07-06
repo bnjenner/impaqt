@@ -44,8 +44,10 @@ int main(int argc, char const ** argv) {
     std::cerr << "//Parsing Input Files:\n";
 
     // Set Up Impaqt Threads
+    std::vector<std::shared_ptr<Impaqt>> processes;
+    processes.emplace_back(std::make_shared<Impaqt>(0));
+    
     std::cerr << "//    Alignment File.....\n";
-    std::vector<Impaqt*> processes = {new Impaqt(0)};
     processes[0] -> open_alignment_file();
     processes[0] -> set_chrom_order();
 
@@ -58,7 +60,7 @@ int main(int argc, char const ** argv) {
     size_t n = processes[0] -> get_chrom_num();
     if (n > 1) {
         processes.reserve(n);
-        for (int i = 1; i < n; i++) { processes.emplace_back(new Impaqt(i)); }
+        for (int i = 1; i < n; i++) { processes.emplace_back(std::make_shared<Impaqt>(i)); }
     }
 
     // Launch Threads
@@ -126,7 +128,6 @@ int main(int argc, char const ** argv) {
         total_low_quality += processes[i] -> get_low_quality_reads();
         total_reads += processes[i] -> get_total_reads();
         total_transcripts += processes[i] -> get_transcript_num();
-        delete processes[i];
     }
 
     std::cout << "//assigned\t" << std::fixed << std::setprecision(2) << total_assigned << "\n"

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include <vector>
 
 #include "utils.h"
@@ -13,12 +14,12 @@
 /* Traversal Functions */
 
 // Get Next Cloest Gene
-GeneNode* get_closest_gene(const int &t, GeneNode *gene, ClusterNode *clust) {
+std::shared_ptr<GeneNode> get_closest_gene(const int &t, std::shared_ptr<GeneNode> gene, std::shared_ptr<ClusterNode> node) {
 	if (gene == NULL) { return NULL; }
 	while (t > gene -> get_stop()) {
 		gene = gene -> get_next();
 		if (gene == NULL)  { break; }
-		if (gene -> get_chrom() != clust -> get_contig_name()) {
+		if (gene -> get_chrom() != node -> get_contig_name()) {
 			gene = NULL; break; // Not on same contig
 		}
 	}
@@ -29,7 +30,7 @@ GeneNode* get_closest_gene(const int &t, GeneNode *gene, ClusterNode *clust) {
 /* Assignment Functions */
 
 // Resolve Read Assignment To Genes
-void resolve_read_assignment(GeneNode *gene, const int &max, std::vector<size_t> &read_assignments) {
+void resolve_read_assignment(std::shared_ptr<GeneNode> gene, const int &max, std::vector<size_t> &read_assignments) {
 
 	if (gene == NULL && max != 0) {
 		read_assignments[2] += 1; // Add to ambiguous
@@ -48,26 +49,27 @@ void resolve_read_assignment(GeneNode *gene, const int &max, std::vector<size_t>
 }
 
 // Resolve Read Assignment To Genes
-void resolve_transcript_assignment(ClusterList *list, ClusterNode *cluster, GeneNode *gene, const int &max, const int &i) {
+void resolve_transcript_assignment(std::shared_ptr<ClusterList> list, std::shared_ptr<ClusterNode> node, 
+	                               std::shared_ptr<GeneNode> gene, const int &max, const int &i) {
 	
-	long double expr = cluster -> get_transcript_expr(i);
+	long double expr = node -> get_transcript_expr(i);
 
 	if (gene == NULL && max != 0) {
-		cluster -> assign_ambiguous(i);
+		node -> assign_ambiguous(i);
 		list -> add_ambiguous_reads(expr);
 		
 	} else if (max == 0) {
 		list -> add_unassigned_reads(expr);
 
 	} else if (gene != NULL) {
-		cluster -> assign_transcript(gene -> get_geneID(), i);
+		node -> assign_transcript(gene -> get_geneID(), i);
 		gene -> add_expression(expr);
 		list -> add_assigned_reads(expr);
 
 	} else {
 		std::cerr << "ERROR: No best overlap found for read assignment.\n"
-				  << "Cluster: " << cluster -> get_contig_name() << ":" 
-				  << cluster -> get_start() << "-" << cluster -> get_stop() << "\n";
+				  << "Cluster: " << node -> get_contig_name() << ":" 
+				  << node -> get_start() << "-" << node -> get_stop() << "\n";
  		throw "ERROR: No best overlap found for read assignment.";
  	}
 }
@@ -75,7 +77,7 @@ void resolve_transcript_assignment(ClusterList *list, ClusterNode *cluster, Gene
 /////////////////////////////////////////////////////////////
 /* Overlapper Helper Functions */
 
-int get_read_overlap(const int &a, const int &b, GeneNode *gene) {
+int get_read_overlap(const int &a, const int &b, std::shared_ptr<GeneNode> gene) {
 
 	int match = 0;
 	bool overlap_a, overlap_b;
@@ -104,7 +106,7 @@ int get_read_overlap(const int &a, const int &b, GeneNode *gene) {
 }
 
 // Check the number of exons that overlap with transcript
-int get_transcript_overlap(const std::vector<int> &transcript, GeneNode *gene) {
+int get_transcript_overlap(const std::vector<int> &transcript, std::shared_ptr<GeneNode> gene) {
 
 	int matches = 0;
 	int i = 0, j = 0;
@@ -140,7 +142,7 @@ int get_transcript_overlap(const std::vector<int> &transcript, GeneNode *gene) {
 	return matches;
 }
 
-void compare_and_update_overlap(GeneNode *&gene, GeneNode *&best_gene, const int &overlap, int &max_overlap) {
+void compare_and_update_overlap(std::shared_ptr<GeneNode> &gene, std::shared_ptr<GeneNode> &best_gene, const int &overlap, int &max_overlap) {
 	// If Better Overlap
 	if (overlap > max_overlap) {
 		max_overlap = overlap; best_gene = gene;
@@ -155,12 +157,13 @@ void compare_and_update_overlap(GeneNode *&gene, GeneNode *&best_gene, const int
 /* Overlapper Functions */
 
 // Assigning expression of transcripts to genes
-void assign_transcripts_to_genes(ClusterNode *cluster, GeneNode *prev_gene, ClusterList *list,  AnnotationList &annotation, const int &t_num) {
+void assign_transcripts_to_genes(std::shared_ptr<ClusterNode> node,  std::shared_ptr<GeneNode> prev_gene, 
+                                 std::shared_ptr<ClusterList> list, AnnotationList &annotation, const int &t_num) {
 
-	GeneNode *gene;
-	GeneNode *best_gene;
+	std::shared_ptr<GeneNode> gene;
+	std::shared_ptr<GeneNode> best_gene;
 	int t_start, t_stop, overlap, max_overlap;
-	std::vector<std::vector<int>> transcripts = *(cluster -> get_transcripts());
+	std::vector<std::vector<int>> transcripts = *(node -> get_transcripts());
 
 	// Iterate through transcripts
 	for (int i = 0; i < t_num; i++) {
@@ -180,29 +183,29 @@ void assign_transcripts_to_genes(ClusterNode *cluster, GeneNode *prev_gene, Clus
 			compare_and_update_overlap(gene, best_gene, overlap, max_overlap);
 
 			gene = gene -> get_next();
-			if (gene == NULL || gene -> get_chrom() != cluster -> get_contig_name()) {
+			if (gene == NULL || gene -> get_chrom() != node -> get_contig_name()) {
 				break;
 			}
 		}
 
-		resolve_transcript_assignment(list, cluster, best_gene, max_overlap, i);
+		resolve_transcript_assignment(list, node, best_gene, max_overlap, i);
 	}
 }
 
 // Assigning expression of transcripts to genes
-void assign_reads_to_genes(ClusterNode *cluster, GeneNode *prev_gene, ClusterList *list, AnnotationList &annotation) {
+void assign_reads_to_genes(std::shared_ptr<ClusterNode> node, std::shared_ptr<GeneNode> prev_gene, 
+	                       std::shared_ptr<ClusterList> list, AnnotationList &annotation) {
 
-	GeneNode *gene;
-	GeneNode *best_gene;
+	std::shared_ptr<GeneNode> gene;
+	std::shared_ptr<GeneNode> best_gene;
 	int start, stop, overlap, max_overlap, index;
 
 	int prev_read = -1;
 	std::vector<size_t> read_assignments = {0, 0, 0}; // {Assigned, Unassigned, Ambiguous}, could probably make an array
 	
+	for (int i = 0; i < node -> get_vec_count(); i++) {
 
-	for (int i = 0; i < cluster -> get_vec_count(); i++) {
-
-		index = cluster -> get_index_vec()[i];
+		index = node -> get_index_vec()[i];
 		gene = prev_gene;
 
 		// If onto new read, reset overlap stats
@@ -217,9 +220,8 @@ void assign_reads_to_genes(ClusterNode *cluster, GeneNode *prev_gene, ClusterLis
 			best_gene = NULL;
 		}
 
-
-		start = (cluster -> get_five_vec())[i];
-		stop = (cluster -> get_three_vec())[i];
+		start = (node -> get_five_vec())[i];
+		stop = (node -> get_three_vec())[i];
 
 		// Check all possible genes
 		while (stop >= gene -> get_start()) {
@@ -227,7 +229,7 @@ void assign_reads_to_genes(ClusterNode *cluster, GeneNode *prev_gene, ClusterLis
 			compare_and_update_overlap(gene, best_gene, overlap, max_overlap);
 
 			gene = gene -> get_next();
-			if (gene == NULL || gene -> get_chrom() != cluster -> get_contig_name()) {
+			if (gene == NULL || gene -> get_chrom() != node -> get_contig_name()) {
 				break;
 			}
 		}
@@ -251,11 +253,11 @@ void assign_reads_to_genes(ClusterNode *cluster, GeneNode *prev_gene, ClusterLis
 /////////////////////////////////////////////////////////////
 /* Main Assignment Function */
 
-void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::string &chrom, const int &strand) {
+void assign_to_genes(AnnotationList &annotation, std::shared_ptr<ClusterList> list, const std::string &chrom, const int &strand) {
 	
 	int t_num, start;
-	ClusterNode *cluster = list -> get_head(strand);
-	GeneNode *prev_gene = annotation.jump_to_chrom(chrom, strand);
+	std::shared_ptr<ClusterNode> node = list -> get_head(strand);
+	std::shared_ptr<GeneNode> prev_gene = annotation.jump_to_chrom(chrom, strand);
 
 	// If no genes
 	if (prev_gene == NULL) {
@@ -263,43 +265,43 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 		return;
 	}
 
-	while (cluster != NULL) {
+	while (node != NULL) {
 
 		// Skip not swallowed by neighboring cluster
-		if (!(cluster -> is_skipped())) {
+		if (!(node -> is_skipped())) {
 
-			t_num = cluster -> get_transcript_num();
+			t_num = node -> get_transcript_num();
 
 			// If transcripts to assign
 			if (t_num != 0) {
 
 				// Advance to Potential Gene
-				start = cluster -> get_transcript_start();
-				prev_gene = get_closest_gene(start, prev_gene, cluster);
+				start = node -> get_transcript_start();
+				prev_gene = get_closest_gene(start, prev_gene, node);
 				
 				if (prev_gene != NULL) {
-					assign_transcripts_to_genes(cluster, prev_gene, list, annotation, t_num);
+					assign_transcripts_to_genes(node, prev_gene, list, annotation, t_num);
 				}
 
 			} else {
 
 				// May not be necessary, but just in case
-				cluster -> index_sort_vectors();
+				node -> index_sort_vectors();
 
 				// Advance to Potential Gene
-				start = (cluster -> get_five_vec())[0];
-				prev_gene = get_closest_gene(start, prev_gene, cluster);
+				start = (node -> get_five_vec())[0];
+				prev_gene = get_closest_gene(start, prev_gene, node);
 
 				if (prev_gene != NULL) {
-					assign_reads_to_genes(cluster, prev_gene, list, annotation);				
+					assign_reads_to_genes(node, prev_gene, list, annotation);				
 				}
 			}
 
 			if (prev_gene == NULL) {
-				list -> add_unassigned_singles(cluster -> get_read_count());
+				list -> add_unassigned_singles(node -> get_read_count());
 			}
 		}
 
-		cluster = cluster -> get_next();
+		node = node -> get_next();
 	}
 }

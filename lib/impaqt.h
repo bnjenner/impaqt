@@ -29,7 +29,7 @@ private:
 	int contig_index;                                           // chromosome number
 	bool ignore = false;                                        // to ignore for downstream
 
-	ClusterList* cluster_list;                                  // List for clusters
+	std::shared_ptr<ClusterList> list_ptr;                      // Temporary Pointer to ClusterList
 
 	// Read Stats
 	long double assigned_reads = 0.0;
@@ -56,9 +56,6 @@ public:
 		this -> alignment_file_name = ImpaqtArguments::Args.alignment_file;
 	}
 
-	// Destructor
-	~Impaqt() { if (!ignore) { delete cluster_list; } }
-
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
@@ -74,7 +71,6 @@ public:
 
 	// Get Data Structures
 	AnnotationList* get_annotation() { return &annotation; }
-	ClusterList* get_clusters() { return cluster_list; }
 
 	// Get Chromosome Info
 	bool is_ignored() { return ignore; }
@@ -134,15 +130,14 @@ public:
 		annotation.create_gene_list();
 	}
 
-
 	/////////////////////////////////////////////////////////////
 	/* Cluster Related Functions */
 
 	// Create cluster list
-	void create_clusters() {
+	void create_clusters(std::shared_ptr<ClusterList> &cluster) {
 
-		cluster_list = new ClusterList();
-		cluster_list -> initialize(contig_index, this -> get_contig_name(), this -> get_contig_length());
+		cluster = std::make_shared<ClusterList>();
+		cluster -> initialize(contig_index, this -> get_contig_name(), this -> get_contig_length());
 
 		if (!inFile.Jump(contig_index)) {
 			std::cerr << "//ERROR: Could not jump to region: " << this -> get_contig_name() << "\n";
@@ -150,32 +145,32 @@ public:
 		}
 
 		// If failed to create clusters, flag to ignore
-		if (!(cluster_list -> create_clusters(inFile, alignment))) { ignore = true; }
+		if (!(cluster -> create_clusters(inFile, alignment))) { ignore = true; }
 	}
 
 	// Merge neighboring clusters and remove zeroes
-	void collapse_clusters() {
-		cluster_list -> collapse_clusters(0); // Forward 
-		cluster_list -> collapse_clusters(1); // Reverse
+	void collapse_clusters(std::shared_ptr<ClusterList> &cluster) {
+		cluster -> collapse_clusters(0); // Forward 
+		cluster -> collapse_clusters(1); // Reverse
 	}
 
 	// Differentiate Transcripts
-	void find_transcripts() {
+	void find_transcripts(std::shared_ptr<ClusterList> &cluster) {
 		if (ignore) { return; }
 
 		// Forward
-		find_transcripts_DBSCAN(cluster_list, 0);
-		collapse_final_transcripts(cluster_list, 0);
+		find_transcripts_DBSCAN(cluster, 0);
+		collapse_final_transcripts(cluster, 0);
 
 		// Reverse
-		find_transcripts_DBSCAN(cluster_list, 1);
-		collapse_final_transcripts(cluster_list, 1);
+		find_transcripts_DBSCAN(cluster, 1);
+		collapse_final_transcripts(cluster, 1);
 	}
 
 	// Assign Transcripts to Genes
-	void assign_transcripts() {
-		assign_to_genes(annotation, cluster_list, this -> get_contig_name(), 0); // Forward
-		assign_to_genes(annotation, cluster_list, this -> get_contig_name(), 1); // Forward
+	void assign_transcripts(std::shared_ptr<ClusterList> &cluster) {
+		assign_to_genes(annotation, cluster, this -> get_contig_name(), 0); // Forward
+		assign_to_genes(annotation, cluster, this -> get_contig_name(), 1); // Forward
 	}
 
 	/////////////////////////////////////////////////////////////
@@ -184,33 +179,37 @@ public:
 	// Print Clusters as GTF
 	void write_gtf(std::ofstream &gtfFile) {
 		if (ignore) { return; }
-		cluster_list -> write_clusters_as_GTF(gtfFile);
+		list_ptr -> write_clusters_as_GTF(gtfFile);
+		list_ptr.reset();
 	}
 
-	void get_stats() {
-		assigned_reads = cluster_list -> get_assigned_reads();
-		unassigned_reads = cluster_list -> get_unassigned_reads();
-		ambiguous_reads = cluster_list -> get_ambiguous_reads();
-		multimapped_reads = cluster_list -> get_multimapped_reads();
-		low_quality_reads = cluster_list -> get_low_quality_reads();
-		total_reads = cluster_list -> get_total_reads();
-		transcript_num = cluster_list -> get_transcript_num();
+	void get_stats(std::shared_ptr<ClusterList> &cluster) {
+		assigned_reads = cluster -> get_assigned_reads();
+		unassigned_reads = cluster -> get_unassigned_reads();
+		ambiguous_reads = cluster -> get_ambiguous_reads();
+		multimapped_reads = cluster -> get_multimapped_reads();
+		low_quality_reads = cluster -> get_low_quality_reads();
+		total_reads = cluster -> get_total_reads();
+		transcript_num = cluster -> get_transcript_num();
 	}
 
 	/////////////////////////////////////////////////////////////
 	/* Thread Launcher */
 
 	void launch() {
-		this -> open_alignment_file();              // open files
-		this -> create_clusters();                  // find clusters
-		this -> close_alignment_file();             // close files
-		if (!ignore) {
-			this -> collapse_clusters();            // collapse clusters
-			this -> find_transcripts();             // dbscan clustering algorithm
-			this -> assign_transcripts();           // overlap genes
+		this -> open_alignment_file();                   // open files
+		{
+			std::shared_ptr<ClusterList> cluster;
+			this -> create_clusters(cluster);            // find clusters
+			this -> close_alignment_file();              // close files
+			if (!ignore) {
+				this -> collapse_clusters(cluster);      // collapse clusters
+				this -> find_transcripts(cluster);       // dbscan clustering algorithm
+				this -> assign_transcripts(cluster);     // overlap genes
+				this -> list_ptr = cluster;              // Save for later
+			}
+			this -> get_stats(cluster);                  // Get Read Stats
 		}
-		this -> get_stats();                        // Get Read Stats
-		if (ignore) { delete cluster_list; }
 	}
 };
 

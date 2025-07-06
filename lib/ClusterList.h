@@ -15,31 +15,31 @@ class ClusterList {
 private:
 
 	// List Details
-	std::string contig_name;                  // name of contig
-	int contig_index;                         // chromosome number in index
-	int contig_length = 0;                    // length of chromosome
-	int window_size;                          // window size
+	std::string contig_name;                   // name of contig
+	int contig_index;                          // contig number in index
+	int contig_length = 0;                     // length of chromosome
+	int window_size;                           // window size
 
 	// Links
-	ClusterNode *pos_head;                    // first positive ClusterNode
-	ClusterNode *pos_tail;                    // last positive ClusterNode
-	ClusterNode *neg_head;                    // first negative ClusterNode
-	ClusterNode *neg_tail;                    // last negative ClusterNode
+	std::shared_ptr<ClusterNode> pos_head;     // first positive ClusterNode
+	std::shared_ptr<ClusterNode> pos_tail;     // last positive ClusterNode
+	std::shared_ptr<ClusterNode> neg_head;     // first negative ClusterNode
+	std::shared_ptr<ClusterNode> neg_tail;     // last negative ClusterNode
 
 	// Summary
-	long double assigned_reads = 0.0;         // Assigned Transcript counts
-	long double ambiguous_reads = 0.0;        // Unassigned Transcript counts
-	long double unassigned_reads = 0.0;       // Ambigous Transcript counts
-	size_t assigned_singles = 0;              // Assigned Read counts
-	size_t ambiguous_singles = 0;             // Unssigned Read counts
-	size_t unassigned_singles = 0;            // Ambigous Read counts
+	long double assigned_reads = 0.0;          // Assigned Transcript counts
+	long double ambiguous_reads = 0.0;         // Unassigned Transcript counts
+	long double unassigned_reads = 0.0;        // Ambigous Transcript counts
+	size_t assigned_singles = 0;               // Assigned Read counts
+	size_t ambiguous_singles = 0;              // Unssigned Read counts
+	size_t unassigned_singles = 0;             // Ambigous Read counts
 
 	size_t multimapped_reads = 0;
 	size_t low_quality_reads = 0;
 
 	size_t total_reads = 0;
-	size_t passing_pos_reads = 0;             // Reads passing read check on +
-	size_t passing_neg_reads = 0;             // Reads passing read check on -
+	size_t passing_pos_reads = 0;              // Reads passing read check on +
+	size_t passing_neg_reads = 0;              // Reads passing read check on -
 	size_t transcript_num = 0;
 
 	/////////////////////////////////////////////////////////////
@@ -49,17 +49,11 @@ private:
 
 	/////////////////////////////////////////////////////////////
 	/* Private Node Methods */
-	void initialize_strand(ClusterNode *&head, ClusterNode *&tail, const int strand, const int &zones);
-	void delete_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail);
-	void merge_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail);
-	void delete_list();
+	void initialize_strand(std::shared_ptr<ClusterNode> &head, std::shared_ptr<ClusterNode> &tail, const int strand, const int &zones);
+	void delete_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared_ptr<ClusterNode> &t_head, std::shared_ptr<ClusterNode> &t_tail);
+	void merge_nodes(std::shared_ptr<ClusterNode> &c_node, std::shared_ptr<ClusterNode> &t_head, std::shared_ptr<ClusterNode> &t_tail);
 
 public:
-
-	/////////////////////////////////////////////////////////////
-	/* Constructors */
-	ClusterList() {}
-	~ClusterList() { this -> delete_list(); }
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
@@ -68,19 +62,19 @@ public:
 	std::string get_contig_name() { return contig_name; }
 
 	// Get Head Node
-	ClusterNode* get_head(int t_strand) {
+	std::shared_ptr<ClusterNode> get_head(int t_strand) {
 		if (t_strand == 0) { return pos_head; }
 		return neg_head;
 	}
 
 	// Get Tail Node
-	ClusterNode* get_tail(int t_strand) {
+	std::shared_ptr<ClusterNode> get_tail(int t_strand) {
 		if (t_strand == 0) { return pos_tail; }
 		return neg_tail;
 	}
 
 	// Get First cluster by position (just trust me on this one)
-	ClusterNode* get_first_cluster(bool &strand) {
+	std::shared_ptr<ClusterNode> get_first_cluster(bool &strand) {
 		if (pos_head == NULL && neg_head != NULL) {
 			strand = 1; return neg_head;
 		} else if (neg_head == NULL && pos_head != NULL) {
@@ -95,8 +89,11 @@ public:
 	}
 
 	// Get Next cluster by position
-	ClusterNode* get_next_cluster(ClusterNode *&c_node, ClusterNode *&a_prev, ClusterNode *&b_prev, bool &strand) {
-		
+	std::shared_ptr<ClusterNode> get_next_cluster(std::shared_ptr<ClusterNode> &c_node, 
+												  std::shared_ptr<ClusterNode> &a_prev,
+												  std::shared_ptr<ClusterNode> &b_prev, 
+												  bool &strand) {
+
 		a_prev = c_node -> get_next();
 		if (a_prev == NULL) {
 			c_node = b_prev; strand = !strand;
@@ -126,7 +123,7 @@ public:
 
 	// Get Transcript Number
 	size_t get_transcript_num() {
-		ClusterNode *node = pos_head;
+		std::shared_ptr<ClusterNode> node = pos_head;
 		for (int i = 0; i < 2; i ++) {
 			if (i != 0) { node = neg_head; }
 			while (node != NULL) {
@@ -162,7 +159,7 @@ public:
 	}
 
 	// Find Nearest Region in List
-	void jump_to_cluster(ClusterNode *&node, const int &pos) {
+	void jump_to_cluster(std::shared_ptr<ClusterNode> &node, const int &pos) {
 		while (node -> get_next() != NULL) {
 			if (pos > node -> get_stop()) {
 				node = node -> get_next();
@@ -182,7 +179,7 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Functions for Testing Suite */
 	void print_clusters(int t_strand) {
-		ClusterNode *node = get_head(t_strand);
+		std::shared_ptr<ClusterNode> node = get_head(t_strand);
 		while (node != NULL) {
 			std::cout << get_contig_name() << "\t"
 			          << node -> get_start() << "\t" << node -> get_stop() << "\t"
@@ -193,7 +190,7 @@ public:
 
 	std::string string_clusters(int t_strand) {
 		std::stringstream ss;
-		ClusterNode *node = get_head(t_strand);
+		std::shared_ptr<ClusterNode> node = get_head(t_strand);
 		while (node != NULL) {
 			ss << get_contig_name() << "\t"
 			   << node -> get_start() << "\t" << node -> get_stop() << "\t"
