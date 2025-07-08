@@ -9,17 +9,14 @@ bool check_subset(const std::vector<int>& a, const std::vector<int>& b);
 // Get Core Points of Transcript
 int get_quant(const std::vector <int> result, const std::vector<std::vector<int>> &init_copy, const std::vector<int> counts);
 
-// Merge Overlapping Transcripts
-std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<int>& b);
-
-// Reduce Transcript Number by Overlapping. Report Unique Transcripts
-void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts);
-
 // Report Unique Transcripts (no overlapping, used for Mitochrondria)
 void report_transcripts(ClusterNode *node, std::vector<std::vector<int>> &result, std::vector<int> &counts);
 
-// Merge identified transscripts
-void merge_final_transcripts(ClusterNode *c_node, ClusterNode *n_node);
+// Merge Overlapping Transcripts
+std::vector<int> overlap_aux(const std::vector<int>& a, const std::vector<int>& b);
+
+// Reduce Transcript Number by Overlapping. Report Unique Transcripts
+void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts);
 
 // Get Transcript Coordinates
 void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &paths,
@@ -36,7 +33,10 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
                         std::vector<std::vector<int>> &assignment, const bool &five, const bool &mito);
 
 // Initiate Transcript Identifying Procedure
-void find_transcripts_DBSCAN(ClusterList *cluster,  const int &strand);
+void identify_transcripts(ClusterList *cluster,  const int &strand);
+
+// Merge identified transscripts
+void merge_ranscripts(ClusterNode *c_node, ClusterNode *n_node);
 
 // Combine clusters with nonzero neighbors
-void collapse_final_transcripts(ClusterList *cluster, int t_strand);
+void collapse_transcripts(ClusterList *cluster, int t_strand);

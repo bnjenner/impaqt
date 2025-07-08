@@ -61,9 +61,13 @@ int get_quant(const std::vector <int> result, const std::vector<std::vector<int>
 	return core_points;
 }
 
+// Report Unique Transcripts (no overlapping, used for Mitochrondria)
+void report_transcripts(ClusterNode *node, std::vector<std::vector<int>> &result, std::vector<int> &counts) {
+	for (int i = 0; i < result.size(); i++) { node -> add_transcript(result[i], counts[i]); }
+}
 
-// Merge Overlapping Transcripts
-std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<int>& b) {
+// Merge Overlapping clusters
+std::vector<int> overlap_aux(const std::vector<int>& a, const std::vector<int>& b) {
 
 	std::vector<int> merged;
 
@@ -114,7 +118,7 @@ std::vector<int> merge_transcripts(const std::vector<int>& a, const std::vector<
 }
 
 // Reduce Transcript Number by Overlapping. Report Unique Transcripts
-void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts) {
+void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts) {
 
 	int n;
 	bool all_unique, overlap;
@@ -151,7 +155,7 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 
 					overlap = true;
 					absorbed.emplace_back(j);
-					tmp = merge_transcripts(transcripts[i], transcripts[j]);
+					tmp = overlap_aux(transcripts[i], transcripts[j]);
 					
 					// If new transcript not already in results, add
 					auto it = std::find(result.begin(), result.end(), tmp);
@@ -186,31 +190,6 @@ void get_final_transcripts(ClusterNode *curr_node, std::vector<std::vector<int>>
 
 	transcripts = result;
 	counts = new_counts;
-}
-
-
-// Report Unique Transcripts (no overlapping, used for Mitochrondria)
-void report_transcripts(ClusterNode *node, std::vector<std::vector<int>> &result, std::vector<int> &counts) {
-	for (int i = 0; i < result.size(); i++) { node -> add_transcript(result[i], counts[i]); }
-}
-
-
-void merge_final_transcripts(ClusterNode *c_node, ClusterNode *n_node) {
-
-	std::vector<std::vector<int>> transcripts = *(c_node -> get_transcripts());
-	std::vector<int> counts(c_node -> get_transcript_num(), 0);
-
-	// Populate New Transcript and Count Vecs
-	for (int i = 0; i < c_node -> get_transcript_num(); i++) {counts[i] = (int)(c_node -> get_transcript_expr(i)); }
-	for (int i = 0; i < n_node -> get_transcript_num(); i++) {
-		transcripts.push_back(n_node -> get_transcripts() -> at(i));
-		counts.push_back((int)(n_node -> get_transcript_expr(i)));
-	}
-	c_node -> clear_transcripts();
-
-	// Merge Final Transcripts
-	get_final_transcripts(c_node, transcripts, counts);
-	report_transcripts(c_node, transcripts, counts);
 }
 
 
@@ -421,7 +400,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 }
 
 // Initiate Transcript Identifying Procedure
-void find_transcripts_DBSCAN(ClusterList *cluster,  const int &strand) {
+void identify_transcripts(ClusterList *cluster,  const int &strand) {
 
 	float density;
 	int expr, points, min_counts;
@@ -479,10 +458,7 @@ void find_transcripts_DBSCAN(ClusterList *cluster,  const int &strand) {
 				// Report Final Transcripts
 				if (density < 1.5) {
 					// Merge overlapping transcripts 
-					get_final_transcripts(curr_node, transcripts, counts);
-				} else {
-					// Reverse and Negative Results if Necessary
-					if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
+					overlap_clusters(curr_node, transcripts, counts);
 				}
 
 				report_transcripts(curr_node, transcripts, counts);
@@ -493,8 +469,27 @@ void find_transcripts_DBSCAN(ClusterList *cluster,  const int &strand) {
 }
 
 
+void merge_transcripts(ClusterNode *c_node, ClusterNode *n_node) {
+
+	std::vector<std::vector<int>> transcripts = *(c_node -> get_transcripts());
+	std::vector<int> counts(c_node -> get_transcript_num(), 0);
+
+	// Populate New Transcript and Count Vecs
+	for (int i = 0; i < c_node -> get_transcript_num(); i++) { counts[i] = (int)(c_node -> get_transcript_expr(i)); }
+	for (int i = 0; i < n_node -> get_transcript_num(); i++) {
+		transcripts.push_back(n_node -> get_transcripts() -> at(i));
+		counts.push_back((int)(n_node -> get_transcript_expr(i)));
+	}
+	c_node -> clear_transcripts();
+
+	// Merge Final Transcripts
+	overlap_clusters(c_node, transcripts, counts);
+	report_transcripts(c_node, transcripts, counts);
+}
+
+
 // Combine clusters with nonzero neighbors
-void collapse_final_transcripts(ClusterList *cluster, int t_strand) {
+void collapse_transcripts(ClusterList *cluster, int t_strand) {
 
 	ClusterNode *c_node = cluster -> get_head(t_strand);
 	ClusterNode *n_node = NULL;
@@ -512,7 +507,7 @@ void collapse_final_transcripts(ClusterList *cluster, int t_strand) {
 
 					if (c_node -> get_transcript_stop() >= n_node -> get_transcript_start()) {
 
-						merge_final_transcripts(c_node, n_node);
+						merge_transcripts(c_node, n_node);
 						c_node -> update_read_counts(n_node -> get_read_count());
 						c_node -> update_vec_counts(n_node -> get_vec_count());
 						c_node -> update_stop(n_node -> get_stop());

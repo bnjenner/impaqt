@@ -164,12 +164,12 @@ public:
 		if (ignore) { return; }
 
 		// Forward
-		find_transcripts_DBSCAN(cluster_list, 0);
-		collapse_final_transcripts(cluster_list, 0);
+		identify_transcripts(cluster_list, 0);
+		collapse_transcripts(cluster_list, 0);
 
 		// Reverse
-		find_transcripts_DBSCAN(cluster_list, 1);
-		collapse_final_transcripts(cluster_list, 1);
+		identify_transcripts(cluster_list, 1);
+		collapse_transcripts(cluster_list, 1);
 	}
 
 	// Assign Transcripts to Genes
