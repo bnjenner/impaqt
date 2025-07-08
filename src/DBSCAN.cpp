@@ -201,7 +201,7 @@ void merge_final_transcripts(ClusterNode *c_node, ClusterNode *n_node) {
 	std::vector<int> counts(c_node -> get_transcript_num(), 0);
 
 	// Populate New Transcript and Count Vecs
-	for (int i = 0; i < c_node -> get_transcript_num(); i++) { counts[(int)(c_node -> get_transcript_expr(i))]; }
+	for (int i = 0; i < c_node -> get_transcript_num(); i++) {counts[i] = (int)(c_node -> get_transcript_expr(i)); }
 	for (int i = 0; i < n_node -> get_transcript_num(); i++) {
 		transcripts.push_back(n_node -> get_transcripts() -> at(i));
 		counts.push_back((int)(n_node -> get_transcript_expr(i)));

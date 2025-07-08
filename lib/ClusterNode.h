@@ -79,15 +79,15 @@ public:
 		// Necessary Copy, Resize, Overwrite
 		five_vec = c_node -> get_five_vec();
 		five_vec.resize(vec_count, 0);
-		for (int i = 0; i < n_vec; i++) { five_vec.at(c_vec + i) = n_node -> get_five_vec()[i]; }
+		for (int i = 0; i < n_vec; i++) { five_vec.at(c_vec + i) = n_node -> get_five_vec().at(i); }
 
 		three_vec = c_node -> get_three_vec();
 		three_vec.resize(vec_count, 0); // Resize to fit both nodes
-		for (int i = 0; i < n_vec; i++) { three_vec.at(c_vec + i) = n_node -> get_three_vec()[i]; }
+		for (int i = 0; i < n_vec; i++) { three_vec.at(c_vec + i) = n_node -> get_three_vec().at(i); }
 
 		index_vec = c_node -> get_index_vec(); 
 		index_vec.resize(vec_count, 0);
-		for (int i = 0; i < n_vec; i++) { index_vec.at(c_vec + i) = c_vec + n_node -> get_index_vec()[i]; }
+		for (int i = 0; i < n_vec; i++) { index_vec.at(c_vec + i) = c_vec + n_node -> get_index_vec().at(i); }
 	}
 
 	// Destroy
