@@ -184,6 +184,21 @@ public:
 		}
 	}
 
+	void print_specific_gene(const std::string &geneID, const int &strand) {
+		GeneNode *c_node = get_head(strand);
+		while (c_node != NULL) {
+			if (c_node -> get_geneID() == geneID) {
+				std::cerr << c_node -> get_chrom() << ": " << c_node -> get_geneID() << "\n";
+				for (int i = 0; i < c_node -> get_exon_num(); i++) {
+					std::cerr << "\t" << c_node -> get_exon_vec()[(2*i)] << "\t"
+									  << c_node -> get_exon_vec()[(2*i)+1] << "\n";
+				}
+				return;
+			}
+			c_node = c_node -> get_next();
+		}
+	}
+
 	// Print genes and counts
 	void print_chrom_map() {
 		std::cerr << "// Positive Strand Chrom Map\n";
@@ -195,6 +210,5 @@ public:
 		for (const auto &pair : neg_chrom_map) {
 			std::cerr << pair.first << ": " << pair.second << "\n";
 		}
-	
 	}
 };

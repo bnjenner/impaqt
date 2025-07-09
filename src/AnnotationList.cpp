@@ -84,7 +84,7 @@ void AnnotationList::add_line(const std::vector<std::string> &columns) {
 			(*tail) -> GeneNode::add_region(columns[3], columns[4]);
 		
 		} else { AnnotationList::extend(columns); } // create new gene node
-	}	
+	}
 
 	// If new chrom add to chrom map
 	if (chrom_map -> find(columns[0]) == chrom_map -> end()) {

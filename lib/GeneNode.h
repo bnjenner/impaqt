@@ -44,7 +44,8 @@ private:
 	void close_gap(const int &t_start, const int &t_stop) {
 
 		// Just populate new vector with exons that are unique
-		std::vector<int> t_vec(exons * 2); // New exon vec
+		std::vector<int> t_vec;
+		t_vec.reserve(exons * 2); // New exon vec
 
 		for (int i = 0; i < exons; i++) {
 
@@ -59,9 +60,17 @@ private:
 			} else {
 				t_vec.emplace_back(std::min(exon_vec[(2*i)], t_start));
 				t_vec.emplace_back(std::max(exon_vec[(2*i) + 1], t_stop));
-				i += 1;
-			}
 
+				// close gap
+				int counter = 1;
+				for (int j = i + 1; j < exons; j++) {
+					if (exon_vec[(2*j)] < t_vec[t_vec.size() - 1]) {
+						t_vec[t_vec.size() - 1] = std::max(t_vec[t_vec.size() - 1], exon_vec[(2*j) + 1]);
+						++counter;
+					} else { break; }
+				}
+				i += counter;
+			}
 		}
 
 		t_vec.shrink_to_fit(); // shrink to fit 
