@@ -283,7 +283,6 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 
 			} else {
 
-				// May not be necessary, but just in case
 				cluster -> index_sort_vectors();
 
 				// Advance to Potential Gene

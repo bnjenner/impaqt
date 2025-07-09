@@ -200,6 +200,8 @@ public:
 		five_vec = tmp_vec;
 		for (int i = 0; i < vec_count; i++) { tmp_vec[i] = three_vec[indices[i]]; }
 		three_vec = tmp_vec;
+		for (int i = 0; i < vec_count; i++) { tmp_vec[i] = index_vec[indices[i]]; }
+		index_vec = tmp_vec;
 	}
 
 	// Sort Point Vectors By 5' Positions

@@ -128,7 +128,6 @@ void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &tra
 	std::vector<std::vector<int>> result;
 	std::vector<std::vector<int>> init_copy = transcripts;
 
-	// No need to overlap
 	if (transcripts.size() == 1) { return; }
 
 	// Reverse and Negative if reverse strand
@@ -144,13 +143,11 @@ void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &tra
 		absorbed.clear();
 		all_unique = true;
 
-		// Iterate through transcripts
 		for (int i = 0; i < n; i++) {
 			overlap = false;
 
 			for (int j = i + 1; j < n; j++) {
 
-				// Check if transcripts overlap
 				if (check_subset(transcripts[i], transcripts[j])) {
 
 					overlap = true;
@@ -207,38 +204,28 @@ void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &p
 
 	for (const auto &p : paths) {
 
-		if (p.second == 0) { continue; } // Skip if no reads
+		if (p.second == 0) { continue; }
 
 		std::vector<int> tmp_vec;
 
 		// add 5' region
 		if (p.first[0] != '-') {
-
-			// Get Bounds of cluster
 			index = std::stoi(p.first.substr(0, 1));
 			min_pos = get_pos_min(index, core_5, curr_node -> get_five_ref());
 			max_pos = get_pos_max(index, core_5, curr_node -> get_five_ref());
-
-			// swap variables if necessary
 			if (min_pos > max_pos) { variable_swap(min_pos, max_pos); } 
-
-			tmp_vec.emplace_back(min_pos);
-			tmp_vec.emplace_back(max_pos);
+			tmp_vec.push_back(min_pos);
+			tmp_vec.push_back(max_pos);
 		}
 
 		// add 3' region
 		if (p.first[1] != '-') {
-
-			// Get Bounds of cluster
 			index = std::stoi(p.first.substr(1, 1));
 			min_pos = get_pos_min(index, core_3, curr_node -> get_three_ref());
 			max_pos = get_pos_max(index, core_3, curr_node -> get_three_ref());
-
-			// swap variables if necessary
 			if (min_pos > max_pos) { variable_swap(min_pos, max_pos); } 
-
-			tmp_vec.emplace_back(min_pos);
-			tmp_vec.emplace_back(max_pos);
+			tmp_vec.push_back(min_pos);
+			tmp_vec.push_back(max_pos);
 		}
 
 		// If two regions and they are close or out of order, merge
@@ -250,8 +237,8 @@ void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &p
 			}
 		}
 
-		transcripts -> emplace_back(tmp_vec);
-		counts -> emplace_back(p.second);
+		transcripts -> emplace_back(std::move(tmp_vec));
+		counts -> push_back(p.second);
 	}
 }
 
@@ -262,7 +249,6 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 
 	std::string path;
 
-	// Use hashmap to store clusters and supporting counts
 	for (int i = 0; i < curr_node -> get_vec_count(); i++) {
 
 		path = "";
@@ -280,7 +266,6 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 
 		if (path == "") { continue; }
 
-		// Add to map and increment
 		if (path_map.find(path) != path_map.end()) {
 			path_map[path] += 1; // Increment count if path already exists
 		} else {
@@ -332,16 +317,12 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 	std::vector<int> assign_vec(points, -1);
 	std::vector<bool> visted(points, false);
 
-
 	int epsilon = ImpaqtArguments::Args.epsilon;
 	if (mito) { epsilon = 50; } // If mito, use smaller epsilon (magic number again... look they're fundamentally different problems)
 
 	// Sepicfy 5' or 3' clusters
-	if (five) {
-		adj_vec = curr_node -> get_five_ref();
-	} else {
-		adj_vec = curr_node -> get_three_ref();
-	}
+	adj_vec = curr_node -> get_five_ref();
+	if (!five) { adj_vec = curr_node -> get_three_ref(); }
 
 
 	// iterate through every point
@@ -362,7 +343,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 
 				visted[i] = true;
 				assign_vec.at(i) = clust_num;
-				std::vector<int> cluster_indexes;
+				std::vector<int> cluster_indexes = {i};
 
 				// Continously add points to "stack" and determine if they are core points
 				while (neighbors.empty() == false) {
@@ -378,7 +359,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 						// Check if member of cluster
 						for (int k = 0; k < points; k++) {
 							if (std::abs((*adj_vec)[index] - (*adj_vec)[k]) <= epsilon) {
-								sub_neighbors.emplace_back(k);
+								sub_neighbors.push_back(k);
 								assign_vec.at(k) = clust_num;
 							}
 						}
@@ -387,7 +368,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 						if (sub_neighbors.size() >= min_counts) {
 							std::copy(sub_neighbors.begin(), sub_neighbors.end(), std::back_inserter(neighbors));
 						}
-						cluster_indexes.emplace_back(index);
+						cluster_indexes.push_back(index);
 					}
 				}
 
@@ -416,6 +397,8 @@ void identify_transcripts(ClusterList *cluster,  const int &strand) {
 		// If threshold for transcript detection is reached
 		if (expr >= count_threshold) {
 
+			curr_node -> point_sort_vectors();
+
 			std::map<std::string, int> paths;
 			std::vector<int> counts;
 			std::vector<std::vector<int>> transcripts;
@@ -425,7 +408,6 @@ void identify_transcripts(ClusterList *cluster,  const int &strand) {
 			// BNJ - 6/16/2025: Pleaseeeeee fix this casting
 			density = (float)expr / (float)(curr_node -> get_stop() - curr_node -> get_start());
 			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
-
 
 			if (density < 1.5) {
 				assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, true, false);
