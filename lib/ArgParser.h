@@ -59,13 +59,13 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                   "m", "min-count",
                   "Minimum read count to initiate DBSCAN transcript identification algorithm. (Minimum of 10)",
                   seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "min-count", "10");
+    seqan::setDefaultValue(parser, "min-count", "25");
 
     seqan::addOption(parser, seqan::ArgParseOption(
                   "p", "count-percentage",
-                  "Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold unless percentage is less than 10.",
+                  "Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold unless number of reads is less than 10.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "count-percentage", "10");
+    seqan::setDefaultValue(parser, "count-percentage", "5");
 
     seqan::addOption(parser, seqan::ArgParseOption(
                   "e", "epsilon",
