@@ -1,4 +1,4 @@
-# IMPAQT
+# IMPAQT [![C/C++ CI](https://github.com/bnjenner/impaqt/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/bnjenner/impaqt/actions/workflows/c-cpp.yml)
 Currently performs transcript identification, gene assignment, and naive quantification. 
 A more sophisticated quantification method remain on the TO-DO list.
 
