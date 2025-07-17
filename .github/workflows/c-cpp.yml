@@ -26,6 +26,6 @@ jobs:
     - name: ClusterList Test
       working-directory: ./build
       run: ./cluster_test
-   - name: DBSCAN Test
+    - name: DBSCAN Test
       working-directory: ./build
       run: ./dbscan_test
