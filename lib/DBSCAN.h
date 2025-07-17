@@ -33,10 +33,13 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
                         std::vector<std::vector<int>> &assignment, const bool &five, const bool &mito);
 
 // Initiate Transcript Identifying Procedure
-void identify_transcripts(ClusterList *cluster,  const int &strand);
+void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand);
 
 // Merge identified transscripts
 void merge_ranscripts(ClusterNode *c_node, ClusterNode *n_node);
 
 // Combine clusters with nonzero neighbors
 void collapse_transcripts(ClusterList *cluster, int t_strand);
+
+// Combine clusters with nonzero neighbors
+void identify_transcripts(ClusterList *cluster, int t_strand);

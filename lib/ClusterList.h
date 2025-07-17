@@ -43,11 +43,6 @@ private:
 	size_t transcript_num = 0;
 
 	/////////////////////////////////////////////////////////////
-	/* Private Alignment Methods */
-	void calculate_splice(BamTools::BamAlignment &alignment, std::vector<int> &positions);
-	bool read_check(const BamTools::BamAlignment &alignment);
-
-	/////////////////////////////////////////////////////////////
 	/* Private Node Methods */
 	void initialize_strand(ClusterNode *&head, ClusterNode *&tail, const int strand, const int &zones);
 	void delete_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail);
@@ -86,7 +81,7 @@ public:
 		} else if (neg_head == NULL && pos_head != NULL) {
 			strand = 0; return pos_head;
 		} else {
-			if (pos_head -> get_start() < neg_head -> get_start()) {
+			if (pos_head -> get_start() <= neg_head -> get_start()) {
 				strand = 0; return pos_head;
 			} else {
 				strand = 1; return neg_head;
@@ -102,7 +97,7 @@ public:
 			c_node = b_prev; strand = !strand;
 
 			// If oppostie strand exhausted or this strand first, continue
-		} else if (b_prev == NULL || a_prev -> get_start() < b_prev -> get_start()) {
+		} else if (b_prev == NULL || a_prev -> get_start() <= b_prev -> get_start()) {
 			c_node = a_prev;
 
 			// If positives are after negatives, switch strands
@@ -138,6 +133,11 @@ public:
 	}
 
 	/////////////////////////////////////////////////////////////
+	/* Private Alignment Methods */
+	void calculate_splice(BamTools::BamAlignment &alignment, std::vector<int> &positions);
+	bool read_check(const BamTools::BamAlignment &alignment);
+
+	/////////////////////////////////////////////////////////////
 	/* Counting Functions */
 	void add_assigned_reads(const long double &expr) { assigned_reads += expr; }
 	void add_unassigned_reads(const long double &expr) { unassigned_reads += expr; }
@@ -164,7 +164,7 @@ public:
 	// Find Nearest Region in List
 	void jump_to_cluster(ClusterNode *&node, const int &pos) {
 		while (node -> get_next() != NULL) {
-			if (pos > node -> get_stop()) {
+			if (pos >= node -> get_stop()) {
 				node = node -> get_next();
 			} else { break; }
 		}	

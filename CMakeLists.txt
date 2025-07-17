@@ -53,18 +53,46 @@ install(TARGETS impaqt DESTINATION bin)
 enable_testing()
 link_directories(${GTEST_LIBS_DIR})
 
-# Test: impaqt_test
-#add_executable(impaqt_test test/impaqt_test.cpp)
-#target_link_libraries(impaqt_test
-#    gtest gtest_main
-#    BamTools
-#)
-#add_test(NAME impaqt_test COMMAND impaqt_test)
 
-# Test: ClusterList_test
-#add_executable(ClusterList_test test/ClusterList_test.cpp)
-#target_link_libraries(ClusterList_test
-#    gtest gtest_main
-#    BamTools
-#)
-#add_test(NAME ClusterList_test COMMAND ClusterList_test)
+# Test: annotation_test
+add_executable(annotation_test
+    ${PROJECT_SOURCE_DIR}/test/AnnotationList_test.cpp
+)
+target_sources(annotation_test
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/AnnotationList.cpp
+)
+target_link_libraries(annotation_test
+    gtest gtest_main
+    BamTools
+)
+add_test(NAME annotation_test COMMAND annotation_test)
+
+
+# Test: cluster_test
+add_executable(cluster_test
+    ${PROJECT_SOURCE_DIR}/test/ClusterList_test.cpp
+)
+target_sources(cluster_test
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ClusterList.cpp
+)
+target_link_libraries(cluster_test
+    gtest gtest_main
+    BamTools
+)
+add_test(NAME cluster_test COMMAND cluster_test)
+
+
+# Test: dbscan_test
+add_executable(dbscan_test
+    ${PROJECT_SOURCE_DIR}/test/DBSCAN_test.cpp
+)
+target_sources(dbscan_test
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/ClusterList.cpp
+    ${PROJECT_SOURCE_DIR}/src/DBSCAN.cpp
+    ${PROJECT_SOURCE_DIR}/src/utils.cpp
+)
+target_link_libraries(dbscan_test
+    gtest gtest_main
+    BamTools
+)
+add_test(NAME dbscan_test COMMAND dbscan_test)

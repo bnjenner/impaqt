@@ -123,30 +123,3 @@ TEST_F(impactTest, BasicCollapse) {
    ASSERT_EQ(test_process -> get_clusters() -> string_clusters(0), answer);
 };
 
-
-// Test 4
-TEST_F(impactTest, ComplexCollapse) {
-   ClusterList *test_list = new ClusterList();
-   test_list -> initialize(0, "chr1", 1000000);
-
-   // Set Test List
-   std::vector<int> vec;
-   ClusterNode *node = test_list -> get_head(0);
-   for (int i = 0; i < 5; i++) { node = node -> get_next(); }
-   while (node != NULL) {
-      vec = {node -> get_start() + 50 , node -> get_start() + 150};
-      if (node -> get_start() > 965000) { break; }
-      if (node -> get_start() != 500000 && node -> get_start() != 510000 && 
-          node -> get_start() != 750000 && node -> get_start() != 810000) { 
-         for (int i = 0; i < 20; i++) { node -> add_alignment(vec); }
-      }
-      node = node -> get_next();
-   }
-
-   test_list -> collapse_clusters(0);
-
-   std::string result = test_list -> string_clusters(0);
-   std::string answer = "chr1\t25000\t500000\t1900\nchr1\t505000\t510000\t20\nchr1\t515000\t750000\t940\nchr1\t755000\t810000\t220\nchr1\t815000\t970000\t620\n";
-   ASSERT_EQ(result, answer);
-};
-

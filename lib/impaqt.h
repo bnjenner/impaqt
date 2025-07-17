@@ -162,14 +162,8 @@ public:
 	// Differentiate Transcripts
 	void find_transcripts() {
 		if (ignore) { return; }
-
-		// Forward
-		identify_transcripts(cluster_list, 0);
-		collapse_transcripts(cluster_list, 0);
-
-		// Reverse
-		identify_transcripts(cluster_list, 1);
-		collapse_transcripts(cluster_list, 1);
+		identify_transcripts(cluster_list, 0); // Forward
+		identify_transcripts(cluster_list, 1); // Reverse
 	}
 
 	// Assign Transcripts to Genes

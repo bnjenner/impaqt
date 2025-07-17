@@ -116,7 +116,7 @@ public:
 		} else if (neg_head == NULL && pos_head != NULL) {
 			strand = 0; return pos_head;
 		} else {
-			if (pos_head -> get_start() < neg_head -> get_start()) {
+			if (pos_head -> get_start() <= neg_head -> get_start()) {
 				strand = 0; return pos_head;
 			} else {
 				strand = 1; return neg_head;
@@ -133,7 +133,7 @@ public:
 			c_node = b_prev; strand = !strand;
 
 			// If oppostie strand exhausted or this strand first, continue
-		} else if (b_prev == NULL || a_prev -> get_start() < b_prev -> get_start()) {
+		} else if (b_prev == NULL || a_prev -> get_start() <= b_prev -> get_start()) {
 			c_node = a_prev;
 
 			// If positives are after negatives, switch strands

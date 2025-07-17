@@ -49,7 +49,7 @@ public:
 	ClusterNode() {}
 
 	// Initialize
-	ClusterNode(const int &start, const int &window_size, const int strand, const int &chrom_index, const std::string &contig_name) {
+	ClusterNode(const int &start, const int strand,  const int &window_size, const int &chrom_index, const std::string &contig_name) {
 		this -> start = start;
 		this -> stop = start + window_size;
 		this -> strand = strand;

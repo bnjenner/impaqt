@@ -96,6 +96,7 @@ std::vector<int> overlap_aux(const std::vector<int>& a, const std::vector<int>& 
 				merged.emplace_back(b[(j*2)]);
 				merged.emplace_back(b[(j*2)+1]);
 			}
+
 			j += 1;
 		
 			// Merge Overlapping sections
@@ -104,6 +105,11 @@ std::vector<int> overlap_aux(const std::vector<int>& a, const std::vector<int>& 
 			merged.emplace_back(std::max(a[(i*2)+1], b[(j*2)+1]));
 			i += 1;
 			j += 1;
+
+			while (j < m && (merged.back() >= b[(j*2)])) {
+				merged.back() = std::max(merged.back(), b[(j*2)+1]);
+				j += 1;
+			}
 		}
 	}
 
@@ -136,6 +142,14 @@ void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &tra
 	// Merge transcripts until all are unique
 	int x = 0;
 	while (true) {
+
+		// std::cerr << "Iter: " << x << "\n"; x++;
+		// for (const auto &t : transcripts) {
+		// 	for (const auto &p : t) { std::cerr << p << ","; }
+		// 	std::cerr << "\n";
+		// }
+		// std::cerr << "\n\n";
+
 
 		// Reset Checks
 		n = transcripts.size();
@@ -381,7 +395,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 }
 
 // Initiate Transcript Identifying Procedure
-void identify_transcripts(ClusterList *cluster,  const int &strand) {
+void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 
 	float density;
 	int expr, points, min_counts;
@@ -506,4 +520,9 @@ void collapse_transcripts(ClusterList *cluster, int t_strand) {
 
 		c_node = n_node;
 	}
+}
+
+void identify_transcripts(ClusterList *cluster, int t_strand) {
+	identify_transcripts_dbscan(cluster, t_strand);
+	collapse_transcripts(cluster, t_strand);
 }

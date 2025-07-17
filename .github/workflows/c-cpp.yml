@@ -1,0 +1,31 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Make Build Directory
+      run: mkdir build && cd build
+    - name: cmake
+      working-directory: ./build
+      run: cmake -DCMAKE_BUILD_TYPE=Release ..
+    - name: make
+      working-directory: ./build
+      run: make
+    - name: AnnotationList Test
+      working-directory: ./build
+      run: ./annotation_test
+    - name: ClusterList Test
+      working-directory: ./build
+      run: ./cluster_test
+   - name: DBSCAN Test
+      working-directory: ./build
+      run: ./dbscan_test
