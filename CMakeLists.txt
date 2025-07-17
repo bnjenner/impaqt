@@ -25,7 +25,7 @@ message(STATUS "GTest include dirs: ${GTEST_INCLUDE_DIRS}")
 
 # Include paths
 include_directories(
-    ${PROJECT_SOURCE_DIR}/lib
+    ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/ext/bamtools/src
     ${PROJECT_SOURCE_DIR}/ext/seqan/include
     ${GTEST_INCLUDE_DIRS}
