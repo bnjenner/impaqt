@@ -13,7 +13,7 @@ int get_quant(const std::vector <int> result, const std::vector<std::vector<int>
 void report_transcripts(ClusterNode *node, std::vector<std::vector<int>> &result, std::vector<int> &counts);
 
 // Merge Overlapping Transcripts
-std::vector<int> overlap_aux(const std::vector<int>& a, const std::vector<int>& b);
+bool overlap_aux(std::vector<std::vector<int>> &transcripts);
 
 // Reduce Transcript Number by Overlapping. Report Unique Transcripts
 void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts);

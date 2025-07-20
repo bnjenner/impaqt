@@ -2,6 +2,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "global_args.h"
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utils (alot of these could be more generalized...)
 
@@ -63,6 +65,45 @@ bool check_point_overlap(const int &p, const int &e1, const int &e2) {
 	if (p >= e1 && p <= e2) { return true; } 
 	return false;
 }
+
+
+// Check if vector is contained within another vector
+bool check_containment(const std::vector<int> &b, const std::vector<int> &a) {
+
+	bool match = false;
+	int i = 0;
+	int j = 0;
+	int n = a.size() / 2;
+	int m = b.size() / 2;
+
+	// Iterate through exons, see if match is complete 
+	while (j < m) {
+
+		// End of A reached
+		if (i >= n || (!match && ((i > 0) && (j > 0)))) { 
+			break;
+
+		// Check bounds
+		} else if (check_bounds(a[(2*i)], a[(2*i)+1], b[(2*j)], b[(2*j)+1])) {
+			match = true; i += 1;
+
+			// Last exon of A reached, but is it close enough?
+		} else if (i == n - 1 && std::abs(a[(2*n) - 1] - b[0]) <= ImpaqtArguments::Args.epsilon) {
+			match = true; i += 1;
+
+		} else {
+			if (match) {
+				return false;
+			} else {
+				i += 1; j -= 1;
+			}
+		}
+		j += 1;
+	}
+
+	return match;
+}
+
 
 // For Debugging
 void print_transcripts(const std::vector<std::vector<int>> &transcripts) {

@@ -2,59 +2,18 @@
 
 #include "ClusterList.h"
 #include "DBSCAN.h"
+#include "ContainmentList.h"
 #include "utils.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* DBSCAN and Related Functions */
-
-// Check if transcripts overlap / are contained in another transcript
-bool check_subset(const std::vector<int>& a, const std::vector<int>& b) {
-
-	bool match = false;
-	bool started = false;
-
-	int i = 0;
-	int j = 0;
-	int n = a.size() / 2;
-	int m = b.size() / 2;
-
-	// Iterate through exons, see if match is complete 
-	while (j < m) {
-
-		// If end of A is reached or first match was not a hit
-		if (i >= n || (!match && ((i > 0) && (j > 0)))) {
-			break;
-
-		} else if (check_bounds(a[(i*2)], a[(i*2)+1], b[(j*2)], b[(j*2)+1])) {
-			match = true; started = true;
-			i += 1;
-
-			// If last exon and it matches the first exon of B is after but close to A
-		} else if (i == n - 1 && (a.back() < b[0]) && 
-				   std::abs(a.back() - b[0]) <= ImpaqtArguments::Args.epsilon) {
-			match = true; started = true;
-			i += 1;
-
-		} else {
-
-			if (started) {
-				match = false; break;
-			} else {
-				i += 1; j -= 1;
-			}
-		}
-		j += 1;
-	}
-
-	return match;
-}
 
 
 // Get Core Points of Transcript
 int get_quant(const std::vector <int> result, const std::vector<std::vector<int>> &init_copy, const std::vector<int> counts) {
 	int core_points = 0;
 	for (int i = 0; i < init_copy.size(); i++) {
-		if (check_subset(result, init_copy[i])) {
+		if (check_containment(init_copy[i], result)) {
 			core_points += counts[i];
 		}
 	}
@@ -66,140 +25,92 @@ void report_transcripts(ClusterNode *node, std::vector<std::vector<int>> &result
 	for (int i = 0; i < result.size(); i++) { node -> add_transcript(result[i], counts[i]); }
 }
 
-// Merge Overlapping clusters
-std::vector<int> overlap_aux(const std::vector<int>& a, const std::vector<int>& b) {
 
-	std::vector<int> merged;
+// Merge Overlapping Transcripts
+bool overlap_aux(std::vector<std::vector<int>> &transcripts) {
 
-	int i = 0;
-	int j = 0;
-	int n = a.size() / 2;
-	int m = b.size() / 2;
+	// Construct containment list 
+	ContainmentList head;
+	ContainmentList *curr;
+	std::vector<int> visited = {};
 
-	bool appended = false;
+	// Construct containment list
+	bool unique = true;
+	for (int i = 0; i < transcripts.size(); i++) {
 
-	while (j < m) {
+		// Set head
+		if (head.indices == 0) {
+			head = ContainmentList(transcripts[i]);
+			curr = &head;
 
-		// If section of A precedes B
-		if (i != n && j == 0 && (a[(i*2)+1] < b[(j*2)])) {
-			merged.emplace_back(a[(i*2)]);
-			merged.emplace_back(a[(i*2)+1]);
-			i += 1;
+			// or extend list
+		} else if (std::find(visited.begin(), visited.end(), i) == visited.end()) {
+			curr -> set_next(new ContainmentList(transcripts[i]));
+			curr = curr -> next;
 
-			// If remaining sections in B, but A is spent
-		} else if (i == n) {
+		} else { continue; }
 
-			if (!appended && std::abs(merged.back() - b[(j*2)]) <= ImpaqtArguments::Args.epsilon) {
-				merged.back() = std::max(merged.back(), b[(j*2)+1]);
-				appended = true;
-			} else {
-				merged.emplace_back(b[(j*2)]);
-				merged.emplace_back(b[(j*2)+1]);
-			}
+		for (int j = i + 1; j < transcripts.size(); j++) {
 
-			j += 1;
-		
-			// Merge Overlapping sections
-		} else {
-			merged.emplace_back(std::min(a[(i*2)], b[(j*2)]));
-			merged.emplace_back(std::max(a[(i*2)+1], b[(j*2)+1]));
-			i += 1;
-			j += 1;
+			// Skip if overlap notpossible
+			if (transcripts[j][0] > curr -> get_back()) { continue; }
 
-			while (j < m && (merged.back() >= b[(j*2)])) {
-				merged.back() = std::max(merged.back(), b[(j*2)+1]);
-				j += 1;
+			if (check_containment(transcripts[j], transcripts[i])) {
+				curr -> add_interval(transcripts[j]);
+				visited.push_back(j);
+				unique = false;
 			}
 		}
+		curr -> collapse_intervals();
 	}
 
-	// If remaining sections of A
-	while (i < n) {
-		merged.emplace_back(a[(i*2)]);
-		merged.emplace_back(a[(i*2)+1]);
-		i += 1;
+
+	curr = &head;
+	transcripts.clear();
+	while (curr != nullptr) {
+		// Add if unique
+		if (curr -> sublist_count == 0) { 
+			transcripts.push_back(curr -> vals); 
+
+			// Add if extended
+		} else {
+			for (const auto &n : curr -> sublist) { transcripts.push_back(n -> vals); }
+		}
+
+		curr -> clean();
+		curr = curr -> next;
 	}
-	
-	return merged;
+
+	return unique;
 }
+
 
 // Reduce Transcript Number by Overlapping. Report Unique Transcripts
 void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts) {
 
-	int n;
-	bool all_unique, overlap;
-	std::vector<int> absorbed;
-
-	std::vector<int> tmp;
-	std::vector<std::vector<int>> result;
 	std::vector<std::vector<int>> init_copy = transcripts;
 
+	// Return if no need to overlap
 	if (transcripts.size() == 1) { return; }
 
 	// Reverse and Negative if reverse strand
 	if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
 
-	// Merge transcripts until all are unique
-	int x = 0;
-	while (true) {
-
-		// std::cerr << "Iter: " << x << "\n"; x++;
-		// for (const auto &t : transcripts) {
-		// 	for (const auto &p : t) { std::cerr << p << ","; }
-		// 	std::cerr << "\n";
-		// }
-		// std::cerr << "\n\n";
-
-
-		// Reset Checks
-		n = transcripts.size();
-		result.clear(); 
-		absorbed.clear();
-		all_unique = true;
-
-		for (int i = 0; i < n; i++) {
-			overlap = false;
-
-			for (int j = i + 1; j < n; j++) {
-
-				if (check_subset(transcripts[i], transcripts[j])) {
-
-					overlap = true;
-					absorbed.emplace_back(j);
-					tmp = overlap_aux(transcripts[i], transcripts[j]);
-					
-					// If new transcript not already in results, add
-					auto it = std::find(result.begin(), result.end(), tmp);
-					if (it == result.end()) { result.push_back(tmp); }
-				}
-			}
-
-			// If unique transcripts and not absorbed, add. If not, add another iteration
-			if (!overlap && std::find(absorbed.begin(), absorbed.end(), i) == absorbed.end()) {
-				result.emplace_back(transcripts[i]);
-			
-			} else { all_unique = false; }
-		}
-
-		if (!all_unique) {
-			transcripts = result;
-		} else {
-			break;
-		}
+	bool unique = overlap_aux(transcripts);
+	while (!unique) {
+		unique = overlap_aux(transcripts);
 	}
 
 	// Reverse and Negative Results if Necessary
-	if (curr_node -> get_strand() == 1) { reverse_transcripts(result); }
+	if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
 	
 	// Get Final Transcripts + Counts
 	int core_points = 0;
-	std::vector<int> new_counts(result.size(), 0);
-	for (int i = 0; i < result.size(); i++) {
-		core_points = get_quant(result[i], init_copy, counts);
+	std::vector<int> new_counts(transcripts.size(), 0);
+	for (int i = 0; i < transcripts.size(); i++) {
+		core_points = get_quant(transcripts[i], init_copy, counts);
 		new_counts[i] = core_points;
 	}
-
-	transcripts = result;
 	counts = new_counts;
 }
 
@@ -292,7 +203,7 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 	int pos;
 	for (const auto& p1 : path_map) {
 
-		if (path_map[p1.first] == 0) { continue; }
+		if (p1.second == 0) { continue; }
 
 		// if path is orphaned
 		pos = p1.first.find('-');

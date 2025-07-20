@@ -10,7 +10,6 @@
 #include "global_args.h"
 #include "impaqt.h"
 
-
 // Globals
 ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/dbscan_test.bam",      // bam
                                                      "../test/data/dbscan_test.bam.bai",  // index
@@ -129,7 +128,7 @@ TEST_F(impactTest, OverlapTranscripts) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
-   ASSERT_EQ(result, "61942684,61942962,61942684,61943440,");
+   ASSERT_EQ(result, "61942684,61943440,");
 };
 
 // Test 3

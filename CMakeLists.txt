@@ -11,6 +11,7 @@ file(GLOB IMPAQT_FILES
         ${PROJECT_SOURCE_DIR}/src/AnnotationList.cpp
 	${PROJECT_SOURCE_DIR}/src/ClusterList.cpp
 	${PROJECT_SOURCE_DIR}/src/DBSCAN.cpp
+        ${PROJECT_SOURCE_DIR}/src/ContainmentList.cpp
 	${PROJECT_SOURCE_DIR}/src/AssignClusters.cpp
 	${PROJECT_SOURCE_DIR}/src/utils.cpp
 )
@@ -88,6 +89,7 @@ add_executable(dbscan_test
 )
 target_sources(dbscan_test
     PRIVATE ${PROJECT_SOURCE_DIR}/src/ClusterList.cpp
+    ${PROJECT_SOURCE_DIR}/src/ContainmentList.cpp
     ${PROJECT_SOURCE_DIR}/src/DBSCAN.cpp
     ${PROJECT_SOURCE_DIR}/src/utils.cpp
 )
