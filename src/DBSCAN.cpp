@@ -13,7 +13,7 @@
 int get_quant(const std::vector <int> result, const std::vector<std::vector<int>> &init_copy, const std::vector<int> counts) {
 	int core_points = 0;
 	for (int i = 0; i < init_copy.size(); i++) {
-		if (check_containment(init_copy[i], result)) {
+		if (check_containment_strict(init_copy[i], result)) {
 			core_points += counts[i];
 		}
 	}
@@ -104,14 +104,19 @@ void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &tra
 	// Reverse and Negative Results if Necessary
 	if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
 	
-	// Get Final Transcripts + Counts
+	// If more than one transcript identified
 	int core_points = 0;
-	std::vector<int> new_counts(transcripts.size(), 0);
-	for (int i = 0; i < transcripts.size(); i++) {
-		core_points = get_quant(transcripts[i], init_copy, counts);
-		new_counts[i] = core_points;
+	if (transcripts.size() == 1) {
+		for (const auto &c : counts) { core_points += c; }
+		counts = {core_points};
+	} else {
+		std::vector<int> new_counts(transcripts.size(), 0);
+		for (int i = 0; i < transcripts.size(); i++) {
+			core_points = get_quant(transcripts[i], init_copy, counts);
+			new_counts[i] = core_points;
+		}
+		counts = new_counts;
 	}
-	counts = new_counts;
 }
 
 

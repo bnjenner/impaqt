@@ -33,5 +33,7 @@ bool check_point_overlap(const int &p, const int &e1, const int &e2);
 // Check if vector is contained within another vector
 bool check_containment(const std::vector<int> &b, const std::vector<int> &a);
 
+bool check_containment_strict(const std::vector<int> &b, const std::vector<int> &a);
+
 // For Debugging
 void print_transcripts(const std::vector<std::vector<int>> &transcripts);

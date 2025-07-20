@@ -104,6 +104,45 @@ bool check_containment(const std::vector<int> &b, const std::vector<int> &a) {
 	return match;
 }
 
+// Check if vector is contained within another vector
+bool check_containment_strict(const std::vector<int> &b, const std::vector<int> &a) {
+
+	bool match = false;
+	int i = 0;
+	int j = 0;
+	int n = a.size() / 2;
+	int m = b.size() / 2;
+
+	// Iterate through exons, see if match is complete 
+	while (j < m) {
+
+		// End of A reached
+		if (i >= n || (!match && ((i > 0) && (j > 0)))) { 
+			break;
+
+		// Check bounds
+		} else if (check_bounds(a[(2*i)], a[(2*i)+1], b[(2*j)], b[(2*j)+1])) {
+			match = true; i += 1;
+
+			// If current A extends beyond next B
+			if (j != m - 1 && b[(2*(j+1))] < a[(2*(i-1))+1]) {
+				i -= 1;
+			}
+
+		} else {
+			if (match) {
+				match = false;
+				break;
+			} else {
+				i += 1; j -= 1;
+			}
+		}
+		j += 1;
+	}
+
+	return match;
+}
+
 
 // For Debugging
 void print_transcripts(const std::vector<std::vector<int>> &transcripts) {
