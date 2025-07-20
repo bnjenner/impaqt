@@ -345,11 +345,9 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 
 			} else {
 
-				// If read mitochrondrial genome detected, only cluster 5' end 
-				min_counts = (int)((float)expr * 0.01); // 1% of total reads for mito (magic number, I am sorry)
-				assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, true, true);
-				assign_vec_3 = std::vector<int>(points, -1);
-				assignments_3.push_back(assign_vec_3);		
+				// If read mitochrondrial genome detected, don't bother lol
+				curr_node = curr_node -> get_next();
+				continue;	
 			}
 			
 
@@ -366,12 +364,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				                assignments_5, assignments_3,
 				                &transcripts, &counts);
 
-				
-				// Report Final Transcripts
-				if (density < 1.5) {
-					// Merge overlapping transcripts 
-					overlap_clusters(curr_node, transcripts, counts);
-				}
+				overlap_clusters(curr_node, transcripts, counts);
 
 				report_transcripts(curr_node, transcripts, counts);
 			}
