@@ -276,7 +276,7 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 				// Advance to Potential Gene
 				start = cluster -> get_transcript_start();
 				prev_gene = get_closest_gene(start, prev_gene, cluster);
-				
+
 				if (prev_gene != NULL) {
 					assign_transcripts_to_genes(cluster, prev_gene, list, annotation, t_num);
 				}

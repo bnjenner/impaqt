@@ -94,7 +94,11 @@ void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &tra
 	if (transcripts.size() == 1) { return; }
 
 	// Reverse and Negative if reverse strand
-	if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
+	if (curr_node -> get_strand() == 1) {
+		reverse_transcripts(transcripts);
+	} else {
+		std::sort(transcripts.begin(), transcripts.end(), compare_first_element);
+	}
 
 	bool unique = overlap_aux(transcripts);
 	while (!unique) {
@@ -102,7 +106,11 @@ void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &tra
 	}
 
 	// Reverse and Negative Results if Necessary
-	if (curr_node -> get_strand() == 1) { reverse_transcripts(transcripts); }
+	if (curr_node -> get_strand() == 1) {
+		reverse_transcripts(transcripts);
+	} else {
+		std::sort(transcripts.begin(), transcripts.end(), compare_first_element);
+	}
 	
 	// If more than one transcript identified
 	int core_points = 0;
