@@ -255,7 +255,8 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 	
 	int t_num, start;
 	ClusterNode *cluster = list -> get_head(strand);
-	GeneNode *prev_gene = annotation.jump_to_chrom(chrom, strand);
+	GeneNode *prev_gene, *gene;
+	prev_gene = annotation.jump_to_chrom(chrom, strand);
 
 	// If no genes
 	if (prev_gene == NULL) {
@@ -275,10 +276,10 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 
 				// Advance to Potential Gene
 				start = cluster -> get_transcript_start();
-				prev_gene = get_closest_gene(start, prev_gene, cluster);
+				gene = get_closest_gene(start, prev_gene, cluster);
 
-				if (prev_gene != NULL) {
-					assign_transcripts_to_genes(cluster, prev_gene, list, annotation, t_num);
+				if (gene != NULL) {
+					assign_transcripts_to_genes(cluster, gene, list, annotation, t_num);
 				}
 
 			} else {
@@ -287,14 +288,14 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 
 				// Advance to Potential Gene
 				start = (cluster -> get_five_vec())[0];
-				prev_gene = get_closest_gene(start, prev_gene, cluster);
+				gene = get_closest_gene(start, prev_gene, cluster);
 
-				if (prev_gene != NULL) {
-					assign_reads_to_genes(cluster, prev_gene, list, annotation);				
+				if (gene != NULL) {
+					assign_reads_to_genes(cluster, gene, list, annotation);				
 				}
 			}
 
-			if (prev_gene == NULL) {
+			if (gene == NULL) {
 				list -> add_unassigned_singles(cluster -> get_read_count());
 			}
 		}

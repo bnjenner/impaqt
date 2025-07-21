@@ -62,7 +62,7 @@ private:
 				t_vec.emplace_back(std::max(exon_vec[(2*i) + 1], t_stop));
 
 				// close gap
-				int counter = 1;
+				int counter = 0;
 				for (int j = i + 1; j < exons; j++) {
 					if (exon_vec[(2*j)] < t_vec[t_vec.size() - 1]) {
 						t_vec[t_vec.size() - 1] = std::max(t_vec[t_vec.size() - 1], exon_vec[(2*j) + 1]);
