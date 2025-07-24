@@ -38,24 +38,23 @@ int main(int argc, char const ** argv) {
     seqan::ArgumentParser::ParseResult res = argparse(argc, argv);
     if (res != seqan::ArgumentParser::PARSE_OK) { return res; }
 
-
     // Welcome!
     std::cerr << "//IMPAQT\n";
     std::cerr << "//Parsing Input Files:\n";
 
     // Set Up Impaqt Threads
+    const int init_thread = 0;
     std::cerr << "//    Alignment File.....\n";
-    std::vector<Impaqt*> processes = {new Impaqt(0)};
-    processes[0] -> open_alignment_file();
-    processes[0] -> set_chrom_order();
+    std::vector<Impaqt*> processes = {new Impaqt(init_thread)};
+    processes[init_thread] -> open_alignment_file();
+    processes[init_thread] -> set_chrom_order();
 
     std::cerr << "//    Annotation File....\n";
-    processes[0] -> add_annotation();
-    AnnotationList* annotation = processes[0] -> get_annotation();
-
+    processes[init_thread] -> add_annotation();
+    AnnotationList *annotation = processes[init_thread] -> get_annotation();
 
     // Multithreading Initialization
-    size_t n = processes[0] -> get_chrom_num();
+    size_t n = processes[init_thread] -> get_chrom_num();
     if (n > 1) {
         processes.reserve(n);
         for (int i = 1; i < n; i++) { processes.emplace_back(new Impaqt(i)); }
@@ -67,7 +66,7 @@ int main(int argc, char const ** argv) {
     const int proc = std::max(ImpaqtArguments::Args.threads - 1, 1);
     {
         int i = 0;
-        thread_queue call_queue(proc); // initialize dispatch queue with N threads
+        thread_queue call_queue(proc);
         do {
             while (i < n) {
                 call_queue.dispatch([&, i] {processes[i] -> launch();});
@@ -80,18 +79,12 @@ int main(int argc, char const ** argv) {
     main_lock.unlock();                                    // unlock thread
 
 
-    // Write Results
     std::cerr << "//Writing Results:\n";
-
-    // Output read cluster gtf if specified
     if (ImpaqtArguments::Args.gtf_output != "") {
-
-         // Open GTF File
+       
         std::cerr << "//    GTF File...........\n";
         std::ofstream gtfFile;
         gtfFile.open(ImpaqtArguments::Args.gtf_output);
-
-        // Write Header 
         gtfFile << "##description: transcripts identified by IMPAQT\n"
                 << "##format: gtf\n"
                 << "##bam: " << ImpaqtArguments::Args.alignment_file << "\n"
@@ -103,11 +96,9 @@ int main(int argc, char const ** argv) {
     }
 
 
-    // Output Counts
     std::cerr << "//    Counts Data........\n";
     annotation -> print_gene_counts();
 
-    // Summary Statistics (could potentially make this a struct)
     long double total_assigned = 0.0;
     long double total_unassigned = 0.0;
     long double total_ambiguous = 0.0;

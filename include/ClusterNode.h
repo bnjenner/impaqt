@@ -5,6 +5,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "utils.h"
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Cluster Node Class (really just a node in a doubly linked list) */
 
@@ -13,25 +15,25 @@ class ClusterNode {
 private:
 
 	// Node Details
-	std::string contig_name;                           // name of contig
-	int chrom_index;                                   // chromosome number in index
-	int strand = -1;                                   // standedness
-	int start;                                         // beginning of window
-	int stop;                                          // end of window
+	std::string contig_name;
+	int contig_index;
+	int strand = -1;
+	int start;
+	int stop;
 	bool skip = false;
 
 	// Read Details
 	std::string headID;                                // read ID of first read in cluster
 	size_t read_count = 0;                             // number of associated reads
-	size_t vec_count = 0;
+	size_t vec_count = 0;                              // number of points (gapped alns starts and ends)
 	size_t total_core_points = 0;                      // number of total core points
 	std::vector<int> five_vec;                         // vector for 5' ends
 	std::vector<int> three_vec;                        // vector for 3' ends
 	std::vector<int> index_vec;                        // vector for read indexes
 
 	// Links
-	ClusterNode *next = NULL;                          // next ClusterNode
-	ClusterNode *prev = NULL;                          // pevsious ClusterNode
+	ClusterNode *next = NULL;
+	ClusterNode *prev = NULL;
 
 	// Transcript Results
 	size_t transcript_num = 0;                         // number of transcripts identified
@@ -49,11 +51,11 @@ public:
 	ClusterNode() {}
 
 	// Initialize
-	ClusterNode(const int &start, const int strand,  const int &window_size, const int &chrom_index, const std::string &contig_name) {
+	ClusterNode(const int &start, const int strand,  const int &window_size, const int &contig_index, const std::string &contig_name) {
 		this -> start = start;
 		this -> stop = start + window_size;
 		this -> strand = strand;
-		this -> chrom_index = chrom_index;
+		this -> contig_index = contig_index;
 		this -> contig_name = contig_name;
 		five_vec.resize(1000, 0);
 		three_vec.resize(1000, 0);
@@ -72,7 +74,7 @@ public:
 		stop = n_node -> get_stop();
 		strand = c_node -> get_strand();
 		contig_name = c_node -> get_contig_name();
-		chrom_index = c_node -> get_chrom_index();
+		contig_index = c_node -> get_contig_index();
 		vec_count = c_vec + n_vec;
 		read_count = c_node -> get_read_count() + n_node -> get_read_count();
 
@@ -96,7 +98,7 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
-	int get_chrom_index() { return chrom_index; }
+	int get_contig_index() { return contig_index; }
 	int get_strand() { return strand; }
 	int get_start() { return start; }
 	int get_stop() { return stop; }
@@ -141,6 +143,7 @@ public:
 	ClusterNode* get_prev() { return prev; }
 
 	bool is_skipped() { return skip; }
+	bool read_contained(const int pos) { return check_point_overlap(pos, this -> get_start(), this -> get_stop()); }
 
 
 	/////////////////////////////////////////////////////////////
@@ -148,7 +151,7 @@ public:
 
 	void set_next(ClusterNode *node) { next = node; }
 	void set_prev(ClusterNode *node) { prev = node; }
-	void set_chrom_index(int t_chrom_index) { chrom_index = t_chrom_index; }
+	void set_contig_index(int t_contig_index) { contig_index = t_contig_index; }
 	void set_skip() { skip = true; }
 	void update_read_counts(size_t count) { read_count += count; }
 	void update_vec_counts(size_t count) { vec_count += count; }

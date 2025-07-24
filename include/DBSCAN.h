@@ -30,7 +30,7 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 
 // DBSCAN Clustering Function, inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
 std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &min_counts,
-                        std::vector<std::vector<int>> &assignment, const bool &five, const bool &mito);
+                        std::vector<std::vector<int>> &assignment, const bool &five);
 
 // Initiate Transcript Identifying Procedure
 void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand);

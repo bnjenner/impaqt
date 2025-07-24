@@ -80,16 +80,24 @@ TEST_F(impactTest, DBSCAN) {
    test_process = new Impaqt(0);
    test_process -> open_alignment_file();
    test_process -> set_chrom_order();
-   test_process ->  create_clusters();
+   test_process -> create_clusters();
    test_process -> collapse_clusters();
 
-   node = test_process -> get_clusters() -> get_head(1) -> get_next();
+   // Move to Test Node
+   int n = 0;
+   node = test_process -> get_clusters() -> get_head(1);
+   while (n < 9) {
+      node = node -> get_next();
+      ++n;
+   }
+
+
    expr = node -> get_read_count();
    points = node -> get_vec_count();
    min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
 
-   assign_vec_5 = dbscan(node, points, min_counts, assignments_5, true, false);
-   assign_vec_3 = dbscan(node, points, min_counts, assignments_3, false, false);
+   assign_vec_5 = dbscan(node, points, min_counts, assignments_5, true);
+   assign_vec_3 = dbscan(node, points, min_counts, assignments_3, false);
 
    std::string result = "";
    for (const auto &p : assign_vec_5) { result += std::to_string(p); }
@@ -114,7 +122,7 @@ TEST_F(impactTest, GetCoordinates) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
-   ASSERT_EQ(result, "61942684,61942962,61942684,61942878,61943136,61943440,61943093,61943440,");
+   ASSERT_EQ(result, "61940521,61940831,61942676,61942962,61942676,61942878,61943136,61943440,61943093,61943440,");
 };
 
 // Test 2
@@ -128,7 +136,7 @@ TEST_F(impactTest, OverlapTranscripts) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
-   ASSERT_EQ(result, "61942684,61943440,");
+   ASSERT_EQ(result, "61940521,61940831,61942676,61943440,");
 };
 
 // Test 3
@@ -151,5 +159,5 @@ TEST_F(impactTest, FullTest) {
       node = node -> get_next();
    }
 
-   ASSERT_EQ(result, "61896749,61897371,\n61912885,61913254,\n61942676,61943440,61974675,61974932,\n61942676,61942726,61974675,61974932,\n62034854,62035036,\n62036645,62037056,\n");
+   ASSERT_EQ(result, "61896749,61897493,\n61903790,61904194,\n61905443,61905749,\n61905986,61906362,\n61907029,61907249,\n61912784,61913335,\n61917453,61917765,\n61929352,61929836,\n61931193,61931786,\n61932084,61932362,\n61933801,61934198,\n61940521,61940831,\n61942684,61974707,\n62034854,62035036,\n62036645,62037056,\n");
 };

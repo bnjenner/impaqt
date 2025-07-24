@@ -5,6 +5,7 @@
 #include <api/BamReader.h>
 
 #include "global_args.h"
+#include "utils.h"
 #include "ClusterNode.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -15,16 +16,16 @@ class ClusterList {
 private:
 
 	// List Details
-	std::string contig_name;                  // name of contig
-	int contig_index;                         // chromosome number in index
-	int contig_length = 0;                    // length of chromosome
-	int window_size;                          // window size
+	std::string contig_name;
+	int contig_index;
+	int contig_length = 0;
+	int window_size;
 
 	// Links
-	ClusterNode *pos_head;                    // first positive ClusterNode
-	ClusterNode *pos_tail;                    // last positive ClusterNode
-	ClusterNode *neg_head;                    // first negative ClusterNode
-	ClusterNode *neg_tail;                    // last negative ClusterNode
+	ClusterNode *pos_head = NULL;
+	ClusterNode *pos_tail = NULL;
+	ClusterNode *neg_head = NULL;
+	ClusterNode *neg_tail = NULL;
 
 	// Summary
 	long double assigned_reads = 0.0;         // Assigned Transcript counts
@@ -34,8 +35,8 @@ private:
 	size_t ambiguous_singles = 0;             // Unssigned Read counts
 	size_t unassigned_singles = 0;            // Ambigous Read counts
 
-	size_t multimapped_reads = 0;
-	size_t low_quality_reads = 0;
+	size_t multimapped_reads = 0;             // Multimapped Read counts
+	size_t low_quality_reads = 0;             // Low Quality Read counts
 
 	size_t total_reads = 0;
 	size_t passing_pos_reads = 0;             // Reads passing read check on +
@@ -44,8 +45,9 @@ private:
 
 	/////////////////////////////////////////////////////////////
 	/* Private Node Methods */
-	void initialize_strand(ClusterNode *&head, ClusterNode *&tail, const int strand, const int &zones);
-	void delete_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail);
+	//void initialize_strand(ClusterNode *&head, ClusterNode *&tail, const int strand, const int &zones);
+	void initialize_list(const int t_strand, const int t_pos);
+	ClusterNode* extend_list(ClusterNode *&curr, const int t_strand, const int pos);
 	void merge_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail);
 	void delete_list();
 
@@ -54,24 +56,43 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Constructors */
 	ClusterList() {}
+	ClusterList(const int contig_index, const std::string contig_name, const int contig_length) {
+		this -> contig_index = contig_index;
+		this -> contig_name = contig_name;
+		this -> contig_length = contig_length;
+		this -> window_size = ImpaqtArguments::Args.window_size;
+	}
 	~ClusterList() { this -> delete_list(); }
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
-	// Get Chrom Name
 	std::string get_contig_name() { return contig_name; }
 
-	// Get Head Node
+	// Gets
 	ClusterNode* get_head(int t_strand) {
 		if (t_strand == 0) { return pos_head; }
 		return neg_head;
 	}
-
-	// Get Tail Node
 	ClusterNode* get_tail(int t_strand) {
 		if (t_strand == 0) { return pos_tail; }
 		return neg_tail;
+	}
+
+	// Sets
+	void set_head(ClusterNode* node, const int t_strand) {
+		if (t_strand == 0) {
+			pos_head = node;
+		} else {
+			neg_head = node;
+		}
+	}
+	void set_tail(ClusterNode* node, const int t_strand) {
+		if (t_strand == 0) {
+			pos_tail = node;
+		} else {
+			neg_tail = node;
+		}
 	}
 
 	// Get First cluster by position (just trust me on this one)
@@ -110,7 +131,6 @@ public:
 	long double get_assigned_reads() { return assigned_reads + (long double)assigned_singles; }
 	long double get_unassigned_reads() { return unassigned_reads + (long double)unassigned_singles; }
 	long double get_ambiguous_reads() { return ambiguous_reads + (long double)ambiguous_singles; }
-
 	size_t get_multimapped_reads() { return multimapped_reads; }
 	size_t get_low_quality_reads() { return low_quality_reads; }
 	size_t get_total_reads() { return total_reads; }
@@ -149,25 +169,13 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* List Functions */
 
-	// Initialize empty object
-	void initialize(const int contig_index, const std::string contig_name, const int contig_length) {
-		this -> contig_index = contig_index;
-		this -> contig_name = contig_name;
-		this -> contig_length = contig_length;
-		this -> window_size = ImpaqtArguments::Args.window_size;
-
-		const int zones = (contig_length / window_size) + 1;
-		initialize_strand(pos_head, pos_tail, 0, zones); // Positive Strand
-		initialize_strand(neg_head, neg_tail, 1, zones); // Negative Strand
-	}
-
 	// Find Nearest Region in List
 	void jump_to_cluster(ClusterNode *&node, const int &pos) {
 		while (node -> get_next() != NULL) {
-			if (pos >= node -> get_stop()) {
+			if (!(node -> read_contained(pos))) {
 				node = node -> get_next();
 			} else { break; }
-		}	
+		}
 	}
 
 	/////////////////////////////////////////////////////////////
@@ -184,7 +192,7 @@ public:
 	void print_clusters(int t_strand) {
 		ClusterNode *node = get_head(t_strand);
 		while (node != NULL) {
-			std::cout << get_contig_name() << "\t"
+			std::cout << node -> get_contig_name() << "\t"
 			          << node -> get_start() << "\t" << node -> get_stop() << "\t"
 			          << node -> get_read_count() << "\n";
 			node = node -> get_next();
@@ -195,7 +203,7 @@ public:
 		std::stringstream ss;
 		ClusterNode *node = get_head(t_strand);
 		while (node != NULL) {
-			ss << get_contig_name() << "\t"
+			ss << node -> get_contig_name() << "\t"
 			   << node -> get_start() << "\t" << node -> get_stop() << "\t"
 			   << node -> get_read_count() << "\n";
 			node = node -> get_next();

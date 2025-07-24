@@ -239,7 +239,7 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 
 // DBSCAN Clustering Function, inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
 std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &min_counts,
-                        std::vector<std::vector<int>> &assignment, const bool &five, const bool &mito) {
+                        std::vector<std::vector<int>> &assignment, const bool &five) {
 
 
 	//  BNJ: 7/4/2025 - This function EATS time... I should cache the bounds for each point, make it obvious where to search.
@@ -254,9 +254,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 	std::vector<int> sub_neighbors;
 	std::vector<int> assign_vec(points, -1);
 	std::vector<bool> visted(points, false);
-
 	int epsilon = ImpaqtArguments::Args.epsilon;
-	if (mito) { epsilon = 50; } // If mito, use smaller epsilon (magic number again... look they're fundamentally different problems)
 
 	// Sepicfy 5' or 3' clusters
 	adj_vec = curr_node -> get_five_ref();
@@ -322,6 +320,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 
 	float density;
+	int prime_5 = 0;
 	int expr, points, min_counts;
 	int count_threshold = std::max(ImpaqtArguments::Args.min_count, 10);
 
@@ -348,8 +347,8 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
 
 			if (density < 1.5) {
-				assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, true, false);
-				assign_vec_3 = dbscan(curr_node, points, min_counts, assignments_3, false, false);
+				assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, prime_5);
+				assign_vec_3 = dbscan(curr_node, points, min_counts, assignments_3, !prime_5);
 
 			} else {
 
