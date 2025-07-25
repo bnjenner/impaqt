@@ -70,7 +70,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                   "e", "epsilon",
                   "Distance (in base pairs) for DBSCAN algorithm.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "epsilon", "150");
+    seqan::setDefaultValue(parser, "epsilon", "100");
 
 
     // Define Annotation Options
