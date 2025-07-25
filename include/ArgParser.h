@@ -47,14 +47,13 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                          seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "mapq-min", "1");
 
-
-    // Define DBSCAN Options
     seqan::addOption(parser, seqan::ArgParseOption(
                   "w", "window-size",
                   "Window size to use to parition genome for read collection.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "window-size", "1000");
 
+    // Define DBSCAN Options
     seqan::addOption(parser, seqan::ArgParseOption(
                   "m", "min-count",
                   "Minimum read count to initiate DBSCAN transcript identification algorithm. (Minimum of 10)",
@@ -71,7 +70,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                   "e", "epsilon",
                   "Distance (in base pairs) for DBSCAN algorithm.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "epsilon", "50");
+    seqan::setDefaultValue(parser, "epsilon", "150");
 
 
     // Define Annotation Options

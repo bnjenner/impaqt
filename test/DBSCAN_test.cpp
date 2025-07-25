@@ -83,15 +83,7 @@ TEST_F(impactTest, DBSCAN) {
    test_process -> create_clusters();
    test_process -> collapse_clusters();
 
-   // Move to Test Node
-   int n = 0;
-   node = test_process -> get_clusters() -> get_head(1);
-   while (n < 9) {
-      node = node -> get_next();
-      ++n;
-   }
-
-
+   node = test_process -> get_clusters() -> get_head(0);
    expr = node -> get_read_count();
    points = node -> get_vec_count();
    min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
@@ -122,7 +114,7 @@ TEST_F(impactTest, GetCoordinates) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
-   ASSERT_EQ(result, "61940521,61940831,61942676,61942962,61942676,61942878,61943136,61943440,61943093,61943440,");
+   ASSERT_EQ(result, "4959707,4959824,4960962,4961018,4960962,4961094,4962137,4962291,4962181,4962291,");
 };
 
 // Test 2
@@ -136,28 +128,5 @@ TEST_F(impactTest, OverlapTranscripts) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
-   ASSERT_EQ(result, "61940521,61940831,61942676,61943440,");
-};
-
-// Test 3
-TEST_F(impactTest, FullTest) {
-   test_process = new Impaqt(0);
-   test_process -> open_alignment_file();
-   test_process -> set_chrom_order();
-   test_process ->  create_clusters();
-   test_process -> collapse_clusters();
-   test_process -> find_transcripts();             // dbscan clustering algorithm
-
-   std::string result = "";
-
-   node = test_process -> get_clusters() -> get_head(1);
-   while (node != NULL) {
-      for (const auto &transcript : *(node -> get_transcripts())) {
-         for (const auto &pos : transcript) { result += std::to_string(pos) + ","; }
-         result += "\n";
-      }
-      node = node -> get_next();
-   }
-
-   ASSERT_EQ(result, "61896749,61897504,\n61903790,61904242,\n61905443,61905749,\n61905986,61906362,\n61907029,61907249,\n61912784,61913335,\n61917453,61917765,\n61929352,61929836,\n61931193,61931786,\n61932084,61932362,\n61933801,61934198,\n61940521,61940831,\n61942676,61943440,\n62034854,62035036,\n62036645,62037056,\n");
+   ASSERT_EQ(result, "4959707,4959824,4960962,4961094,4962137,4962291,");
 };

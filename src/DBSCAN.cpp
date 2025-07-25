@@ -372,7 +372,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				                assignments_5, assignments_3,
 				                &transcripts, &counts);
 
-				overlap_clusters(curr_node, transcripts, counts);
+                overlap_clusters(curr_node, transcripts, counts);
 
 				report_transcripts(curr_node, transcripts, counts);
 

@@ -247,14 +247,13 @@ void ClusterList::collapse_clusters(int t_strand) {
 
 		node -> shrink_vectors();
 
-		// If no merging needed
-		if (node -> get_next() != NULL) {
+		while (node -> get_next() != NULL) {
 
-			// Check if next cluster is within merge range
 			dist = (node -> get_next() -> get_start()) - (node -> get_stop());
-			if (dist < ClusterList::window_size) {
-				ClusterList::merge_nodes(node, t_head, t_tail);
-			}
+			if (dist > ClusterList::window_size) { break; }
+
+			// If next cluster is within merge range
+			ClusterList::merge_nodes(node, t_head, t_tail);
 		}
 
 		node = node -> get_next();
