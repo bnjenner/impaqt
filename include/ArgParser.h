@@ -53,7 +53,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                   "w", "window-size",
                   "Window size to use to parition genome for read collection.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "window-size", "2500");
+    seqan::setDefaultValue(parser, "window-size", "1000");
 
     seqan::addOption(parser, seqan::ArgParseOption(
                   "m", "min-count",

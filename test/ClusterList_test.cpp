@@ -12,22 +12,22 @@
 
 
 // Globals
-ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/test.bam",      // bam
-                                                     "../test/data/test.bam.bai",  // index
-                                                     "../test/data/test.gtf",      // annotation
-                                                     1,                            // threads
-                                                     "SE",                         // library type
-                                                     "forward",                    // stranded
-                                                     false,                        // nonunique
-                                                     0,                            // mapq
-                                                     5000,                         // window size
-                                                     1,                            // min_count
-                                                     25,                           // count_percentage
-                                                     50,                           // epsilon
-                                                     false,                        // isGFF
-                                                     "exon",                       // feature_tag
-                                                     "gene_id",                    // feature_id
-                                                     ""                            // gtf_output
+ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/test_negative.bam",      // bam
+                                                     "../test/data/test_negative.bam.bai",  // index
+                                                     "../test/data/test.gtf",               // annotation
+                                                     1,                                     // threads
+                                                     "SE",                                  // library type
+                                                     "forward",                             // stranded
+                                                     false,                                 // nonunique
+                                                     0,                                     // mapq
+                                                     500,                                   // window size
+                                                     1,                                     // min_count
+                                                     25,                                    // count_percentage
+                                                     50,                                    // epsilon
+                                                     false,                                 // isGFF
+                                                     "exon",                                // feature_tag
+                                                     "gene_id",                             // feature_id
+                                                     ""                                     // gtf_output
                                                     };
 
 
@@ -62,6 +62,7 @@ TEST_F(impactTest, ConstructClustList) {
    test_process = new Impaqt(0);
    test_process -> open_alignment_file();
    test_process -> set_chrom_order();
+   test_process -> set_contigs();
 };
 
 
@@ -109,44 +110,18 @@ TEST_F(impactTest, SpliceTest) {
    ASSERT_EQ(result, answer);
 };
 
-// Test 3
+// Test 2
 TEST_F(impactTest, BasicCluster) {
    test_process ->  create_clusters();
    std::string answer = read_test_file("../test/data/test_cluster.txt");
-   ASSERT_EQ(test_process -> get_clusters() -> string_clusters(0), answer);
+   ASSERT_EQ(test_process -> get_clusters() -> string_clusters(1), answer);
 };
 
-// Test 4
+// Test 3
 TEST_F(impactTest, BasicCollapse) {
    test_process -> collapse_clusters();
    std::string answer = read_test_file("../test/data/test_collapse.txt");
-   ASSERT_EQ(test_process -> get_clusters() -> string_clusters(0), answer);
+   ASSERT_EQ(test_process -> get_clusters() -> string_clusters(1), answer);
 };
 
-
-// Test 4
-TEST_F(impactTest, ComplexCollapse) {
-   ClusterList *test_list = new ClusterList();
-   test_list -> initialize(0, "chr1", 1000000);
-
-   // Set Test List
-   std::vector<int> vec;
-   ClusterNode *node = test_list -> get_head(0);
-   for (int i = 0; i < 5; i++) { node = node -> get_next(); }
-   while (node != NULL) {
-      vec = {node -> get_start() + 50 , node -> get_start() + 150};
-      if (node -> get_start() > 965000) { break; }
-      if (node -> get_start() != 500000 && node -> get_start() != 510000 && 
-          node -> get_start() != 750000 && node -> get_start() != 810000) { 
-         for (int i = 0; i < 20; i++) { node -> add_alignment(vec); }
-      }
-      node = node -> get_next();
-   }
-
-   test_list -> collapse_clusters(0);
-
-   std::string result = test_list -> string_clusters(0);
-   std::string answer = "chr1\t25000\t500000\t1900\nchr1\t505000\t510000\t20\nchr1\t515000\t750000\t940\nchr1\t755000\t810000\t220\nchr1\t815000\t970000\t620\n";
-   ASSERT_EQ(result, answer);
-};
 

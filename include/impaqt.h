@@ -15,21 +15,21 @@ class Impaqt {
 private:
 
 	// Alignment file Readers
-	BamTools::BamReader inFile;                                 // Bam File Object
-	BamTools::BamAlignment alignment;                           // BamAlignmentRecord Object;
+	BamTools::BamReader inFile;
+	BamTools::BamAlignment alignment;
 
-	static AnnotationList annotation;                           // Annotation list for genes
-	static std::string alignment_file_name;                     // alignment file
-	static std::string index_file_name;                         // alignment index file
-
-	// These could just be arrays or vectors
-	static std::unordered_map<int, std::string> contig_map;     // Links Index to Contig Name
-	static std::unordered_map<int, int> contig_lengths;         // Links Index to Contig Length
+	// Files and Data Structure
+	ClusterList* cluster_list;
+	static AnnotationList annotation;
+	static std::string alignment_file_name;
+	static std::string index_file_name;
+	static std::unordered_map<int, std::string> contig_map;
+	static std::unordered_map<int, int> contig_lengths;
 	
-	int contig_index;                                           // chromosome number
-	bool ignore = false;                                        // to ignore for downstream
-
-	ClusterList* cluster_list;                                  // List for clusters
+	std::string contig_name;
+	int contig_index;
+	int contig_length;
+	bool ignore = false;
 
 	// Read Stats
 	long double assigned_reads = 0.0;
@@ -66,7 +66,6 @@ public:
 	long double get_assigned_reads() { return assigned_reads; }
 	long double get_unassigned_reads() { return unassigned_reads; }
 	long double get_ambiguous_reads() { return ambiguous_reads; }
-
 	size_t get_multimapped_reads() { return multimapped_reads; }
 	size_t get_low_quality_reads() { return low_quality_reads; }
 	size_t get_total_reads() { return total_reads; }
@@ -84,7 +83,6 @@ public:
 	std::string get_contig_name() { return contig_map[contig_index]; }	
 	std::unordered_map<int, std::string> get_contig_map() { return contig_map; }
 	std::unordered_map<int, int> get_contig_lengths() { return contig_lengths; }
-
 
 	/////////////////////////////////////////////////////////////
 	/* Thread Initilizers */
@@ -120,12 +118,17 @@ public:
 			throw "ERROR: Could determine sort status. Please ensure file is sorted.";
 		}
 
-		// Generate Ref Map (contig indicies)
+		// Generate Contig Map (contig indicies -> contig name)
 		BamTools::RefVector references = inFile.GetReferenceData();
 		for (int i = 0; i < references.size(); i++) {
 			contig_map[i] = references.at(i).RefName;
 			contig_lengths[i] = references.at(i).RefLength;
 		}
+	}
+
+	void set_contigs() {
+		contig_name = contig_map[contig_index];
+		contig_length = contig_lengths[contig_index];
 	}
 
 	// Add and Create GTF/GFF Gene Annotation
@@ -134,18 +137,16 @@ public:
 		annotation.create_gene_list();
 	}
 
-
 	/////////////////////////////////////////////////////////////
 	/* Cluster Related Functions */
 
 	// Create cluster list
 	void create_clusters() {
 
-		cluster_list = new ClusterList();
-		cluster_list -> initialize(contig_index, this -> get_contig_name(), this -> get_contig_length());
+		cluster_list = new ClusterList(contig_index, contig_name, contig_length);
 
 		if (!inFile.Jump(contig_index)) {
-			std::cerr << "//ERROR: Could not jump to region: " << this -> get_contig_name() << "\n";
+			std::cerr << "//ERROR: Could not jump to region: " << contig_name << "\n";
 			throw "ERROR: Could not jump to region. Make sure BAM header is correct.";
 		}
 
@@ -155,21 +156,24 @@ public:
 
 	// Merge neighboring clusters and remove zeroes
 	void collapse_clusters() {
-		cluster_list -> collapse_clusters(0); // Forward 
-		cluster_list -> collapse_clusters(1); // Reverse
+		int t_strand = 0; // Forward
+		cluster_list -> collapse_clusters(t_strand);
+		cluster_list -> collapse_clusters(!t_strand);
 	}
 
 	// Differentiate Transcripts
 	void find_transcripts() {
 		if (ignore) { return; }
-		identify_transcripts(cluster_list, 0); // Forward
-		identify_transcripts(cluster_list, 1); // Reverse
+		int t_strand = 0; // Forward
+		identify_transcripts(cluster_list, t_strand);
+		identify_transcripts(cluster_list, !t_strand);
 	}
 
 	// Assign Transcripts to Genes
 	void assign_transcripts() {
-		assign_to_genes(annotation, cluster_list, this -> get_contig_name(), 0); // Forward
-		assign_to_genes(annotation, cluster_list, this -> get_contig_name(), 1); // Forward
+		int t_strand = 0; // Forward
+		assign_to_genes(annotation, cluster_list, contig_name, t_strand);
+		assign_to_genes(annotation, cluster_list, contig_name, !t_strand);
 	}
 
 	/////////////////////////////////////////////////////////////
@@ -195,15 +199,16 @@ public:
 	/* Thread Launcher */
 
 	void launch() {
-		this -> open_alignment_file();              // open files
-		this -> create_clusters();                  // find clusters
-		this -> close_alignment_file();             // close files
+		this -> set_contigs();
+		this -> open_alignment_file();
+		this -> create_clusters();
+		this -> close_alignment_file();
 		if (!ignore) {
-			this -> collapse_clusters();            // collapse clusters
-			this -> find_transcripts();             // dbscan clustering algorithm
-			this -> assign_transcripts();           // overlap genes
+			this -> collapse_clusters();
+			this -> find_transcripts();
+			this -> assign_transcripts();
 		}
-		this -> get_stats();                        // Get Read Stats
+		this -> get_stats();
 		if (ignore) { delete cluster_list; }
 	}
 };

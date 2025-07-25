@@ -6,6 +6,7 @@
 #include <api/BamReader.h>
 
 #include "global_args.h"
+#include "utils.h"
 #include "ClusterList.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,7 +25,7 @@ void ClusterList::calculate_splice(BamTools::BamAlignment &alignment, std::vecto
 
 	for (int i = 0; i < n; i++) {
 
-		// If gapped alignment, get start and ends of neighbor aligned regions 
+		// If gapped alignment, get start and ends of neighboring aligned regions 
 		if (alignment.CigarData[i].Type == 'N') {
 			
 			n_offset = alignment.CigarData[i].Length;
@@ -90,65 +91,30 @@ bool ClusterList::read_check(const BamTools::BamAlignment &alignment) {
 /////////////////////////////////////////////////////////////
 /* Private Node Methods */
 
-// Create Empty Clusters
-void ClusterList::initialize_strand(ClusterNode *&head, ClusterNode *&tail, const int strand, const int &zones) {
-	int pos = 0;
-	ClusterNode *node = new ClusterNode(pos,
-	                                    strand,
+// Initialize strand on list
+void ClusterList::initialize_list(const int t_strand, const int t_pos) {
+	ClusterNode *node = new ClusterNode(t_pos,
+	                                    t_strand,
 	                                    ClusterList::window_size, 
 	                                    ClusterList::contig_index, 
 	                                    ClusterList::contig_name);
-	head = node; tail = node;
-	for (int i = 1; i < zones; i++) {
-		pos += ClusterList::window_size;
-		tail -> set_next(new ClusterNode(pos,
-		                                 strand,
-		                                 ClusterList::window_size, 
-		                                 ClusterList::contig_index, 
-		                                 ClusterList::contig_name));
-		tail -> get_next() -> set_prev(tail);
-		tail = tail -> get_next();
-	}
+	set_head(node, t_strand);
+	set_tail(node, t_strand);
 }
 
-// Delete Empty Nodes
-void ClusterList::delete_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail) {
 
-	ClusterNode *t_node;
-
-	// If last node
-	if (c_node -> get_next() == NULL) {
-		t_node = c_node -> get_prev();
-
-		// If curr_node is also not first node
-		if (t_node != NULL) {
-			t_node -> set_next(NULL);
-		
-		} else { t_head = NULL; }
-		
-		delete c_node;
-		c_node = NULL; t_tail = t_node;
-		return;
-	}
-
-	// If first node
-	if (c_node -> get_prev() == NULL) {
-		t_node = c_node -> get_next();
-
-		t_node -> set_prev(NULL);
-		delete c_node;
-
-		c_node = t_node; t_head = c_node;
-		return;
-	}
-
-	t_node = c_node -> get_prev();
-	t_node -> set_next(c_node -> get_next());
-	t_node -> get_next() -> set_prev(t_node);
-	delete c_node;
-
-	c_node = t_node -> get_next();
+// Create Empty Clusters
+ClusterNode* ClusterList::extend_list(ClusterNode *&curr, const int t_strand, const int t_pos) {
+	ClusterNode *node = new ClusterNode(t_pos,
+	                                    t_strand,
+	                                    ClusterList::window_size, 
+	                                    ClusterList::contig_index, 
+	                                    ClusterList::contig_name);
+	curr -> set_next(node);
+	node -> set_prev(curr);
+	return node;
 }
+
 
 // Merge Neighboring Non-Zero Nodes
 void ClusterList::merge_nodes(ClusterNode *&c_node, ClusterNode *&t_head, ClusterNode *&t_tail) {
@@ -196,11 +162,12 @@ void ClusterList::delete_list() {
 // Create read clusters
 bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlignment &alignment) {
 
-	int t_5end, t_3end, t_strand;
+	int t_5end, t_3end;
+	int t_strand = 0; // Forward
 	bool found_reads = false;
 	std::vector<int> positions;
-	ClusterNode *pos_node = ClusterList::get_head(0);
-	ClusterNode *neg_node = ClusterList::get_head(1);
+	ClusterNode *pos_node = ClusterList::get_head(t_strand);
+	ClusterNode *neg_node = ClusterList::get_head(!t_strand);
 	ClusterNode *t_node = neg_node; // This needs to exist because BAM is ordered by left most position
 
 	while (true) {
@@ -219,25 +186,46 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 		// Process in Strand Specific way
 		if (alignment.IsReverseStrand()) {
 
-			t_5end = positions[positions.size() - 1];
+			t_5end = positions.back();
 			t_3end = positions[0];
 			passing_neg_reads += 1;
 
-			// Advance to correct node based on left position
-			ClusterList::jump_to_cluster(neg_node, alignment.Position);
-			t_node = neg_node;
+			if (ClusterList::neg_head == NULL) {
+				ClusterList::initialize_list(!t_strand, t_3end);
+				neg_node = ClusterList::get_head(!t_strand);
 
-			// Advance based on 5' position (right most)
-			ClusterList::jump_to_cluster(t_node, t_5end);
-			t_node -> add_alignment(positions);
+			} else {
+
+				// Advance based on 3' position (left most)
+				ClusterList::jump_to_cluster(neg_node, t_3end);
+			}
+
+			if (t_3end > neg_node -> get_stop()) {
+				neg_node = ClusterList::extend_list(neg_node, !t_strand, t_3end);
+			}
+
+			neg_node -> add_alignment(positions);
 
 		} else {
 
 			t_5end = positions[0];
-			t_3end = positions[positions.size() - 1];
+			t_3end = positions.back();
 			passing_pos_reads += 1;
 
-			ClusterList::jump_to_cluster(pos_node, t_5end);
+			if (ClusterList::pos_head == NULL) {
+				ClusterList::initialize_list(t_strand, t_5end);
+				pos_node = ClusterList::get_head(t_strand);
+
+			} else {
+
+				// Advance based on 5' position (left most)
+				ClusterList::jump_to_cluster(pos_node, t_5end);
+			}
+
+			if (t_5end > pos_node -> get_stop()) {
+				pos_node = ClusterList::extend_list(pos_node, t_strand, t_5end);
+			}
+
 			pos_node -> add_alignment(positions);
 		}
 	}
@@ -247,45 +235,29 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 // Combine clusters with nonzero neighbors
 void ClusterList::collapse_clusters(int t_strand) {
 
+	int dist;
 	ClusterNode *t_head = ClusterList::get_head(t_strand);
 	ClusterNode *t_tail = ClusterList::get_tail(t_strand);
 	ClusterNode *node = t_head;
+
+	// If not Init
+	if (node == NULL) { return; }
 
 	while (node != NULL) {
 
 		node -> shrink_vectors();
 
-		// std::cerr << "Current: " << node -> get_start() << "-" << node -> get_stop() << ": " 
-		// 		  << node -> get_read_count() << " reads\n";
+		// If no merging needed
+		if (node -> get_next() != NULL) {
 
-
-		// Not Empty Node
-		if (node -> get_read_count() != 0) {
-			while (true) {
-
-				// If no merging needed
-				if (node -> get_next() == NULL) { break; }
-				if (node -> get_next() -> get_read_count() == 0) { break; }
-
-				// std::cerr << "\tMerging with: " << node -> get_next() -> get_start() 
-				// 		  << " - " << node -> get_next() -> get_stop() << ": " 
-				//  		  << node -> get_read_count() << " reads\n";"\n";
-
-
+			// Check if next cluster is within merge range
+			dist = (node -> get_next() -> get_start()) - (node -> get_stop());
+			if (dist < ClusterList::window_size) {
 				ClusterList::merge_nodes(node, t_head, t_tail);
 			}
-			node = node -> get_next();
+		}
 
-			// Empty
-		} else { 
-			// std::cerr << "\tDeleting\n";
-			ClusterList::delete_nodes(node, t_head, t_tail);
-		} // Also updates pointers
-
-		// std::cerr << "\tHead: " << t_head -> get_start() << "-" << t_head -> get_stop() << ": "
-		// 		  << t_head -> get_read_count() << " reads\n";
-		// std::cerr << "\tTail: " << t_tail -> get_start() << "-" << t_tail -> get_stop() << ": "
-		// 		  << t_tail -> get_read_count() << " reads\n";
+		node = node -> get_next();
 	}
 
 	// Adjust head and tail nodes by strand
