@@ -260,7 +260,6 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 	adj_vec = curr_node -> get_five_ref();
 	if (!five) { adj_vec = curr_node -> get_three_ref(); }
 
-
 	// iterate through every point
 	for (int i = 0; i < points; i++) {
 
@@ -271,7 +270,9 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 			// Get distance to all other points
 			for (int j = 0; j < points; j++) {
 				dist = std::abs((*adj_vec)[j] - (*adj_vec)[i]); // Distance between points
-				if ((i != j) && (dist <= epsilon)) { neighbors.push_back(j); }
+				if ((i != j) && (dist <= epsilon)) {
+					neighbors.push_back(j);
+				}
 			}
 
 			// If core point
@@ -320,7 +321,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 
 	float density;
-	int prime_5 = 0;
+	bool prime_5 = true;
 	int expr, points, min_counts;
 	int count_threshold = std::max(ImpaqtArguments::Args.min_count, 10);
 
@@ -374,6 +375,8 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				overlap_clusters(curr_node, transcripts, counts);
 
 				report_transcripts(curr_node, transcripts, counts);
+
+				
 			}
 		}
 		curr_node = curr_node -> get_next();

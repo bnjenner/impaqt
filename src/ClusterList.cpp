@@ -196,7 +196,7 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 
 			} else {
 
-				// Advance based on 5' position (right most)
+				// Advance based on 3' position (left most)
 				ClusterList::jump_to_cluster(neg_node, t_3end);
 			}
 
@@ -218,7 +218,7 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 
 			} else {
 
-				// Advance based on 5' position (right most)
+				// Advance based on 5' position (left most)
 				ClusterList::jump_to_cluster(pos_node, t_5end);
 			}
 
