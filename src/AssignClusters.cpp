@@ -130,9 +130,8 @@ int get_transcript_overlap(const std::vector<int> &transcript, GeneNode *gene) {
 			} else {
 				if (check_bounds(transcript[(2*i)], transcript[(2*i)+1], exons[(2*j)], exons[(2*j)+1])) {
 					matches += 1;
-				} else {
-					j += 1;	
 				}
+				j += 1;	
 			}
 		}
 		i += 1;
