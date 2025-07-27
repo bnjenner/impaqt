@@ -26,7 +26,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 
     seqan::addOption(parser, seqan::ArgParseOption(
                          "a", "annotation",
-                         "Annotation File (GTF or GFF).",
+                         "Annotation File (GTF or GFF). If specified, a counts table will be output through standard out.",
                          seqan::ArgParseArgument::INPUT_FILE, "STRING"));
     seqan::setDefaultValue(parser, "annotation", "");
 
