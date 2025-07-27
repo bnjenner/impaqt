@@ -13,9 +13,6 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     // Define Arguments
     seqan::addArgument(parser, seqan::ArgParseArgument(
                            seqan::ArgParseArgument::INPUT_FILE, "BAM"));
-    // seqan::addArgument(parser, seqan::ArgParseArgument(
-    //                        seqan::ArgParseArgument::INPUT_FILE, "GTF"));
-
 
     // Define Program Options
     seqan::addOption(parser, seqan::ArgParseOption(
@@ -97,7 +94,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     seqan::addUsageLine(parser, "input.sorted.bam [options]");
     seqan::setDefaultValue(parser, "version-check", "OFF");
     seqan::hideOption(parser, "version-check");
-    seqan::setVersion(parser, "1.0.0");
+    seqan::setVersion(parser, "beta");
     seqan::setDate(parser, "July 2025");
 
     seqan::ArgumentParser::ParseResult res = seqan::parse(parser, argc, argv);

@@ -103,7 +103,7 @@ OPTIONS
 
 VERSION
     Last update: July 2025
-    impaqt version: 1.0.0
+    impaqt version: beta
     SeqAn version: 2.4.0
 ```
 
