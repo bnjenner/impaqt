@@ -206,7 +206,9 @@ public:
 		if (!ignore) {
 			this -> collapse_clusters();
 			this -> find_transcripts();
-			this -> assign_transcripts();
+			if (ImpaqtArguments::Args.annotation_file != "") {
+				this -> assign_transcripts();
+			}
 		}
 		this -> get_stats();
 		if (ignore) { delete cluster_list; }

@@ -7,14 +7,14 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     // Setup ArgumentParser.
     seqan::ArgumentParser parser("impaqt");
     seqan::addDescription(parser,
-                          "Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms utilizing distinct terminal exons. Generates a counts file written to stdout and optionally a GTF file of identified read clusters.");
+                          "Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms utilizing distinct terminal exons. Generates a GTF file of identified read clusters and optionally a counts file written to stdout.");
 
 
     // Define Arguments
     seqan::addArgument(parser, seqan::ArgParseArgument(
                            seqan::ArgParseArgument::INPUT_FILE, "BAM"));
-    seqan::addArgument(parser, seqan::ArgParseArgument(
-                           seqan::ArgParseArgument::INPUT_FILE, "GTF"));
+    // seqan::addArgument(parser, seqan::ArgParseArgument(
+    //                        seqan::ArgParseArgument::INPUT_FILE, "GTF"));
 
 
     // Define Program Options
@@ -23,6 +23,12 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                          "Number of processers for multithreading.",
                          seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "threads", "1");
+
+    seqan::addOption(parser, seqan::ArgParseOption(
+                         "a", "annotation",
+                         "Annotation File (GTF or GFF).",
+                         seqan::ArgParseArgument::INPUT_FILE, "STRING"));
+    seqan::setDefaultValue(parser, "annotation", "");
 
 
     // Define Read Options
@@ -70,7 +76,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                   "e", "epsilon",
                   "Distance (in base pairs) for DBSCAN algorithm.",
                   seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "epsilon", "100");
+    seqan::setDefaultValue(parser, "epsilon", "150");
 
 
     // Define Annotation Options
@@ -85,15 +91,14 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     seqan::setDefaultValue(parser, "feature-id", "gene_id");
 
     seqan::addOption(parser, seqan::ArgParseOption(
-                         "o", "output-gtf", "Output read cluster GTF file and specify name.",
+                         "o", "output-gtf", "Specify name of cluster GTF file. Default is BAM name + \".gtf\".",
                          seqan::ArgParseArgument::STRING, "STRING"));
 
-
-    seqan::addUsageLine(parser, "input.sorted.bam annotation.gtf [options]");
+    seqan::addUsageLine(parser, "input.sorted.bam [options]");
     seqan::setDefaultValue(parser, "version-check", "OFF");
     seqan::hideOption(parser, "version-check");
-    seqan::setVersion(parser, "dev0");
-    seqan::setDate(parser, "June 2025");
+    seqan::setVersion(parser, "1.0.0");
+    seqan::setDate(parser, "July 2025");
 
     seqan::ArgumentParser::ParseResult res = seqan::parse(parser, argc, argv);
 
@@ -107,23 +112,13 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
         return seqan::ArgumentParser::PARSE_ERROR;
     }
 
-    // Check file type of second positional arg
-    input_file_ext = seqan::getFileExtension(getArgument(parser, 1));
-    if (input_file_ext != "gtf" && input_file_ext != "gff") {
-        std::cerr << "ERROR: Unaccapetd File Format: \"." << input_file_ext <<  "\". Only accepts \".gtf\" and \".gff\",  extension.\n";
-        return seqan::ArgumentParser::PARSE_ERROR;
-    }
-
-    if (input_file_ext == "gff") { ImpaqtArguments::Args.isGFF = true; }
-
-
     // Get arguments
     seqan::getArgumentValue(ImpaqtArguments::Args.alignment_file, parser, 0);
-    seqan::getArgumentValue(ImpaqtArguments::Args.annotation_file, parser, 1);
     seqan::getArgumentValue(ImpaqtArguments::Args.index_file, parser, 0);
     ImpaqtArguments::Args.index_file = ImpaqtArguments::Args.index_file + ".bai";
 
     // Populate options
+    seqan::getOptionValue(ImpaqtArguments::Args.annotation_file, parser, "annotation");
     seqan::getOptionValue(ImpaqtArguments::Args.threads, parser, "threads");
     seqan::getOptionValue(ImpaqtArguments::Args.library_type, parser, "library-type");
     seqan::getOptionValue(ImpaqtArguments::Args.stranded, parser, "strandedness");
@@ -136,6 +131,21 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     seqan::getOptionValue(ImpaqtArguments::Args.feature_tag, parser, "feature-tag");
     seqan::getOptionValue(ImpaqtArguments::Args.feature_id, parser, "feature-id");
     seqan::getOptionValue(ImpaqtArguments::Args.gtf_output, parser, "output-gtf");
+
+
+    if (ImpaqtArguments::Args.gtf_output == "") {
+      ImpaqtArguments::Args.gtf_output = ImpaqtArguments::Args.alignment_file + ".gtf";
+    }
+
+    // Check file type of annotation
+    if (ImpaqtArguments::Args.annotation_file != "") {
+      input_file_ext = seqan::getFileExtension(getOption(parser, "annotation"));
+      if (input_file_ext != "gtf" && input_file_ext != "gff") {
+          std::cerr << "ERROR: Unaccapetd File Format: \"." << input_file_ext <<  "\". Only accepts \".gtf\" and \".gff\",  extension.\n";
+          return seqan::ArgumentParser::PARSE_ERROR;
+      }
+      if (input_file_ext == "gff") { ImpaqtArguments::Args.isGFF = true; }
+    }
 
     return seqan::ArgumentParser::PARSE_OK;
 }
