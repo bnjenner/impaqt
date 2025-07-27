@@ -163,6 +163,9 @@ public:
 				if (i != (n - 1) && exon_vec[(2 * i) + 1] >= exon_vec[(2 * i) + 2]) {
 					close_gap(exon_vec[(2 * i)], exon_vec[(2 * i) + 1]);  // exon spans previous intron
 				}
+
+				start = exon_vec[0]; // update start position
+				stop = exon_vec.back(); // update stop position
 				return;
 			}
 		}

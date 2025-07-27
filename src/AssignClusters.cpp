@@ -111,6 +111,7 @@ int get_transcript_overlap(const std::vector<int> &transcript, GeneNode *gene) {
 	int n = transcript.size() / 2;
 	int m = gene -> get_exon_num();
 	std::vector<int> exons = gene -> get_exon_vec();
+	bool overlap_a, overlap_b;
 
 	// Iterate through exons, see if match is complete 
 	while (i < n) {
@@ -129,7 +130,13 @@ int get_transcript_overlap(const std::vector<int> &transcript, GeneNode *gene) {
 				// If potential match
 			} else {
 				if (check_bounds(transcript[(2*i)], transcript[(2*i)+1], exons[(2*j)], exons[(2*j)+1])) {
-					matches += 1;
+					overlap_a = check_point_overlap(transcript[(2*i)], exons[(2*j)], exons[(2*j)+1]);
+					overlap_b = check_point_overlap(transcript[(2*i)+1], exons[(2*j)], exons[(2*j)+1]);
+					if (overlap_a && overlap_b) { 
+						matches += 2;
+					} else {
+						matches += 1;
+					}
 				}
 				j += 1;	
 			}
@@ -145,7 +152,7 @@ void compare_and_update_overlap(GeneNode *&gene, GeneNode *&best_gene, const int
 	if (overlap > max_overlap) {
 		max_overlap = overlap; best_gene = gene;
 
-		 // If ambiguous
+		 // If ambiguous122482723       122482801
 	} else if (overlap == max_overlap && max_overlap != 0) {
 		best_gene = NULL;
 	}

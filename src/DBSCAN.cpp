@@ -352,7 +352,6 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				assign_vec_3 = dbscan(curr_node, points, min_counts, assignments_3, !prime_5);
 
 			} else {
-
 				// If read mitochrondrial genome detected, don't bother lol
 				curr_node = curr_node -> get_next();
 				continue;	
