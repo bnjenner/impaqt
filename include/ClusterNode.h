@@ -296,7 +296,7 @@ public:
 			        << "gene_id \"" << gene_id << "\";"
 			        << " transcript_id \"impaqt."
 			        << contig_name << ":"
-			        << start << "-" << stop << "\";"
+			        << start << "-" << stop << "." << i << "\";"
 			        << " region \"" << contig_name << ":" 
 			        << this -> get_start() << "-" << this -> get_stop() << "\";"
 			        << " exons \"" << (regions / 2) << "\";"
@@ -314,7 +314,7 @@ public:
 				        << "gene_id \"" << gene_id << "\";"
 				        << " transcript_id \"impaqt."
 				        << contig_name << ":"
-				        << start << "-" << stop << "\";"
+				        << start << "-" << stop << "." << i << "\";"
 				        << " region \"" << contig_name << ":" 
 				        << this -> get_start() << "-" << this -> get_stop() << "\";"
 				        << " exon \"" << (j / 2) << "\";\n";
