@@ -273,18 +273,14 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 
 	while (cluster != NULL) {
 
-		// Skip not swallowed by neighboring cluster
 		if (!(cluster -> is_skipped())) {
 
 			t_num = cluster -> get_transcript_num();
 
 			// If transcripts to assign
 			if (t_num != 0) {
-
-				// Advance to Potential Gene
 				start = cluster -> get_transcript_start();
 				gene = get_closest_gene(start, prev_gene, cluster);
-
 				if (gene != NULL) {
 					assign_transcripts_to_genes(cluster, gene, list, annotation, t_num);
 				}
@@ -292,11 +288,8 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 			} else {
 
 				cluster -> index_sort_vectors();
-
-				// Advance to Potential Gene
 				start = (cluster -> get_five_vec())[0];
 				gene = get_closest_gene(start, prev_gene, cluster);
-
 				if (gene != NULL) {
 					assign_reads_to_genes(cluster, gene, list, annotation);				
 				}

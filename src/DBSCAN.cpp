@@ -347,7 +347,8 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 			density = (float)expr / (float)(curr_node -> get_stop() - curr_node -> get_start());
 			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
 
-			if (density < 1.5) {
+			// If not in quantification mode
+			if (density < 1.5 || ImpaqtArguments::Args.annotation_file == "") {
 				assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, prime_5);
 				assign_vec_3 = dbscan(curr_node, points, min_counts, assignments_3, !prime_5);
 
@@ -374,7 +375,6 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
                 overlap_clusters(curr_node, transcripts, counts);
 
 				report_transcripts(curr_node, transcripts, counts);
-
 				
 			}
 		}

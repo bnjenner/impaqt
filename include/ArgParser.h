@@ -50,6 +50,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                          seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "mapq-min", "1");
 
+    // Binning Options
     seqan::addOption(parser, seqan::ArgParseOption(
                   "w", "window-size",
                   "Window size to use to parition genome for read collection.",

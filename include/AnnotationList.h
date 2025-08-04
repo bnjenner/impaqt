@@ -37,12 +37,12 @@ private:
 
 	// Create new gene node
 	GeneNode* create_new_node(const std::vector<std::string> &columns) {
-		GeneNode *temp = new GeneNode(columns[8], 	// Feature ID
+		GeneNode *node = new GeneNode(columns[8], 	// Feature ID
 		                              columns[0], 	// Chrom
 		                              columns[6],	// Strand
 		                              columns[3],	// Start
 		                              columns[4]);	// Stop
-		return temp;
+		return node;
 	}
 
 	// Get feature ID

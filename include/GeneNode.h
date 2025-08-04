@@ -109,11 +109,7 @@ public:
 	}
 
 	// Destroy
-	~GeneNode() {
-		next = NULL;
-		prev = NULL;
-	}
-
+	~GeneNode() { next = NULL; prev = NULL; }
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
@@ -140,7 +136,6 @@ public:
 	void set_next(GeneNode *node) { next = node; }
 	void set_prev(GeneNode *node) { prev = node; }
 
-	
 	/////////////////////////////////////////////////////////////
 	/* Gene Functions */
 
@@ -155,13 +150,14 @@ public:
 		for (int i = 0; i < n; i++) {
 
 			// If intersection
-			if (overlap(exon_vec[(2 * i)], exon_vec[(2 * i) + 1], t_start, t_stop)) {
-				exon_vec[(2 * i)] = std::min(exon_vec[(2 * i)], t_start);
-				exon_vec[(2 * i) + 1] = std::max(exon_vec[(2 * i) + 1], t_stop);
+			if (overlap(exon_vec[(2*i)], exon_vec[(2*i)+1], t_start, t_stop)) {
+				
+				exon_vec[(2*i)] = std::min(exon_vec[(2*i)], t_start);
+				exon_vec[(2*i)+1] = std::max(exon_vec[(2*i)+1], t_stop);
 
 				// if not last exon and gap now closed
-				if (i != (n - 1) && exon_vec[(2 * i) + 1] >= exon_vec[(2 * i) + 2]) {
-					close_gap(exon_vec[(2 * i)], exon_vec[(2 * i) + 1]);  // exon spans previous intron
+				if (i != (n - 1) && exon_vec[(2*i)+1] >= exon_vec[(2*i)+2]) {
+					close_gap(exon_vec[(2*i)], exon_vec[(2*i)+1]);  // exon spans previous intron
 				}
 
 				start = exon_vec[0]; // update start position
