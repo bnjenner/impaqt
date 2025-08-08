@@ -216,7 +216,10 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 	int pos;
 	for (const auto& p1 : path_map) {
 
-		if (p1.second == 0) { continue; }
+		if (p1.second < 10) {
+			path_map[p1.first] = 0;
+			continue;
+		}
 
 		// if path is orphaned
 		pos = p1.first.find('-');
@@ -372,10 +375,11 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				                assignments_5, assignments_3,
 				                &transcripts, &counts);
 
-                overlap_clusters(curr_node, transcripts, counts);
-
-				report_transcripts(curr_node, transcripts, counts);
-				
+				// If no transcripts have at least 10 supporting reads. (maybe don't hardcode this?)
+				if (!transcripts.empty()) {
+					overlap_clusters(curr_node, transcripts, counts);
+					report_transcripts(curr_node, transcripts, counts);
+				}
 			}
 		}
 		curr_node = curr_node -> get_next();
