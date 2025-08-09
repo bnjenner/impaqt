@@ -39,7 +39,7 @@ int main(int argc, char const ** argv) {
     if (res != seqan::ArgumentParser::PARSE_OK) { return res; }
 
     // Welcome!
-    std::cerr << "//IMPAQT\n";
+    std::cerr << "//Impaqt\n";
     std::cerr << "//Parsing Input Files:\n";
 
     // Set Up Impaqt Threads

@@ -126,17 +126,26 @@ public:
 	}
 
 	size_t get_transcript_num() { return transcript_num; }
-	long double get_transcript_expr(const int &i) { return transcript_expression.at(i); }
 	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
 	std::vector<long double> get_transexpr_vec() { return transcript_expression; }
 
-	int get_transcript_start() { return transcript_vec[0][0]; }
-	int get_transcript_stop() { 
+	int get_transcript_start() {
+		if (transcript_vec.empty()) { return -1; }
+		return transcript_vec[0][0];
+	}
+	int get_transcript_stop() {
+		if (transcript_vec.empty()) { return -1; }
 		int last = transcript_vec[0].back();
 		for (const auto &t: transcript_vec) {
 			if (t.back() > last) { last = t.back(); }
 		}
 		return last;
+	}
+	long double get_transcript_expr(const int &i) {
+		if (transcript_expression.empty() || i < 0 || i >= transcript_expression.size()) {
+			return -1.0; 
+		}
+		return transcript_expression.at(i);
 	}
 
 	ClusterNode* get_next() { return next; }
@@ -269,37 +278,49 @@ public:
 	// Print Transcripts
 	void write_transcripts(std::ofstream &gtfFile) {
 
-		// Skip if swallowed by neighboring cluster
-		if (this -> is_skipped()) { return; }
-
-		int start, stop, x_start, x_stop;
-		int regions = 0;
+		// Skip if swallowed by neighboring cluster or no transcripts
+		if (this -> is_skipped() || transcript_num == 0) { return; }
+		
 		float quant;
-		std::string gene_id;
+		int regions = 0;
+		int start, stop, x_start, x_stop;
+		std::string gene_id, assignment;
 
 		// Set Strand
 		char strand = '+';
 		if (this -> get_strand() == 1) { strand = '-'; }
 
+		// Print Gene Line
+		start = this -> get_transcript_start() + 1;
+		stop = this -> get_transcript_stop() + 1;
+		gene_id = "impaqt." + contig_name + ":" + std::to_string(start) + "-" + std::to_string(stop);
+		
+		gtfFile << contig_name << "\timpaqt\tgene\t"
+		        << start << "\t" << stop << "\t.\t"
+		        << strand << "\t.\t"
+		        << "gene_id \"" << gene_id << "\";"
+		        << " region \"" << contig_name << ":" 
+		        << this -> get_start() << "-" << this -> get_stop() << "\";"
+		        << " transcripts \"" << transcript_vec.size() << "\";"
+		        << " counts \"" << read_count << "\";\n";
+
 		for (int i = 0; i < transcript_vec.size(); i++) {
 
-			gene_id = transcript_assignments.at(i);
 			regions	= transcript_vec.at(i).size();
 			start = transcript_vec.at(i).at(0) + 1;
 			stop = transcript_vec.at(i).at(regions - 1) + 1;
 			quant = transcript_expression.at(i);
+			assignment = transcript_assignments.at(i);
 
 			// Print Transcript Line
 			gtfFile << contig_name << "\timpaqt\ttranscript\t"
-			        << start << "\t" << stop << "\t.\t"
-			        << strand << "\t.\t"
+			        << start << "\t" << stop << "\t.\t" << strand << "\t.\t"
 			        << "gene_id \"" << gene_id << "\";"
-			        << " transcript_id \"impaqt."
-			        << contig_name << ":"
-			        << start << "-" << stop << "." << i << "\";"
+			        << " transcript_id \"" << gene_id << "." << i << "\";"
 			        << " region \"" << contig_name << ":" 
-			        << this -> get_start() << "-" << this -> get_stop() << "\";"
+			        << start << "-" << stop << "\";"
 			        << " exons \"" << (regions / 2) << "\";"
+			        << " assignment \"" << assignment << "\";"
 			        << " counts \"" << quant << "\";\n";
 
 			// Print Exon Line
@@ -309,15 +330,13 @@ public:
 				x_stop = transcript_vec.at(i).at(j + 1) + 1;
 
 				gtfFile << contig_name << "\timpaqt\texon\t"
-				        << x_start << "\t" << x_stop << "\t.\t"
-				        << strand  << "\t.\t"
+				        << x_start << "\t" << x_stop << "\t.\t" << strand  << "\t.\t"
 				        << "gene_id \"" << gene_id << "\";"
-				        << " transcript_id \"impaqt."
-				        << contig_name << ":"
-				        << start << "-" << stop << "." << i << "\";"
+				        << " transcript_id \"" << gene_id << "." << i << "\";"
 				        << " region \"" << contig_name << ":" 
-				        << this -> get_start() << "-" << this -> get_stop() << "\";"
-				        << " exon \"" << (j / 2) << "\";\n";
+				        << start << "-" << stop << "\";"
+				        << " exon \"" << (j / 2) << "\";"
+				        << " assignment \"" << assignment << "\";\n";
 			}
 		}
 	}
