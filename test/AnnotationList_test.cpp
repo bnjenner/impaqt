@@ -24,6 +24,7 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/SpliceTest.ba
                                                      1,                            // min_count
                                                      25,                           // count_percentage
                                                      50,                           // epsilon
+                                                     1.5,                          // density threshold
                                                      false,                        // isGFF
                                                      "exon",                       // feature_tag
                                                      "gene_id",                    // feature_id

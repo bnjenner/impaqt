@@ -57,7 +57,7 @@ public:
 	}
 
 	// Destructor
-	~Impaqt() { if (!ignore) { delete cluster_list; } }
+	~Impaqt() {}
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
@@ -88,12 +88,10 @@ public:
 	/* Thread Initilizers */
 
 	void open_alignment_file() {
-		// Open alignment file
 		if (!inFile.Open(alignment_file_name)) {
 			std::cerr << "ERROR: Could not read alignment file: " << alignment_file_name << "\n";
 			throw "ERROR: Make sure alignment file exists.";
 		}
-		// Open index file
 		if (!inFile.OpenIndex(index_file_name)) {
 			std::cerr << "ERROR: Could not read index file: " << index_file_name << "\n";
 			throw "ERROR: Make sure index is present in BAM file location.";
@@ -131,7 +129,6 @@ public:
 		contig_length = contig_lengths[contig_index];
 	}
 
-	// Add and Create GTF/GFF Gene Annotation
 	void add_annotation() {
 		annotation = AnnotationList();
 		annotation.create_gene_list();
@@ -140,7 +137,6 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Cluster Related Functions */
 
-	// Create cluster list
 	void create_clusters() {
 
 		cluster_list = new ClusterList(contig_index, contig_name, contig_length);
@@ -154,14 +150,12 @@ public:
 		if (!(cluster_list -> create_clusters(inFile, alignment))) { ignore = true; }
 	}
 
-	// Merge neighboring clusters and remove zeroes
 	void collapse_clusters() {
 		int t_strand = 0; // Forward
 		cluster_list -> collapse_clusters(t_strand);
 		cluster_list -> collapse_clusters(!t_strand);
 	}
 
-	// Differentiate Transcripts
 	void find_transcripts() {
 		if (ignore) { return; }
 		int t_strand = 0; // Forward
@@ -169,7 +163,6 @@ public:
 		identify_transcripts(cluster_list, !t_strand);
 	}
 
-	// Assign Transcripts to Genes
 	void assign_transcripts() {
 		int t_strand = 0; // Forward
 		assign_to_genes(annotation, cluster_list, contig_name, t_strand);
@@ -179,7 +172,6 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Output Functions */
 
-	// Print Clusters as GTF
 	void write_gtf(std::ofstream &gtfFile) {
 		if (ignore) { return; }
 		cluster_list -> write_clusters_as_GTF(gtfFile);
@@ -211,7 +203,6 @@ public:
 			}
 		}
 		this -> get_stats();
-		if (ignore) { delete cluster_list; }
 	}
 };
 

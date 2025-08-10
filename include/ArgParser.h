@@ -76,6 +76,12 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                   seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "epsilon", "150");
 
+    seqan::addOption(parser, seqan::ArgParseOption(
+                  "d", "density-threshold",
+                  "Read density threshold (# reads / # bps) for identifying regions to ignore. Used to skip organelle genomes for which this method is not designed.",
+                  seqan::ArgParseArgument::DOUBLE, "DOUBLE"));
+    seqan::setDefaultValue(parser, "density-threshold", "2.0");
+
 
     // Define Annotation Options
     seqan::addOption(parser, seqan::ArgParseOption(
@@ -126,6 +132,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     seqan::getOptionValue(ImpaqtArguments::Args.min_count, parser, "min-count");
     seqan::getOptionValue(ImpaqtArguments::Args.count_percentage, parser, "count-percentage");
     seqan::getOptionValue(ImpaqtArguments::Args.epsilon, parser, "epsilon");
+    seqan::getOptionValue(ImpaqtArguments::Args.density_threshold, parser, "density-threshold");
     seqan::getOptionValue(ImpaqtArguments::Args.feature_tag, parser, "feature-tag");
     seqan::getOptionValue(ImpaqtArguments::Args.feature_id, parser, "feature-id");
     seqan::getOptionValue(ImpaqtArguments::Args.gtf_output, parser, "output-gtf");

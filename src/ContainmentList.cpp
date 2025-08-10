@@ -22,28 +22,28 @@ std::vector<std::pair<int, int>> ContainmentList::make_pairs(const std::vector<i
 std::vector<int> ContainmentList::merge_intervals(std::vector<std::pair<int, int>> &pairs) {
 
 	// Sort vector by starts
-    std::sort(pairs.begin(), pairs.end(),
-              [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
-                  return a.first < b.first;
-              });
+  std::sort(pairs.begin(), pairs.end(),
+            [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
+                return a.first < b.first;
+            });
 
-    // Flatten and merge
-    int end;
+  // Flatten and merge
+  int end;
 	std::vector<int> tmp;
-    for (int i = 0; i < pairs.size(); i++) {
-    	tmp.push_back(pairs[i].first);
-    	end = pairs[i].second;
-    	
-    	for (int j = i + 1; j < pairs.size(); j++) {
-    		if (end >= pairs[j].first || std::abs(end - pairs[j].first) <= ImpaqtArguments::Args.epsilon) {
-	    		end = std::max(end, pairs[j].second);
-	    		i = j; 
-    		} else { break; }
-    	}
-    	tmp.push_back(end);
-    }
+  for (int i = 0; i < pairs.size(); i++) {
+  	tmp.push_back(pairs[i].first);
+  	end = pairs[i].second;
+  	
+  	for (int j = i + 1; j < pairs.size(); j++) {
+  		if (end >= pairs[j].first || std::abs(end - pairs[j].first) <= ImpaqtArguments::Args.epsilon) {
+    		end = std::max(end, pairs[j].second);
+    		i = j; 
+  		} else { break; }
+  	}
+  	tmp.push_back(end);
+  }
 
-    return tmp;
+	return tmp;
 }
 
 // Create Transcript offspring and collapse if possible
@@ -60,12 +60,12 @@ void ContainmentList::collapse_intervals() {
 	if (sublist_count == 0) { return; }
 
 	std::vector<std::vector<int>> tmp;
-    std::vector<std::pair<int, int>> pairs;
+  std::vector<std::pair<int, int>> pairs;
 
-    // Convert to vector of pairs and create transcript
-    for (const auto &s : sublist) {
-    	pairs = make_pairs(this -> vals, s -> vals);
-    	tmp.emplace_back(merge_intervals(pairs));
+  // Convert to vector of pairs and create transcript
+  for (const auto &s : sublist) {
+  	pairs = make_pairs(this -> vals, s -> vals);
+  	tmp.emplace_back(merge_intervals(pairs));
 	}
 
 	// Try to Merge Children

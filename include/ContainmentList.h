@@ -4,6 +4,24 @@
 Inspitred by this paper, https://academic.oup.com/bioinformatics/article/23/11/1386/199545
 	Although... this technically is not a nested containment list.
 */
+class ContainmentNode {
+
+public:
+
+	int indices = 0;
+	int regions = 0;
+	std::vector<int> vals;
+
+	ContainmentNode(const std::vector<int> &intervals) {
+		for (int i = 0; i < intervals.size(); i++) {
+			this -> vals.push_back(intervals[i]);
+			++indices;
+		}
+		regions = indices / 2;
+	}
+
+};
+
 
 class ContainmentList {
 
@@ -13,11 +31,11 @@ public:
 	int regions = 0;                     // Number of bounds (regions of start/stops)
 	std::vector<int> vals;               // Bounds
 
-	ContainmentList* next = nullptr;     // Next 
+	ContainmentList* next = nullptr;
 	ContainmentList* prev = nullptr;
 
 	size_t sublist_count = 0;
-	std::vector<ContainmentList*> sublist;
+	std::vector<ContainmentNode*> sublist;
 
 	/////////////////////////////////////////////////////////////
 	/* Constructors */
@@ -33,15 +51,26 @@ public:
 	// Empty
 	ContainmentList() {};
 
+	// Destroy
+	~ContainmentList() {
+		if (!sublist.empty()) {
+			for (auto &s : sublist) {
+				delete s;
+			}
+		}
+		delete next;
+	};
+
 	/////////////////////////////////////////////////////////////
 	/* List Operations */
 
 	void clean() {
 		if (sublist.empty()) { return; }
 		for (auto &s : sublist) {
-			s -> clean(); delete s;
+			delete s;
 		}
 		sublist.clear();
+		sublist.shrink_to_fit();
 		sublist_count = 0;
 	}
 
@@ -52,7 +81,7 @@ public:
 	}
 
 	void add_interval(const std::vector<int> &intervals) {
-		sublist.emplace_back(new ContainmentList(intervals));
+		sublist.emplace_back(new ContainmentNode(intervals));
 		++sublist_count;
 	}
 	

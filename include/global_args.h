@@ -21,8 +21,9 @@ struct GlobalArgs {
     int mapq;                           // minimum mapq score
     int window_size;                    // window size
     int min_count;                      // min read count for dbscan
-    int count_percentage;                // read count percentage for core reads
+    int count_percentage;               // read count percentage for core reads
     int epsilon;                        // epsilon for dbscan
+    double density_threshold;           // read density threshold for identifying organelle genomes
 
     // Features
     bool isGFF = false;                 // annotaiton file is gff

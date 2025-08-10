@@ -166,6 +166,12 @@ public:
 	void update_vec_counts(size_t count) { vec_count += count; }
 	void update_start(int t_start) { start = t_start; }
 	void update_stop(int t_stop) { stop = t_stop; }
+	void empty_vectors() {
+		five_vec.clear(); five_vec.shrink_to_fit();
+		three_vec.clear(); three_vec.shrink_to_fit();
+		index_vec.clear(); index_vec.shrink_to_fit();
+		vec_count = 0;
+	}
 
 	/////////////////////////////////////////////////////////////
 	/* Read Vector Functions */

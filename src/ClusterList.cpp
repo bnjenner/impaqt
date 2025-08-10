@@ -91,22 +91,17 @@ bool ClusterList::read_check(const BamTools::BamAlignment &alignment) {
 /////////////////////////////////////////////////////////////
 /* Private Node Methods */
 
-// Initialize strand on list
 void ClusterList::initialize_list(const int t_strand, const int t_pos) {
-	ClusterNode *node = new ClusterNode(t_pos,
-	                                    t_strand,
+	ClusterNode *node = new ClusterNode(t_pos, t_strand,
 	                                    ClusterList::window_size, 
 	                                    ClusterList::contig_index, 
 	                                    ClusterList::contig_name);
-	set_head(node, t_strand);
-	set_tail(node, t_strand);
+	set_head(node, t_strand); set_tail(node, t_strand);
 }
 
 
-// Create Empty Clusters
 ClusterNode* ClusterList::extend_list(ClusterNode *&curr, const int t_strand, const int t_pos) {
-	ClusterNode *node = new ClusterNode(t_pos,
-	                                    t_strand,
+	ClusterNode *node = new ClusterNode(t_pos, t_strand,
 	                                    ClusterList::window_size, 
 	                                    ClusterList::contig_index, 
 	                                    ClusterList::contig_name);
@@ -142,17 +137,17 @@ void ClusterList::merge_nodes(ClusterNode *&c_node, ClusterNode *&t_head, Cluste
 	c_node = new_node;
 }
 
+
 // Delete every node in list
 void ClusterList::delete_list() {
-	ClusterNode *c_node = pos_head;
-	ClusterNode *t_node = NULL;
+	ClusterNode *node = pos_head;
 	for (int i = 0; i < 2; i ++) {
-		if (i != 0) { c_node = neg_head; t_node = NULL; }
-		while (c_node != NULL) {
-			t_node = c_node;
-			c_node = c_node -> get_next();
-			delete t_node;
+		if (i != 0) { node = neg_head; }
+		while (node -> get_next() != NULL) {
+			node = node -> get_next();
+			delete node -> get_prev();
 		}
+		delete node;
 	}
 }
 

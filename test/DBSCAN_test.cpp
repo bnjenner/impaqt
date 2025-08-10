@@ -23,6 +23,7 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/dbscan_test.b
                                                      25,                           // min_count
                                                      5,                            // count_percentage
                                                      150,                          // epsilon
+                                                     1.5,                          // density threshold
                                                      false,                        // isGFF
                                                      "exon",                       // feature_tag
                                                      "gene_id",                    // feature_id

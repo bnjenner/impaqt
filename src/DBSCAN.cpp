@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 
 #include "ClusterList.h"
 #include "DBSCAN.h"
@@ -68,6 +69,7 @@ bool overlap_aux(std::vector<std::vector<int>> &transcripts) {
 	curr = &head;
 	transcripts.clear();
 	while (curr != nullptr) {
+
 		// Add if unique
 		if (curr -> sublist_count == 0) { 
 			transcripts.push_back(curr -> vals); 
@@ -239,6 +241,8 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 	}
 }
 
+int 
+
 
 // DBSCAN Clustering Function, inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
 std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &min_counts,
@@ -248,6 +252,9 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 	//  BNJ: 7/4/2025 - This function EATS time... I should cache the bounds for each point, make it obvious where to search.
 	//						That being said, would only work for the 5' end cause it's ordered.
 	//						Could also address the resizing vector issue... 
+
+
+	// Ok here is the strategy, binary search for the point in the tree. 
 
 	int index;
 	int dist;
@@ -259,7 +266,6 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 	std::vector<bool> visted(points, false);
 	int epsilon = ImpaqtArguments::Args.epsilon;
 
-	// Sepicfy 5' or 3' clusters
 	adj_vec = curr_node -> get_five_ref();
 	if (!five) { adj_vec = curr_node -> get_three_ref(); }
 
@@ -328,6 +334,12 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 	int expr, points, min_counts;
 	int count_threshold = std::max(ImpaqtArguments::Args.min_count, 10);
 
+	std::map<std::string, int> paths;
+	std::vector<int> counts;
+	std::vector<std::vector<int>> transcripts;
+	std::vector<int> assign_vec_5, assign_vec_3;
+	std::vector<std::vector<int>> assignments_5,  assignments_3;
+
 	ClusterNode *curr_node = cluster -> get_head(strand);
 
 	while (curr_node != NULL) {
@@ -338,25 +350,30 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 		// If threshold for transcript detection is reached
 		if (expr >= count_threshold) {
 
-			curr_node -> point_sort_vectors();
+			// Reset Data
+			paths.clear();
+			assignments_5.clear();
+			assignments_3.clear();
+			transcripts.clear();
 
-			std::map<std::string, int> paths;
-			std::vector<int> counts;
-			std::vector<std::vector<int>> transcripts;
-			std::vector<int> assign_vec_5, assign_vec_3;
-			std::vector<std::vector<int>> assignments_5,  assignments_3;
+			curr_node -> point_sort_vectors();
 
 			// BNJ - 6/16/2025: Pleaseeeeee fix this casting
 			density = (float)expr / (float)(curr_node -> get_stop() - curr_node -> get_start());
 			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
 
 			// If not in quantification mode
-			if (density < 1.5 || ImpaqtArguments::Args.annotation_file == "") {
+			if (density < ImpaqtArguments::Args.density_threshold) {
 				assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, prime_5);
 				assign_vec_3 = dbscan(curr_node, points, min_counts, assignments_3, !prime_5);
 
-			} else {
+			} else {		
 				// If read mitochrondrial genome detected, don't bother lol
+				std::cerr << "//    WARNING: Density threshold met (" 
+						  << std::fixed << std::setprecision(2) << density << "). Skipping "
+						  << curr_node -> get_contig_name() << ":" 
+						  << curr_node -> get_start() << "-" 
+						  << curr_node -> get_stop() << ".\n";
 				curr_node = curr_node -> get_next();
 				continue;	
 			}
@@ -379,6 +396,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				if (!transcripts.empty()) {
 					overlap_clusters(curr_node, transcripts, counts);
 					report_transcripts(curr_node, transcripts, counts);
+					curr_node -> empty_vectors();
 				}
 			}
 		}
