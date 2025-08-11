@@ -277,7 +277,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 
  	bool skip;
 	int clust_num = 0;
-	int p, index, max_index;
+	int p, index, min_index, max_index;
 	std::vector<int> *adj_vec;
 	std::vector<int> neighbors, sub_neighbors;
 	std::vector<bool> empty_vec;
@@ -330,6 +330,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 					skip = false;
 					for (const auto &c : cluster_indexes) {
 						if ((*adj_vec)[indices[index]] == (*adj_vec)[c]) {
+							cluster_indexes.push_back(indices[index]);
 							assign_vec.at(indices[index]) = clust_num;
 							visted[index] = true;
 							skip = true; 
@@ -359,8 +360,9 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 				++x;			
 			}
 
+			// min_index = *std::min_element(cluster_indexes.begin(), cluster_indexes.end());
 			max_index = *std::max_element(cluster_indexes.begin(), cluster_indexes.end());
-			regions[clust_num] = std::vector<int>{(*adj_vec)[cluster_indexes.front()],
+			regions[clust_num] = std::vector<int>{(*adj_vec)[cluster_indexes[0]],
 											 	  (*adj_vec)[max_index]};
 			clust_num += 1;
 			i = x - 1; // Skip to next unvisited point
