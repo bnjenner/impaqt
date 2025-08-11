@@ -52,7 +52,7 @@ public:
    static std::vector<int> counts;
    static std::vector<std::vector<int>> transcripts;
    static std::vector<int> assign_vec_5, assign_vec_3;
-   static std::vector<std::vector<int>> assignments_5,  assignments_3;
+   static std::map<int, std::vector<int>> regions_5, regions_3;
 
 };
 
@@ -62,8 +62,8 @@ std::vector<int> impactTest::counts;
 std::vector<std::vector<int>> impactTest::transcripts;
 std::vector<int> impactTest::assign_vec_5; 
 std::vector<int> impactTest::assign_vec_3;
-std::vector<std::vector<int>> impactTest::assignments_5;
-std::vector<std::vector<int>> impactTest::assignments_3;
+std::map<int, std::vector<int>> impactTest::regions_5;
+std::map<int, std::vector<int>> impactTest::regions_3;
 
 // Read In Results File as string
 std::string read_test_file(std::string filename) {
@@ -91,8 +91,8 @@ TEST_F(impactTest, DBSCAN) {
 
    node -> point_sort_vectors();
 
-   assign_vec_5 = dbscan(node, points, min_counts, assignments_5, true);
-   assign_vec_3 = dbscan(node, points, min_counts, assignments_3, false);
+   assign_vec_5 = dbscan(node, points, min_counts, regions_5, true);
+   assign_vec_3 = dbscan(node, points, min_counts, regions_3, false);
 
    std::string result = "";
    for (const auto &p : assign_vec_5) { result += std::to_string(p); }
@@ -109,7 +109,7 @@ TEST_F(impactTest, GetCoordinates) {
 
    get_linked_clusters(node, paths, assign_vec_5, assign_vec_3);
    get_coordinates(node, paths,
-                   assignments_5, assignments_3,
+                   regions_5, regions_3,
                    &transcripts, &counts);
 
    std::string result = "";
@@ -117,7 +117,7 @@ TEST_F(impactTest, GetCoordinates) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
-   ASSERT_EQ(result, "4959707,4959824,4960962,4961018,4960962,4961094,4962138,4962291,4962181,4962291,");
+   ASSERT_EQ(result, "4959707,4959824,4960962,4961018,4960962,4961094,4962137,4962291,4962181,4962291,");
 };
 
 // Test 2
@@ -131,5 +131,5 @@ TEST_F(impactTest, OverlapTranscripts) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
-   ASSERT_EQ(result, "4959707,4959824,4960962,4961094,4962138,4962291,");
+   ASSERT_EQ(result, "4959707,4959824,4960962,4961094,4962137,4962291,");
 };

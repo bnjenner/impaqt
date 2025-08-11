@@ -18,9 +18,9 @@ bool overlap_aux(std::vector<std::vector<int>> &transcripts);
 // Reduce Transcript Number by Overlapping. Report Unique Transcripts
 void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts);
 
-// Get Transcript Coordinates
+/// Get Transcript Coordinates
 void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &paths,
-                     std::vector<std::vector<int>> &core_5, std::vector<std::vector<int>> &core_3,
+                     const std::map<int, std::vector<int>> &regions_5, const std::map<int, std::vector<int>> &regions_3,
                      std::vector<std::vector<int>> *transcripts, std::vector<int> *counts);
 
 // Find all linked DBSCAN clusters
@@ -28,14 +28,14 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
                          const std::vector<int> &assign_5, const std::vector<int> &assign_3);
 
 // Get Nearest neighbors for Indices in DBSCAN
-std::vector<int> get_nearest_neighbors(const int &i, const int &points, 
-                                       const std::vector<int> &indices,
-                                       const std::vector<int> *adj_vec);
+void get_nearest_neighbors(const int &i, const int &points, 
+                           std::vector<int> &neighbors, std::vector<bool> &queued,
+                           const std::vector<int> &indices, const std::vector<int> *adj_vec);
 
 
 // DBSCAN Clustering Function, inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
 std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &min_counts,
-                        std::vector<std::vector<int>> &assignment, const bool &five);
+                        std::map<int, std::vector<int>> &regions, const bool &five);
 
 // Initiate Transcript Identifying Procedure
 void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand);

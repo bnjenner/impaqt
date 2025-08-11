@@ -67,7 +67,7 @@ int main(int argc, char const ** argv) {
     // Launch Threads
     std::cerr << "//Processing Data:\n";
     std::cerr << "//    Contigs: " << n << "\n";
-    const int proc = std::max(ImpaqtArguments::Args.threads - 1, 1);
+    const int proc = std::max(ImpaqtArguments::Args.threads, 1);
     {
         int i = 0;
         thread_queue call_queue(proc);
