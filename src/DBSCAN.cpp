@@ -136,9 +136,9 @@ void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &p
                      std::vector<std::vector<int>> *transcripts, std::vector<int> *counts) {
 
 	// Get transcript coordinates
-	//	BNJ: 5/2/2025 - Horrible extending vector, but they're short so it shouldn't matter THAT much
-	//	BNJ: 5/31/2025 - Also worth mentioning, the tmp_vec should never be more than 4 in length
-	//	BNJ: 6/4/2025 - Man, I should really use bits instead of a string here.
+	//	BNJ: 5/31/2025 - Worth mentioning, the tmp_vec should never be more than 4 in length
+	//	BNJ: 6/4/2025 - Man, I should really find a better struct than strings for the paths.
+	//  BNJ: 8/10/2025 - ... Say that again? 
 
 	int index, min_pos, max_pos; 
 
@@ -241,7 +241,33 @@ void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &pat
 	}
 }
 
-int 
+
+// Get Nearest Neighbors 
+std::vector<int> get_nearest_neighbors(const int &i, const int &points, 
+									   const std::vector<int> &indices,
+									   const std::vector<int> *adj_vec) {
+
+	int dist;
+	int p = indices[i];
+	int epsilon = ImpaqtArguments::Args.epsilon;
+	std::vector<int> neighbors;
+
+	// Forward Search
+	for (int j = i + 1; j < points; j++) {
+		dist = (*adj_vec)[indices[j]] - (*adj_vec)[p]; 
+		if (dist > epsilon) { break; } // If distance is greater than epsilon, skip
+		if (dist <= epsilon) { neighbors.push_back(j); }
+	}
+
+	// Backward Search
+	for (int j = i - 1; j >= 0; j--) {
+		dist = (*adj_vec)[p] - (*adj_vec)[indices[j]]; 
+		if (dist > epsilon) { break; } // If distance is greater than epsilon, skip
+		if (dist <= epsilon) { neighbors.push_back(j); }
+	}
+
+	return neighbors;
+} 
 
 
 // DBSCAN Clustering Function, inspired by https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp
@@ -255,74 +281,74 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 
 
 	// Ok here is the strategy, binary search for the point in the tree. 
-
-	int index;
-	int dist;
+ 
+ 	int p, index;
 	int clust_num = 0;
 	std::vector<int> *adj_vec;
-	std::vector<int> neighbors;
-	std::vector<int> sub_neighbors;
+	std::vector<int> neighbors, sub_neighbors;
 	std::vector<int> assign_vec(points, -1);
+	std::vector<int> indices(points);
 	std::vector<bool> visted(points, false);
-	int epsilon = ImpaqtArguments::Args.epsilon;
 
 	adj_vec = curr_node -> get_five_ref();
 	if (!five) { adj_vec = curr_node -> get_three_ref(); }
 
-	// iterate through every point
+	// Get Indices of sorted vector
+	if ((curr_node -> get_strand() == 0 && !five) ||
+		curr_node -> get_strand() == 1 && five)  {
+		std::iota(indices.begin(), indices.end(), 0);
+		std::sort(indices.begin(), indices.end(),
+			       [&](int i, int j) -> bool {
+			            return (*adj_vec)[i] < (*adj_vec)[j];
+			        }
+		         );
+	} else {
+		std::iota(indices.begin(), indices.end(), 0);
+	}
+
 	for (int i = 0; i < points; i++) {
 
+		p = indices[i];
 		neighbors.clear();
 
-		if (visted[i] == false) {
+		if (visted[i] == true) { continue; } // Skip if already visited
 
-			// Get distance to all other points
-			for (int j = 0; j < points; j++) {
-				dist = std::abs((*adj_vec)[j] - (*adj_vec)[i]); // Distance between points
-				if ((i != j) && (dist <= epsilon)) {
-					neighbors.push_back(j);
-				}
-			}
+		neighbors = get_nearest_neighbors(i, points, indices, adj_vec);
 
-			// If core point
-			if (neighbors.size() >= min_counts) {
+		// If core point
+		if (neighbors.size() >= min_counts) {
 
-				visted[i] = true;
-				assign_vec.at(i) = clust_num;
-				std::vector<int> cluster_indexes = {i};
+			visted[i] = true;
+			assign_vec.at(p) = clust_num;
+			std::vector<int> cluster_indexes = {p};
 
-				// Continously add points to "stack" and determine if they are core points
-				while (neighbors.empty() == false) {
+			// Continously add points to "stack" and determine if they are core points
+			while (neighbors.empty() == false) {
 
-					index = neighbors.back();
-					sub_neighbors.clear();
-					neighbors.pop_back();
+				index = neighbors.back();
+				sub_neighbors.clear();
+				neighbors.pop_back();
 
-					if (visted[index] == false) {
+				if (visted[index] == false) {
 
-						visted[index] = true;
+					visted[index] = true;
+					assign_vec.at(indices[index]) = clust_num;
 
-						// Check if member of cluster
-						for (int k = 0; k < points; k++) {
-							if (std::abs((*adj_vec)[index] - (*adj_vec)[k]) <= epsilon) {
-								sub_neighbors.push_back(k);
-								assign_vec.at(k) = clust_num;
-							}
-						}
+					sub_neighbors = get_nearest_neighbors(index, points, indices, adj_vec);
 
-						// If also a core point, copy subneighbors into neighbors to also be checked
-						if (sub_neighbors.size() >= min_counts) {
-							std::copy(sub_neighbors.begin(), sub_neighbors.end(), std::back_inserter(neighbors));
-						}
-						cluster_indexes.push_back(index);
+					// If also a core point, copy subneighbors into neighbors to also be checked
+					if (sub_neighbors.size() >= min_counts) {
+						std::copy(sub_neighbors.begin(), sub_neighbors.end(), std::back_inserter(neighbors));
 					}
+					cluster_indexes.push_back(indices[index]);
 				}
-
-				assignment.emplace_back(std::move(cluster_indexes));
-				clust_num += 1;
 			}
+
+			assignment.emplace_back(std::move(cluster_indexes));
+			clust_num += 1;
 		}
 	}
+	
 	return assign_vec;
 }
 
@@ -356,6 +382,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 			assignments_3.clear();
 			transcripts.clear();
 
+			// Sort vectors
 			curr_node -> point_sort_vectors();
 
 			// BNJ - 6/16/2025: Pleaseeeeee fix this casting
@@ -363,7 +390,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
 
 			// If not in quantification mode
-			if (density < ImpaqtArguments::Args.density_threshold) {
+			if (density < ImpaqtArguments::Args.density_threshold || ImpaqtArguments::Args.annotation_file == "") {
 				assign_vec_5 = dbscan(curr_node, points, min_counts, assignments_5, prime_5);
 				assign_vec_3 = dbscan(curr_node, points, min_counts, assignments_3, !prime_5);
 

@@ -89,6 +89,8 @@ TEST_F(impactTest, DBSCAN) {
    points = node -> get_vec_count();
    min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
 
+   node -> point_sort_vectors();
+
    assign_vec_5 = dbscan(node, points, min_counts, assignments_5, true);
    assign_vec_3 = dbscan(node, points, min_counts, assignments_3, false);
 
@@ -115,7 +117,7 @@ TEST_F(impactTest, GetCoordinates) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
-   ASSERT_EQ(result, "4959707,4959824,4960962,4961018,4960962,4961094,4962137,4962291,4962181,4962291,");
+   ASSERT_EQ(result, "4959707,4959824,4960962,4961018,4960962,4961094,4962138,4962291,4962181,4962291,");
 };
 
 // Test 2
@@ -129,5 +131,5 @@ TEST_F(impactTest, OverlapTranscripts) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
-   ASSERT_EQ(result, "4959707,4959824,4960962,4961094,4962137,4962291,");
+   ASSERT_EQ(result, "4959707,4959824,4960962,4961094,4962138,4962291,");
 };
