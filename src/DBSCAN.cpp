@@ -277,7 +277,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 
  	bool skip;
 	int clust_num = 0;
-	int p, index, min_index, max_index;
+	int p, index, min_point, max_point;
 	std::vector<int> *adj_vec;
 	std::vector<int> neighbors, sub_neighbors;
 	std::vector<bool> empty_vec;
@@ -286,20 +286,29 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 	std::vector<bool> visted(points, false);
 
 	adj_vec = curr_node -> get_five_ref();
-	if (!five) { adj_vec = curr_node -> get_three_ref(); }
-
-	// Get Indices of sorted vector
-	if ((curr_node -> get_strand() == 0 && !five) ||
-		curr_node -> get_strand() == 1 && five)  {
-		std::iota(indices.begin(), indices.end(), 0);
+	std::iota(indices.begin(), indices.end(), 0);
+	
+	if (!five) {
+		adj_vec = curr_node -> get_three_ref();
 		std::sort(indices.begin(), indices.end(),
 			       [&](int i, int j) -> bool {
 			            return (*adj_vec)[i] < (*adj_vec)[j];
 			        }
 		         );
-	} else {
-		std::iota(indices.begin(), indices.end(), 0);
 	}
+
+	// // Get Indices of sorted vector
+	// if ((curr_node -> get_strand() == 0 && !five) ||
+	// 	curr_node -> get_strand() == 1 && five)  {
+	// 	std::iota(indices.begin(), indices.end(), 0);
+	// 	std::sort(indices.begin(), indices.end(),
+	// 		       [&](int i, int j) -> bool {
+	// 		            return (*adj_vec)[i] < (*adj_vec)[j];
+	// 		        }
+	// 	         );
+	// } else {
+	// 	std::iota(indices.begin(), indices.end(), 0);
+	// }
 
 
 	for (int i = 0; i < points; i++) {
@@ -317,7 +326,7 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 
 			visted[i] = true;
 			assign_vec.at(p) = clust_num;
-			std::vector<int> cluster_indexes = {p};
+			std::vector<int> cluster_points = {(*adj_vec)[p]};
 
 			int x = 0;
 			while (x < neighbors.size()) {
@@ -328,9 +337,9 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 
 					// Skip Duplicate Points
 					skip = false;
-					for (const auto &c : cluster_indexes) {
-						if ((*adj_vec)[indices[index]] == (*adj_vec)[c]) {
-							cluster_indexes.push_back(indices[index]);
+					for (const auto &c : cluster_points) {
+						if ((*adj_vec)[indices[index]] == c) {
+							cluster_points.push_back((*adj_vec)[indices[index]]);
 							assign_vec.at(indices[index]) = clust_num;
 							visted[index] = true;
 							skip = true; 
@@ -354,16 +363,15 @@ std::vector<int> dbscan(ClusterNode *curr_node, const int &points, const int &mi
 								}
 							}
 						}
-						cluster_indexes.push_back(indices[index]);
+						cluster_points.push_back((*adj_vec)[indices[index]]);
 					}					
 				}
 				++x;			
 			}
 
-			// min_index = *std::min_element(cluster_indexes.begin(), cluster_indexes.end());
-			max_index = *std::max_element(cluster_indexes.begin(), cluster_indexes.end());
-			regions[clust_num] = std::vector<int>{(*adj_vec)[cluster_indexes[0]],
-											 	  (*adj_vec)[max_index]};
+			min_point = *std::min_element(cluster_points.begin(), cluster_points.end());
+			max_point = *std::max_element(cluster_points.begin(), cluster_points.end());
+			regions[clust_num] = std::vector<int>{min_point, max_point};
 			clust_num += 1;
 			i = x - 1; // Skip to next unvisited point
 		}
@@ -401,6 +409,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 			regions_5.clear();
 			regions_3.clear();
 			transcripts.clear();
+			counts.clear();
 
 			// Sort vectors
 			curr_node -> point_sort_vectors();

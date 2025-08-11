@@ -80,7 +80,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                   "d", "density-threshold",
                   "Read density threshold (# reads / # bps) for identifying regions to ignore. Used to skip organelle genomes for which this method is not designed.",
                   seqan::ArgParseArgument::DOUBLE, "DOUBLE"));
-    seqan::setDefaultValue(parser, "density-threshold", "2.0");
+    seqan::setDefaultValue(parser, "density-threshold", "1.5");
 
 
     // Define Annotation Options
