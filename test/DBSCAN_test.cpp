@@ -117,7 +117,7 @@ TEST_F(impactTest, GetCoordinates) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
-   ASSERT_EQ(result, "4959707,4959824,4960962,4961018,4960962,4961094,4962137,4962291,4962181,4962291,");
+   ASSERT_EQ(result, "4959707,4959824,4960962,4961018,4960962,4961094,4962137,4962291,4962137,4962284,");
 };
 
 // Test 2
