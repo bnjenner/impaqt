@@ -158,8 +158,12 @@ void get_coordinates(ClusterNode *node, const std::map<std::string, int> &paths,
 			if (tmp_vec[n-2] > tmp_vec[n-1]) { variable_swap(tmp_vec[n-2], tmp_vec[n-1]); } 
 		}
 
-		// If two regions and they are close or out of order, merge
 		if (tmp_vec.size() > 2) {
+			// If out of order
+			if (tmp_vec[2] < tmp_vec[0]) {
+				tmp_vec = {tmp_vec[2], tmp_vec[3], tmp_vec[0], tmp_vec[1]};
+			}
+			// If two regions and they are close or out of order, merge
 			if (ImpaqtArguments::Args.epsilon >= std::abs(tmp_vec[2] - tmp_vec[1])) {
 				tmp_vec = {tmp_vec[0], tmp_vec[3]};
 			} else if (tmp_vec[2] <= tmp_vec[1]) {
@@ -423,6 +427,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				get_coordinates(node, paths,
 				                regions_5, regions_3,
 				                &transcripts, &counts);
+
 
 				// If no transcripts have at least 10 supporting reads. (maybe don't hardcode this?)
 				if (!transcripts.empty()) {
