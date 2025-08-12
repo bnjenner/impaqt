@@ -339,8 +339,8 @@ std::vector<int> dbscan(ClusterNode *node, const int &points, const int &min_cou
 									queued[n] = true;
 								}
 							}
+							cluster_points.push_back(adj_vec -> at(p2));
 						}
-						cluster_points.push_back(adj_vec -> at(p2));
 					}					
 				}
 				++x;			
