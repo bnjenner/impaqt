@@ -25,7 +25,7 @@ include(cmake/gtest.cmake)
 message(STATUS "GTest include dirs: ${GTEST_INCLUDE_DIRS}")
 
 # Include paths
-include_directories(
+include_directories(SYSTEM
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/ext/bamtools/src
     ${PROJECT_SOURCE_DIR}/ext/seqan/include
