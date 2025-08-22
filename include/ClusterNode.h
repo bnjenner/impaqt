@@ -287,21 +287,27 @@ public:
 		// Skip if swallowed by neighboring cluster or no transcripts
 		if (this -> is_skipped() || transcript_num == 0) { return; }
 		
+		char strand;
 		float quant;
 		int regions = 0;
 		int start, stop, x_start, x_stop;
 		std::string gene_id, assignment;
 
 		// Set Strand
-		char strand = '+';
-		if (this -> get_strand() == 1) { strand = '-'; }
-
+		if (ImpaqtArguments::Args.stranded == "reverse") {
+			if (this -> get_strand() == 1) { strand = '+'; }
+			else { strand = '-'; }
+		} else {
+			if (this -> get_strand() == 0) { strand = '+'; }
+			else { strand = '-'; }
+		}
+		
 		// Print Gene Line
 		start = this -> get_transcript_start() + 1;
 		stop = this -> get_transcript_stop() + 1;
-		gene_id = "impaqt." + contig_name + ":" + std::to_string(start) + "-" + std::to_string(stop);
+		gene_id = "Impaqt." + contig_name + ":" + std::to_string(start) + "-" + std::to_string(stop);
 		
-		gtfFile << contig_name << "\timpaqt\tgene\t"
+		gtfFile << contig_name << "\tImpaqt\tgene\t"
 		        << start << "\t" << stop << "\t.\t"
 		        << strand << "\t.\t"
 		        << "gene_id \"" << gene_id << "\";"
@@ -319,7 +325,7 @@ public:
 			assignment = transcript_assignments.at(i);
 
 			// Print Transcript Line
-			gtfFile << contig_name << "\timpaqt\ttranscript\t"
+			gtfFile << contig_name << "\tImpaqt\ttranscript\t"
 			        << start << "\t" << stop << "\t.\t" << strand << "\t.\t"
 			        << "gene_id \"" << gene_id << "\";"
 			        << " transcript_id \"" << gene_id << "." << i << "\";"
@@ -335,7 +341,7 @@ public:
 				x_start = transcript_vec.at(i).at(j) + 1;
 				x_stop = transcript_vec.at(i).at(j + 1) + 1;
 
-				gtfFile << contig_name << "\timpaqt\texon\t"
+				gtfFile << contig_name << "\tImpaqt\texon\t"
 				        << x_start << "\t" << x_stop << "\t.\t" << strand  << "\t.\t"
 				        << "gene_id \"" << gene_id << "\";"
 				        << " transcript_id \"" << gene_id << "." << i << "\";"

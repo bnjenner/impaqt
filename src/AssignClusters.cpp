@@ -263,7 +263,12 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 	int t_num, start;
 	ClusterNode *node = list -> get_head(strand);
 	GeneNode *prev_gene, *gene;
-	prev_gene = annotation.jump_to_chrom(chrom, strand);
+
+	if (ImpaqtArguments::Args.stranded == "reverse") {
+		prev_gene = annotation.jump_to_chrom(chrom, !strand);
+	} else {
+		prev_gene = annotation.jump_to_chrom(chrom, strand);
+	}
 
 	// If no genes
 	if (prev_gene == NULL) {

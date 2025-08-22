@@ -87,7 +87,7 @@ int main(int argc, char const ** argv) {
     std::cerr << "//    GTF File...........\n";
     std::ofstream gtfFile;
     gtfFile.open(ImpaqtArguments::Args.gtf_output);
-    gtfFile << "##description: transcripts identified by IMPAQT\n"
+    gtfFile << "##description: transcripts identified by Impaqt\n"
             << "##format: gtf\n"
             << "##bam: " << ImpaqtArguments::Args.alignment_file << "\n"
             << "##parameters: annotation: " << ImpaqtArguments::Args.annotation_file 
