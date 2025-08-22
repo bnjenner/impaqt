@@ -400,12 +400,12 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 			min_counts = std::max((int)((float)expr * (((float)ImpaqtArguments::Args.count_percentage / 100.0))), 10);
 
 			// If not in quantification mode
-			if (density < ImpaqtArguments::Args.density_threshold || ImpaqtArguments::Args.annotation_file == "") {
+			if (ImpaqtArguments::Args.density_threshold == 0 || density < ImpaqtArguments::Args.density_threshold) {
 				assign_vec_5 = dbscan(node, points, min_counts, regions_5, prime_5);
 				assign_vec_3 = dbscan(node, points, min_counts, regions_3, !prime_5);
 
 			} else {		
-				// If read mitochrondrial genome detected, don't bother lol
+				// If read mitochrondrial genome detected, don't bother loll
 				std::cerr << "//    NOTICE: Density threshold met (" 
 						  << std::fixed << std::setprecision(2) << density << "). Skipping "
 						  << node -> get_contig_name() << ":" 
