@@ -154,7 +154,7 @@ public:
 
 	/////////////////////////////////////////////////////////////
 	/* Private Alignment Methods */
-	void calculate_splice(BamTools::BamAlignment &alignment, std::vector<int> &positions);
+	void calculate_splice(BamTools::BamAlignment &alignment, std::vector<int> &positions, std::vector<int> &junctions);
 	bool read_check(const BamTools::BamAlignment &alignment);
 
 	/////////////////////////////////////////////////////////////

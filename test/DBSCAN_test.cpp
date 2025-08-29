@@ -13,21 +13,20 @@
 // Globals
 ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/dbscan_test.bam",      // bam
                                                      "../test/data/dbscan_test.bam.bai",  // index
-                                                     "../test/data/test.gtf",      // annotation
-                                                     1,                            // threads
-                                                     "SE",                         // library type
-                                                     "forward",                    // stranded
-                                                     false,                        // nonunique
-                                                     1,                            // mapq
-                                                     2500,                         // window size
-                                                     25,                           // min_count
-                                                     5,                            // count_percentage
-                                                     150,                          // epsilon
-                                                     1.5,                          // density threshold
-                                                     false,                        // isGFF
-                                                     "exon",                       // feature_tag
-                                                     "gene_id",                    // feature_id
-                                                     ""                            // gtf_output
+                                                     "../test/data/test.gtf",             // annotation
+                                                     1,                                   // threads
+                                                     "forward",                           // stranded
+                                                     false,                               // nonunique
+                                                     1,                                   // mapq
+                                                     2500,                                // window size
+                                                     25,                                  // min_count
+                                                     5,                                   // count_percentage
+                                                     150,                                 // epsilon
+                                                     1.5,                                 // density threshold
+                                                     false,                               // isGFF
+                                                     "exon",                              // feature_tag
+                                                     "gene_id",                           // feature_id
+                                                     ""                                   // gtf_output
                                                     };
 
 

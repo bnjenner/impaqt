@@ -16,7 +16,7 @@
 /* Private Alignment Methods */
 
 // Process CIGAR Strings
-void ClusterList::calculate_splice(BamTools::BamAlignment &alignment, std::vector<int> &positions) {
+void ClusterList::calculate_splice(BamTools::BamAlignment &alignment, std::vector<int> &positions, std::vector<int> &junctions) {
 
 	int n_offset = 0;
 	int curr_pos = alignment.Position;
@@ -28,6 +28,7 @@ void ClusterList::calculate_splice(BamTools::BamAlignment &alignment, std::vecto
 		// If gapped alignment, get start and ends of neighboring aligned regions 
 		if (alignment.CigarData[i].Type == 'N') {
 			
+			junctions.push_back(curr_pos + 1);
 			n_offset = alignment.CigarData[i].Length;
 			curr_pos += n_offset;
 
@@ -70,11 +71,6 @@ bool ClusterList::read_check(const BamTools::BamAlignment &alignment) {
 	// Exclude secondary alignment (do I need this?)
 	if (!alignment.IsPrimaryAlignment() && !ImpaqtArguments::Args.nonunique_alignments) {
 		++ClusterList::multimapped_reads;
-		return false;
-	}
-
-	// If paired end, check propper pair
-	if ((ImpaqtArguments::Args.library_type).compare("paired") == 0 && !alignment.IsProperPair()) {
 		return false;
 	}
 
@@ -160,7 +156,7 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 	int t_5end, t_3end;
 	int t_strand = 0; // Forward
 	bool found_reads = false;
-	std::vector<int> positions;
+	std::vector<int> positions, junctions;
 	ClusterNode *pos_node = ClusterList::get_head(t_strand);
 	ClusterNode *neg_node = ClusterList::get_head(!t_strand);
 	ClusterNode *t_node = neg_node; // This needs to exist because BAM is ordered by left most position
@@ -176,7 +172,8 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 
 		found_reads = true;
 		positions.clear();
-		ClusterList::calculate_splice(alignment, positions); // Get Gapped Alignments
+		junctions.clear();
+		ClusterList::calculate_splice(alignment, positions, junctions); // Get Gapped Alignments
 
 		// Process in Strand Specific way
 		if (alignment.IsReverseStrand()) {
@@ -199,7 +196,7 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 				neg_node = ClusterList::extend_list(neg_node, !t_strand, t_3end);
 			}
 
-			neg_node -> add_alignment(positions);
+			neg_node -> add_alignment(positions, junctions);
 
 		} else {
 
@@ -221,7 +218,7 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 				pos_node = ClusterList::extend_list(pos_node, t_strand, t_5end);
 			}
 
-			pos_node -> add_alignment(positions);
+			pos_node -> add_alignment(positions, junctions);
 		}
 	}
 	return found_reads;

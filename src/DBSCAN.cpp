@@ -163,6 +163,7 @@ void get_coordinates(ClusterNode *node, const std::map<std::string, int> &paths,
 			if (tmp_vec[2] < tmp_vec[0]) {
 				tmp_vec = {tmp_vec[2], tmp_vec[3], tmp_vec[0], tmp_vec[1]};
 			}
+
 			// If two regions and they are close or out of order, merge
 			if (ImpaqtArguments::Args.epsilon >= std::abs(tmp_vec[2] - tmp_vec[1])) {
 				tmp_vec = {tmp_vec[0], tmp_vec[3]};
@@ -430,6 +431,15 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				// If no transcripts have at least 10 supporting reads. (maybe don't hardcode this?)
 				if (!transcripts.empty()) {
 					overlap_clusters(node, transcripts, counts);
+
+					// Clean up (close gaps not representing splice junctions)
+					for (int i = 0; i < transcripts.size(); i ++) {
+						if (transcripts[i].size() != 4) { continue; }
+						if (!(node -> contains_junction(transcripts[i][1], transcripts[i][2]))) {
+							transcripts[i] = {transcripts[i][0], transcripts[i][3]};
+						}
+					}
+
 					report_transcripts(node, transcripts, counts);
 					node -> empty_vectors();
 				}

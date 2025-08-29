@@ -11,7 +11,7 @@ identification and gene expression quantification method for TAGseq and
 3' mRNAseq experiments. It operates on assumptions about the distribution 
 of reads along the 3' UTR of expressed genes. Clustering these reads 
 enables pseudo-transcript identification and quantification of expression at the 
-gene and transcript level for isoforms utilizing distinct terminal exons. 
+gene and transcript level for isoforms utilizing distinct 3' ends. 
 
 It generates a GTF file defining the boundaries of each transcript and their 
 expression level as well as, optionally, a gene expression counts table 
@@ -61,8 +61,9 @@ SYNOPSIS
     impaqt input.sorted.bam [options]
 
 DESCRIPTION
-    Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms utilizing distinct
-    terminal exons. Generates a GTF file of identified read clusters and optionally a counts file written to stdout.
+    Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms utilizing distinct 3'
+    ends. Generates a GTF file of identified transcripts and optionally a counts file written to stdout if a reference
+    annotation is provided.
 
 REQUIRED ARGUMENTS
     BAM INPUT_FILE
@@ -73,42 +74,45 @@ OPTIONS
     -t, --threads INTEGER
           Number of processers for multithreading. Default: 1.
     -a, --annotation INPUT_FILE
-          Annotation File (GTF or GFF). If specified, a counts table will be output through standard out. Default: .
-    -l, --library-type STRING
-          Library type. Paired end is not recommended. Only used to check proper pairing. One of single and paired.
-          Default: single.
+          Annotation File (GTF or GFF). If specified, a counts table will be output through standard out. NOTICE: File
+          type identified by file extension. Default: .
     -s, --strandedness STRING
           Strandedness of library. One of forward and reverse. Default: forward.
     -n, --nonunique-alignments
           Count primary and secondary read alignments.
     -q, --mapq-min INTEGER
-          Minimum mapping quality score to consider for counts. Default: 1.
+          Minimum mapping quality score to consider. Default: 1.
     -w, --window-size INTEGER
           Window size to use to parition genome for read collection. Default: 1000.
     -m, --min-count INTEGER
-          Minimum read count to initiate DBSCAN transcript identification algorithm. (Minimum of 10) Default: 25.
+          Minimum read count to initiate DBSCAN transcript identification algorithm. (Hard minimum of 10) Default: 25.
     -p, --count-percentage INTEGER
           Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold
           unless number of reads is less than 10. Default: 5.
     -e, --epsilon INTEGER
-          Distance (in base pairs) for DBSCAN algorithm. Default: 150.
+          Distance (in base pairs) for neighboring reads in DBSCAN algorithm. This should generally be 0.5-1.5x the
+          read length, depending on desired isoform sensitivity (lower = more sensitive). Default: 100.
+    -d, --density-threshold DOUBLE
+          Read density threshold (# reads / # bps) to skip transcript identification. Assignment in super dense
+          regions (usually the mitochrondria) doesn't really benefit from transcript identificaiton. Default is unset.
+          Default: 0.
     -f, --feature-tag STRING
-          Name of feature tag. Default: exon.
+          Name of feature in GTF for assignment. Default: exon.
     -i, --feature-id STRING
-          ID of feature (use for GFFs). Default: gene_id.
+          ID of feature to use for feature assignment. Default: gene_id.
     -o, --output-gtf STRING
           Specify name of cluster GTF file. Default is BAM name + ".gtf".
     --version
           Display version information.
 
 VERSION
-    Last update: July 2025
+    Last update: August 2025
     impaqt version: beta
     SeqAn version: 2.4.0
 ```
 
 ## Dependencies
-Utilizes libraries like [bamtools](https://github.com/pezmaster31/bamtools) and [seqan](https://github.com/seqan/seqan) and contains algorithms inspired by [EmbeddedArtistry](https://github.com/embeddedartistry/embedded-resources/blob/master/examples/cpp/dispatch.cpp) and github user [Eleobert](https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp).
+Utilizes libraries like [bamtools](https://github.com/pezmaster31/bamtools) and [seqan](https://github.com/seqan/seqan) and the DBSCAN algorithm is inspired by [EmbeddedArtistry](https://github.com/embeddedartistry/embedded-resources/blob/master/examples/cpp/dispatch.cpp) and github user [Eleobert](https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp).
 
 ## Contact
 For questions or comments, please contact

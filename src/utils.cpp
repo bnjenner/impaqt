@@ -88,7 +88,9 @@ bool check_containment(const std::vector<int> &b, const std::vector<int> &a) {
 			match = true; i += 1;
 
 			// Last exon of A reached, but is it close enough?
-		} else if (i == n - 1 && std::abs(a[(2*n) - 1] - b[0]) <= ImpaqtArguments::Args.epsilon) {
+		} else if (i == n - 1 && 
+				   ((std::abs(a[(2*n) - 1] - b[0]) <= ImpaqtArguments::Args.epsilon) ||
+				    (std::abs(a[(2*n) - 2] - b[1]) <= ImpaqtArguments::Args.epsilon))) {
 			match = true; i += 1;
 
 		} else {

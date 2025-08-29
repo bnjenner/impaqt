@@ -7,7 +7,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     // Setup ArgumentParser.
     seqan::ArgumentParser parser("impaqt");
     seqan::addDescription(parser,
-                          "Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms utilizing distinct terminal exons. Generates a GTF file of identified read clusters and optionally a counts file written to stdout.");
+                          "Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms utilizing distinct 3' ends. Generates a GTF file of identified transcripts and optionally a counts file written to stdout if a reference annotation is provided.");
 
 
     // Define Arguments
@@ -23,18 +23,12 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 
     seqan::addOption(parser, seqan::ArgParseOption(
                          "a", "annotation",
-                         "Annotation File (GTF or GFF). If specified, a counts table will be output through standard out.",
+                         "Annotation File (GTF or GFF). If specified, a counts table will be output through standard out. NOTICE: File type identified by file extension.",
                          seqan::ArgParseArgument::INPUT_FILE, "STRING"));
     seqan::setDefaultValue(parser, "annotation", "");
 
 
     // Define Read Options
-    seqan::addOption(parser, seqan::ArgParseOption(
-                         "l", "library-type", "Library type. Paired end is not recommended. Only used to check proper pairing.",
-                         seqan::ArgParseArgument::STRING, "STRING"));
-    seqan::setDefaultValue(parser, "library-type", "single");
-    seqan::setValidValues(parser, "library-type", "single paired");
-
     seqan::addOption(parser, seqan::ArgParseOption(
                          "s", "strandedness", "Strandedness of library.",
                          seqan::ArgParseArgument::STRING, "STRING"));
@@ -46,7 +40,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 
     seqan::addOption(parser, seqan::ArgParseOption(
                          "q", "mapq-min",
-                         "Minimum mapping quality score to consider for counts.",
+                         "Minimum mapping quality score to consider.",
                          seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "mapq-min", "1");
 
@@ -60,7 +54,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     // Define DBSCAN Options
     seqan::addOption(parser, seqan::ArgParseOption(
                   "m", "min-count",
-                  "Minimum read count to initiate DBSCAN transcript identification algorithm. (Minimum of 10)",
+                  "Minimum read count to initiate DBSCAN transcript identification algorithm. (Hard minimum of 10)",
                   seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "min-count", "25");
 
@@ -72,25 +66,25 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 
     seqan::addOption(parser, seqan::ArgParseOption(
                   "e", "epsilon",
-                  "Distance (in base pairs) for DBSCAN algorithm.",
+                  "Distance (in base pairs) for neighboring reads in DBSCAN algorithm. This should generally be 0.5-1.5x the read length, depending on desired isoform sensitivity (lower = more sensitive).",
                   seqan::ArgParseArgument::INTEGER, "INT"));
     seqan::setDefaultValue(parser, "epsilon", "100");
 
     seqan::addOption(parser, seqan::ArgParseOption(
                   "d", "density-threshold",
-                  "Read density threshold (# reads / # bps) to skip transcript identification. Quantification of super dense regions doesn't usually benefit from transcript identificaiton.",
+                  "Read density threshold (# reads / # bps) to skip transcript identification. Assignment in super dense regions (usually the mitochrondria) doesn't really benefit from transcript identificaiton. Default is unset.",
                   seqan::ArgParseArgument::DOUBLE, "DOUBLE"));
     seqan::setDefaultValue(parser, "density-threshold", "0");
 
 
     // Define Annotation Options
     seqan::addOption(parser, seqan::ArgParseOption(
-                         "f", "feature-tag", "Name of feature tag.",
+                         "f", "feature-tag", "Name of feature in GTF for assignment.",
                          seqan::ArgParseArgument::STRING, "STRING"));
     seqan::setDefaultValue(parser, "feature-tag", "exon");
 
     seqan::addOption(parser, seqan::ArgParseOption(
-                         "i", "feature-id", "ID of feature (use for GFFs).",
+                         "i", "feature-id", "ID of feature to use for feature assignment.",
                          seqan::ArgParseArgument::STRING, "STRING"));
     seqan::setDefaultValue(parser, "feature-id", "gene_id");
 
@@ -102,7 +96,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     seqan::setDefaultValue(parser, "version-check", "OFF");
     seqan::hideOption(parser, "version-check");
     seqan::setVersion(parser, "beta");
-    seqan::setDate(parser, "July 2025");
+    seqan::setDate(parser, "August 2025");
 
     seqan::ArgumentParser::ParseResult res = seqan::parse(parser, argc, argv);
 
@@ -124,7 +118,6 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     // Populate options
     seqan::getOptionValue(ImpaqtArguments::Args.annotation_file, parser, "annotation");
     seqan::getOptionValue(ImpaqtArguments::Args.threads, parser, "threads");
-    seqan::getOptionValue(ImpaqtArguments::Args.library_type, parser, "library-type");
     seqan::getOptionValue(ImpaqtArguments::Args.stranded, parser, "strandedness");
     ImpaqtArguments::Args.nonunique_alignments = seqan::isSet(parser, "nonunique-alignments");
     seqan::getOptionValue(ImpaqtArguments::Args.mapq, parser, "mapq-min");

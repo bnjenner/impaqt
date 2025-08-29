@@ -30,6 +30,7 @@ private:
 	std::vector<int> five_vec;                         // vector for 5' ends
 	std::vector<int> three_vec;                        // vector for 3' ends
 	std::vector<int> index_vec;                        // vector for read indexes
+	std::vector<int> junctions;                        // splice junctions (determined by alignments)
 
 	// Links
 	ClusterNode *next = NULL;
@@ -69,6 +70,8 @@ public:
 
 		int c_vec = c_node -> get_vec_count();
 		int n_vec = n_node -> get_vec_count();
+		int c_junc = c_node -> get_junct_vec().size();
+		int n_junc = n_node -> get_junct_vec().size();
 
 		start = c_node -> get_start();
 		stop = n_node -> get_stop();
@@ -86,6 +89,10 @@ public:
 		three_vec = c_node -> get_three_vec();
 		three_vec.resize(vec_count, 0); // Resize to fit both nodes
 		for (int i = 0; i < n_vec; i++) { three_vec.at(c_vec + i) = n_node -> get_three_vec().at(i); }
+
+		junctions = c_node -> get_junct_vec();
+		junctions.resize(c_junc + n_junc, 0); // Resize to fit both nodes
+		for (int i = 0; i < n_junc; i++) { junctions.at(c_junc + i) = n_node -> get_junct_vec().at(i); }
 
 		index_vec = c_node -> get_index_vec(); 
 		index_vec.resize(vec_count, 0);
@@ -111,6 +118,7 @@ public:
 
 	std::vector<int> get_five_vec() { return five_vec; }
 	std::vector<int> get_three_vec() { return three_vec; }
+	std::vector<int> get_junct_vec() { return junctions; }
 	std::vector<int> get_index_vec() { return index_vec; }
 	std::vector<int>* get_five_ref() { return &five_vec; }
 	std::vector<int>* get_three_ref() { return &three_vec; }
@@ -153,6 +161,15 @@ public:
 
 	bool is_skipped() { return skip; }
 	bool read_contained(const int pos) { return check_point_overlap(pos, this -> get_start(), this -> get_stop()); }
+	bool contains_junction(const int &a, const int &b) {
+		for (const auto &j : junctions) {
+			if (j >= a && j <= b) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 
 
 	/////////////////////////////////////////////////////////////
@@ -177,7 +194,7 @@ public:
 	/* Read Vector Functions */
 
 	// Add alignment to cluster
-	void add_alignment(const std::vector<int> &positions) {
+	void add_alignment(const std::vector<int> &positions, const std::vector<int> &junctions) {
 
 		// Resize count vecs if necessary
 		int n = positions.size();
@@ -199,6 +216,10 @@ public:
 				three_vec.at(vec_count) = positions[i];
 				vec_count += 1;
 			}
+		}
+
+		for (int i = 0; i < junctions.size(); i++) { 
+			this -> junctions.push_back(junctions[i]);
 		}
 
 		read_count += 1;

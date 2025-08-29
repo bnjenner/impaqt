@@ -16,7 +16,6 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/test_negative
                                                      "../test/data/test_negative.bam.bai",  // index
                                                      "../test/data/test.gtf",               // annotation
                                                      1,                                     // threads
-                                                     "SE",                                  // library type
                                                      "forward",                             // stranded
                                                      false,                                 // nonunique
                                                      0,                                     // mapq
@@ -82,14 +81,13 @@ TEST_F(impactTest, SpliceTest) {
 
    int vec_count = 0;
    int read_count = 0;
-   std::vector<int> positions;
-   std::vector<int> five_vec;
-   std::vector<int> three_vec;
+   std::vector<int> positions, junctions;
+   std::vector<int> five_vec, three_vec;
 
    while (SpliceFile.GetNextAlignment(alignment)) {
 
       positions.clear();
-      cluster_list -> calculate_splice(alignment, positions);
+      cluster_list -> calculate_splice(alignment, positions, junctions);
 
       // Add positions to 3 and 5 vec
       int n = positions.size();

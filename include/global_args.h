@@ -15,7 +15,6 @@ struct GlobalArgs {
     int threads;                        // threads
 
     // Alignments
-    std::string library_type;           // library type (SE or PE)
     std::string stranded;               // strandedness
     bool nonunique_alignments;          // count primary and secondary alignments
     int mapq;                           // minimum mapq score

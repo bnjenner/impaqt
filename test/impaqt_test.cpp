@@ -19,7 +19,6 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/test.bam",   
                                                      "../test/data/test.bam.bai",  // index
                                                      "../test/data/test.gtf",      // annotation
                                                      1,                            // threads
-                                                     "SE",                         // library type
                                                      "forward",                    // stranded
                                                      false,                        // nonunique
                                                      2500,                         // window size
