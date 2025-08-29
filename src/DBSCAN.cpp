@@ -130,7 +130,7 @@ void get_coordinates(ClusterNode *node, const std::map<std::string, int> &paths,
 
 	// Get transcript coordinates
 	//	BNJ: 5/31/2025 - Worth mentioning, the tmp_vec should never be more than 4 in length
-	//	BNJ: 6/4/2025 - Man, I should really find a better struct than strings for the paths.
+	//	BNJ: 6/04/2025 - Man, I should really find a better struct than strings for the paths.
 	//  BNJ: 8/10/2025 - ... Say that again? 
 
 	int index, n; 
@@ -430,9 +430,10 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 
 				// If no transcripts have at least 10 supporting reads. (maybe don't hardcode this?)
 				if (!transcripts.empty()) {
+
 					overlap_clusters(node, transcripts, counts);
 
-					// Clean up (close gaps not representing splice junctions)
+					// Clean up (close gaps of single clusters not representing splice junctions)
 					for (int i = 0; i < transcripts.size(); i ++) {
 						if (transcripts[i].size() != 4) { continue; }
 						if (!(node -> contains_junction(transcripts[i][1], transcripts[i][2]))) {
