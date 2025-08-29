@@ -91,7 +91,7 @@ OPTIONS
           unless number of reads is less than 10. Default: 5.
     -e, --epsilon INTEGER
           Distance (in base pairs) for neighboring reads in DBSCAN algorithm. This should generally be 0.5-1.5x the
-          read length, depending on desired isoform sensitivity (lower = more sensitive). Default: 100.
+          read length, depending on desired isoform sensitivity (lower = more sensitive). Default: 50.
     -d, --density-threshold DOUBLE
           Read density threshold (# reads / # bps) to skip transcript identification. Assignment in super dense
           regions (usually the mitochrondria) doesn't really benefit from transcript identificaiton. Default is unset.
