@@ -207,7 +207,6 @@ void get_linked_clusters(ClusterNode *node, std::map<std::string, int> &path_map
 		}
 	}
 
-
 	// Absorb orphan paths
 	int pos;
 	for (const auto& p1 : path_map) {
@@ -428,13 +427,13 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				                regions_5, regions_3,
 				                &transcripts, &counts);
 
-
 				// If no transcripts have at least 10 supporting reads. (maybe don't hardcode this?)
 				if (!transcripts.empty()) {
 					overlap_clusters(node, transcripts, counts);
 					report_transcripts(node, transcripts, counts);
 					node -> empty_vectors();
 				}
+
 			}
 		}
 		node = node -> get_next();

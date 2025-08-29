@@ -23,7 +23,7 @@ bool AnnotationList::set_feature_id(std::vector<std::string> &t_columns) {
 	std::istringstream anno_stream(t_columns.at(8));
 	while (std::getline(anno_stream, tag, ';')) {
 
-		if (tag.find(feature_id) == std::string::npos) { continue; }
+		if (tag.find(ImpaqtArguments::Args.feature_id) == std::string::npos) { continue; }
 
 		i = 0;
 		std::istringstream feature_stream(tag);
@@ -140,7 +140,7 @@ void AnnotationList::create_gene_list() {
 void  AnnotationList::print_gene_counts() {
 
 	// Return if empty GTF?
-	if (AnnotationList::pos_head == NULL &&  AnnotationList::neg_head == NULL) {
+	if (AnnotationList::pos_head == NULL && AnnotationList::neg_head == NULL) {
 		std::cerr << "// NOTICE: No genes found in annotation file.\n";
 		return;
 	}
