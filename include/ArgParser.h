@@ -68,7 +68,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
                   "e", "epsilon",
                   "Distance (in base pairs) for neighboring reads in DBSCAN algorithm. This should generally be 0.5-1.5x the read length, depending on desired isoform sensitivity (lower = more sensitive).",
                   seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "epsilon", "100");
+    seqan::setDefaultValue(parser, "epsilon", "50");
 
     seqan::addOption(parser, seqan::ArgParseOption(
                   "d", "density-threshold",
