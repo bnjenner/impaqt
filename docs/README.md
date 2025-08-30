@@ -5,34 +5,27 @@
 ### Parallelization
 Current implemention of multithreading splits the workload by contigs. While this can help chew through
 highly fragmented genomes, it does not improve performance on individual contigs that may have high
-coverage. DBSCAN seems to be the bottlenck for this situtaion, as the O(n2) complexity of this algorithm
+coverage. DBSCAN seems to be the bottlenck for this situtaion, as the O(n^2) complexity of this algorithm
 really chugs with these regions. Parallelizing seems doable. 
 
 ### Default Parameter Values
-There are three main problem parameters currently: window-size, count-percentage, and epsilon. The trade off with
-window-size is fairly straight forward, the smaller window size, the higher the resolution when identifying distinct
-transcripts; however, a longer window increases false positives, meaning transcripts are considered separate when
-in actuality they might not be. The inverse problem is true for the epsilon parameter, which defines the distance
-threshold between points to be considered "neighbors" for core point identification.
+There are two main "problem" parameters currently: count-percentage and epsilon.
+
+The epsilon parameter, which defines the distance threshold between reads to be considered "neighbors" 
+for core point identification, controls the resolution of transcript identification. The smaller the resolution
+the more sensitive the algorithm is for identifying isoforms, but this could potentially increase the rate of
+"false positives" (identifying two distinct peaks in the coverage that originate from only one isoform).
 
 The last parameter is trickier, because both identification and quantification of transcripts is dependent on the 
 --count-percentage parameter. This is because this percentage is used to define the concentration parameter in DBSCAN 
 that determines core points. Setting this number statically for a region that is dominated by a single transcript will
-prevent identification of more lowly expressed neighboring transcripts, even when it makes sence biologically that this 
+prevent identification of more lowly expressed neighboring transcripts, even when it makes sense biologically that this 
 transcript is in fact unique (i.e. a transcript located downstream in the UTR). Quantification of transcripts is also impacted
-because it occurs after and depends on the number of core points identified. Briefly, an isoform's counts value is equal to 
-the proportion of the total core points contained in that transcript multiplied by the total read counts for that region. Luckily, 
-this does not necessarily scale linearly with the length of the transcript since core points are identified using density, so
-a pseudo-length bias is not an issue as with standard RNAseq. However, the core point concentration parameter could be biasing
-identification of transcripts (and subsequently biasing quantification as that is dependent on the conc. parameter), so we
-may want to explore more sophisticated ways of setting that parameter or instead settting it liberally only to refine the results
-probabilistically after. 
-
-### Transcript Bounds
-Currently, transcript identification finds the bounds by considering all points assigned to a particular group by
-DBSCAN. Usually, this is fine; however, noise in the form of spuriously aligned reads or unannotated exons result
-in bounds that do not always align exonic starts/stops. This can somewhat hurt assignment, but usually in the case
-of small RNAs located in intronic regions.
+because it occurs after identification and depends on the number of core points identified. Briefly, an isoform's counts value is 
+equal to the proportion of core points contained in that transcript to the total core points in the window multiplied by the total 
+read counts for that region. The core point concentration parameter could be biasing identification of more lowly expressed 
+transcripts (and subsequently biasing quantification as that is dependent on the conc. parameter), so we may want to explore more 
+sophisticated ways of setting that parameter . 
 
 ### Small RNA Species
 For some reason, small RNA's love to show up in these datasets and cause problems, particularly in intronic regions. This algorithm
