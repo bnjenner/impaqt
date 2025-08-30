@@ -98,6 +98,8 @@ OPTIONS
           Default: 0.
     -f, --feature-tag STRING
           Name of feature in GTF for assignment. Default: exon.
+     -u, --utr-tag STRING
+          Name of UTR feature in GTF for assignment. Default: UTR.
     -i, --feature-id STRING
           ID of feature to use for feature assignment. Default: gene_id.
     -o, --output-gtf STRING

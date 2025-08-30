@@ -26,6 +26,7 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/SpliceTest.ba
                                                      1.5,                                // density threshold
                                                      false,                              // isGFF
                                                      "exon",                             // feature_tag
+                                                     "UTR",                              // utr_tag
                                                      "gene_id",                          // feature_id
                                                      ""                                  // gtf_output
                                                     };

@@ -27,6 +27,7 @@ struct GlobalArgs {
     // Features
     bool isGFF = false;                 // annotaiton file is gff
     std::string feature_tag;            // name of feature tag
+    std::string utr_tag;                // name of utr tag
     std::string feature_id;             // ID of feature
 
     // Output

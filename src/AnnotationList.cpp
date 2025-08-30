@@ -119,17 +119,17 @@ void AnnotationList::create_gene_list() {
 			i += 1;
 		}
 
-		// if not feature tag
-		if (columns[2] != ImpaqtArguments::Args.feature_tag) { continue; }
+		if (columns[2] == ImpaqtArguments::Args.feature_tag || columns[2] == ImpaqtArguments::Args.utr_tag) {
+			
+			// if feature id not found
+			if (!AnnotationList::set_feature_id(columns)) {
+				std::cerr << "ERROR: Could not find feature tag in line:\n" << line << "\n";
+				throw "ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.";
+			}
 
-		// if feature id not found
-		if (!AnnotationList::set_feature_id(columns)) {
-			std::cerr << "ERROR: Could not find feature tag in line:\n" << line << "\n";
-			throw "ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.";
+			AnnotationList::add_line(columns);
+			++AnnotationList::features;
 		}
-
-		AnnotationList::add_line(columns);
-		++AnnotationList::features;
 	}
 }
 

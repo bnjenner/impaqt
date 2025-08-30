@@ -28,6 +28,7 @@ ImpaqtArguments::GlobalArgs ImpaqtArguments::Args = {"../test/data/test.bam",   
                                                      50,                           // epsilon
                                                      false,                        // isGFF
                                                      "exon",                       // feature_tag
+                                                     "UTR",                        // utr_tag
                                                      "gene_id",                    // feature_id
                                                      ""                            // gtf_output
                                                     };

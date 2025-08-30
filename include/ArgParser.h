@@ -84,6 +84,11 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     seqan::setDefaultValue(parser, "feature-tag", "exon");
 
     seqan::addOption(parser, seqan::ArgParseOption(
+                         "u", "utr-tag", "Name of UTR feature in GTF for assignment.",
+                         seqan::ArgParseArgument::STRING, "STRING"));
+    seqan::setDefaultValue(parser, "utr-tag", "UTR");
+
+    seqan::addOption(parser, seqan::ArgParseOption(
                          "i", "feature-id", "ID of feature to use for feature assignment.",
                          seqan::ArgParseArgument::STRING, "STRING"));
     seqan::setDefaultValue(parser, "feature-id", "gene_id");
@@ -127,6 +132,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     seqan::getOptionValue(ImpaqtArguments::Args.epsilon, parser, "epsilon");
     seqan::getOptionValue(ImpaqtArguments::Args.density_threshold, parser, "density-threshold");
     seqan::getOptionValue(ImpaqtArguments::Args.feature_tag, parser, "feature-tag");
+    seqan::getOptionValue(ImpaqtArguments::Args.utr_tag, parser, "utr-tag");
     seqan::getOptionValue(ImpaqtArguments::Args.feature_id, parser, "feature-id");
     seqan::getOptionValue(ImpaqtArguments::Args.gtf_output, parser, "output-gtf");
 

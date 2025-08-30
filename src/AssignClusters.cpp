@@ -130,9 +130,17 @@ int get_transcript_overlap(const std::vector<int> &transcript, GeneNode *gene) {
 
 				// If potential match
 			} else {
-				if (check_bounds(transcript[(2*i)], transcript[(2*i)+1], exons[(2*j)], exons[(2*j)+1])) {
-					matches += 1;
 
+				overlap_a = check_point_overlap(transcript[(2*i)], exons[(2*j)], exons[(2*j)+1]);
+				overlap_b = check_point_overlap(transcript[(2*i)+1], exons[(2*j)], exons[(2*j)+1]);
+
+				if (overlap_a && overlap_b) {
+					matches += 2; // perfect match
+				} else if (overlap_a || overlap_b) {
+					matches += 1; // partial match
+				}
+
+				if (overlap_a || overlap_b) { 
 					// prefer 3' most exon
 					if (strand == 0 && j == m) {
 						matches += 1;
@@ -140,6 +148,7 @@ int get_transcript_overlap(const std::vector<int> &transcript, GeneNode *gene) {
 						matches += 1;
 					}
 				}
+
 				j += 1;	
 			}
 		}
