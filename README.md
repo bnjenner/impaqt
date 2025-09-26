@@ -27,6 +27,15 @@ transcript of origin cannot be identified are handled individually.
 
 0. Make sure cmake and make are installed on your machine.
 
+```
+# Linux
+sudo apt install install zlib1g-dev cmake build-essential
+
+# Mac
+brew install cmake zlib
+```
+
+
 1. Clone this repository and change into it.
 ```
 git clone https://github.com/bnjenner/impaqt.git
