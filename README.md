@@ -29,7 +29,7 @@ transcript of origin cannot be identified are handled individually.
 
 ```
 # Linux
-sudo apt install install zlib1g-dev cmake build-essential
+sudo apt install cmake zlib1g-dev
 
 # Mac
 brew install cmake zlib
