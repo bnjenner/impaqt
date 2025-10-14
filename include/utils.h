@@ -37,3 +37,6 @@ bool check_containment_strict(const std::vector<int> &b, const std::vector<int> 
 
 // For Debugging
 void print_transcripts(const std::vector<std::vector<int>> &transcripts);
+
+// Check if file exists
+bool file_exists(const std::string& filename);

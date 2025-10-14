@@ -1,4 +1,7 @@
+#pragma once
+
 #include "seqan/arg_parse.h"
+#include "utils.h"
 
 /////////////////////////////////////////////////////////////
 // Argument Parser
@@ -120,6 +123,12 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     seqan::getArgumentValue(ImpaqtArguments::Args.index_file, parser, 0);
     ImpaqtArguments::Args.index_file = ImpaqtArguments::Args.index_file + ".bai";
 
+    if (!file_exists(ImpaqtArguments::Args.alignment_file)) {
+      std::cerr << "ERROR: Alignment file \"" << ImpaqtArguments::Args.alignment_file <<  "\" does not exist.\n";
+      throw "ERROR: Make sure alignment file exists.";
+    }
+
+
     // Populate options
     seqan::getOptionValue(ImpaqtArguments::Args.annotation_file, parser, "annotation");
     seqan::getOptionValue(ImpaqtArguments::Args.threads, parser, "threads");
@@ -143,13 +152,19 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 
     // Check file type of annotation
     if (ImpaqtArguments::Args.annotation_file != "") {
+      if (!file_exists(ImpaqtArguments::Args.annotation_file)) {
+        std::cerr << "ERROR: Annotation file \"" << ImpaqtArguments::Args.annotation_file <<  "\" does not exist.\n";
+        throw "ERROR: Make sure annotation file exists.";
+      }
       input_file_ext = seqan::getFileExtension(getOption(parser, "annotation"));
+      
       if (input_file_ext != "gtf" && input_file_ext != "gff") {
           std::cerr << "ERROR: Unaccapetd File Format: \"." << input_file_ext <<  "\". Only accepts \".gtf\" and \".gff\",  extension.\n";
           return seqan::ArgumentParser::PARSE_ERROR;
       }
       if (input_file_ext == "gff") { ImpaqtArguments::Args.isGFF = true; }
     }
+
 
     return seqan::ArgumentParser::PARSE_OK;
 }

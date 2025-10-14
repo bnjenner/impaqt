@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <algorithm>
 
@@ -152,4 +153,14 @@ void print_transcripts(const std::vector<std::vector<int>> &transcripts) {
 		for (const auto &e : t) { std::cerr << e << " "; }
 		std::cerr << "\n";
 	}
+}
+
+
+// Check if file exists
+bool file_exists(const std::string& filename) {
+	bool exists = false;
+    std::ifstream file(filename);
+    if (file.is_open()) { exists = true; }
+    file.close();
+    return exists;
 }
