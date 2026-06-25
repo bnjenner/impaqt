@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils.h"
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Gene Node Class (node in a doubly linked list) */
 
@@ -23,12 +25,6 @@ private:
 
 	/////////////////////////////////////////////////////////////
 	/* Private Gene Functions */
-
-	// If two exons overlap
-	bool overlap(const int &e1, const int &e2, const int &t1, const int &t2) {
-		if (e1 > t2 || e2 < t1) { return false; }
-		return true;
-	}
 
 	// Insert exon
 	void insert_exon(const int &t1, const int &t2) {
@@ -150,7 +146,7 @@ public:
 		for (int i = 0; i < n; i++) {
 
 			// If intersection
-			if (overlap(exon_vec[(2*i)], exon_vec[(2*i)+1], t_start, t_stop)) {
+			if (check_bounds(exon_vec[(2*i)], exon_vec[(2*i)+1], t_start, t_stop)) {
 				
 				exon_vec[(2*i)] = std::min(exon_vec[(2*i)], t_start);
 				exon_vec[(2*i)+1] = std::max(exon_vec[(2*i)+1], t_stop);
