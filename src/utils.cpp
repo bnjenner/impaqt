@@ -47,15 +47,6 @@ int get_pos_max(const int &index, std::vector<std::vector<int>> &core, std::vect
 	return vec -> at(*max_result);
 }
 
-// Swap Int Variables
-void variable_swap(int &a, int &b) {
-	if (a > b) {
-		b = b + a;
-		a = b - a;
-		b = b - a;
-	}
-}
-
 // Checks to see if regions of transcript overlap a gene, also used to overlap transrcipts
 bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop) {
 	if (a_start > b_stop || a_stop < b_start) { return false; }
@@ -159,9 +150,5 @@ void print_transcripts(const std::vector<std::vector<int>> &transcripts) {
 
 // Check if file exists
 bool file_exists(const std::string& filename) {
-	bool exists = false;
-    std::ifstream file(filename);
-    if (file.is_open()) { exists = true; }
-    file.close();
-    return exists;
+	return std::ifstream(filename).good();
 }

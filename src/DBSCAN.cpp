@@ -148,7 +148,7 @@ void get_coordinates(const std::map<Path, int> &paths,
 			index = p.first.five;
 			tmp_vec.push_back(regions_5.at(index)[0]);
 			tmp_vec.push_back(regions_5.at(index)[1]);
-			if (tmp_vec[0] > tmp_vec[1]) { variable_swap(tmp_vec[0], tmp_vec[1]); }
+			if (tmp_vec[0] > tmp_vec[1]) { std::swap(tmp_vec[0], tmp_vec[1]); }
 		}
 
 		// add 3' region
@@ -157,7 +157,7 @@ void get_coordinates(const std::map<Path, int> &paths,
 			index = p.first.three;
 			tmp_vec.push_back(regions_3.at(index)[0]);
 			tmp_vec.push_back(regions_3.at(index)[1]);
-			if (tmp_vec[n-2] > tmp_vec[n-1]) { variable_swap(tmp_vec[n-2], tmp_vec[n-1]); }
+			if (tmp_vec[n-2] > tmp_vec[n-1]) { std::swap(tmp_vec[n-2], tmp_vec[n-1]); }
 		}
 
 		if (tmp_vec.size() > 2) {
