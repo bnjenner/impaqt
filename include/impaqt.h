@@ -1,4 +1,5 @@
 #include <unordered_map>
+#include <stdexcept>
 #include <api/BamAux.h>
 #include <api/BamReader.h>
 
@@ -90,11 +91,11 @@ public:
 	void open_alignment_file() {
 		if (!inFile.Open(alignment_file_name)) {
 			std::cerr << "ERROR: Could not read alignment file: " << alignment_file_name << "\n";
-			throw "ERROR: Make sure alignment file exists.";
+			throw std::runtime_error("ERROR: Make sure alignment file exists.");
 		}
 		if (!inFile.OpenIndex(index_file_name)) {
 			std::cerr << "ERROR: Could not read index file: " << index_file_name << "\n";
-			throw "ERROR: Make sure index is present in BAM file location.";
+			throw std::runtime_error("ERROR: Make sure index is present in BAM file location.");
 		}
 	}
 
@@ -109,11 +110,11 @@ public:
 			std::string sortOrder = head.SortOrder;
 			if (sortOrder.compare("coordinate") != 0) {
 				std::cerr << "ERROR: Sorted alignment file required.\n";
-				throw "ERROR: Could not read alignment file.";
+				throw std::runtime_error("ERROR: Could not read alignment file.");
 			}
 		} else {
 			std::cerr << "ERROR: BAM file has no @HD SO:<SortOrder> attribute. Impossible to determine sort order.\n";
-			throw "ERROR: Could determine sort status. Please ensure file is sorted.";
+			throw std::runtime_error("ERROR: Could determine sort status. Please ensure file is sorted.");
 		}
 
 		// Generate Contig Map (contig indicies -> contig name)
@@ -143,7 +144,7 @@ public:
 
 		if (!inFile.Jump(contig_index)) {
 			std::cerr << "//ERROR: Could not jump to region: " << contig_name << "\n";
-			throw "ERROR: Could not jump to region. Make sure BAM header is correct.";
+			throw std::runtime_error("ERROR: Could not jump to region. Make sure BAM header is correct.");
 		}
 
 		// If failed to create clusters, flag to ignore

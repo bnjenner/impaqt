@@ -30,7 +30,7 @@ bool MAIN_THREAD = false;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* IMPAQT */
 
-int main(int argc, char const ** argv) {
+int run_impaqt(int argc, char const ** argv) {
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -144,4 +144,18 @@ int main(int argc, char const ** argv) {
     std::cerr << "//Runtime: " << duration.count() << " seconds" << std::endl;
 
     return 0;
+}
+
+
+int main(int argc, char const ** argv) {
+    // NOTE: exceptions thrown inside worker threads (via launch()) cannot be
+    // caught here; for those the default terminate handler still prints the
+    // std::exception message. This catches the main-thread paths (argument
+    // parsing, file opening, sort-order checks, annotation loading).
+    try {
+        return run_impaqt(argc, argv);
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << "\n";
+        return 1;
+    }
 }

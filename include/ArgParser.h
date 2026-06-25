@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept>
+
 #include "seqan/arg_parse.h"
 #include "utils.h"
 
@@ -125,7 +127,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 
     if (!file_exists(ImpaqtArguments::Args.alignment_file)) {
       std::cerr << "ERROR: Alignment file \"" << ImpaqtArguments::Args.alignment_file <<  "\" does not exist.\n";
-      throw "ERROR: Make sure alignment file exists.";
+      throw std::runtime_error("ERROR: Make sure alignment file exists.");
     }
 
 
@@ -154,7 +156,7 @@ seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
     if (ImpaqtArguments::Args.annotation_file != "") {
       if (!file_exists(ImpaqtArguments::Args.annotation_file)) {
         std::cerr << "ERROR: Annotation file \"" << ImpaqtArguments::Args.annotation_file <<  "\" does not exist.\n";
-        throw "ERROR: Make sure annotation file exists.";
+        throw std::runtime_error("ERROR: Make sure annotation file exists.");
       }
       input_file_ext = seqan::getFileExtension(getOption(parser, "annotation"));
       

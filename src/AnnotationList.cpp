@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
+#include <stdexcept>
 
 #include "global_args.h"
 #include "AnnotationList.h"
@@ -100,7 +101,7 @@ void AnnotationList::create_gene_list() {
 
 	// Open file
 	std::ifstream infile(AnnotationList::annotation_file);
-	if (!infile) { throw "ERROR: Could not read annotation file."; }
+	if (!infile) { throw std::runtime_error("ERROR: Could not read annotation file."); }
 
 	// Iterate through lines in file
 	std::string col;
@@ -124,7 +125,7 @@ void AnnotationList::create_gene_list() {
 			// if feature id not found
 			if (!AnnotationList::set_feature_id(columns)) {
 				std::cerr << "ERROR: Could not find feature tag in line:\n" << line << "\n";
-				throw "ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.";
+				throw std::runtime_error("ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.");
 			}
 
 			AnnotationList::add_line(columns);

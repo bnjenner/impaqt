@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <stdexcept>
 
 #include "utils.h"
 #include "AnnotationList.h"
@@ -42,8 +43,7 @@ void resolve_read_assignment(GeneNode *gene, const int &max, std::vector<size_t>
 		read_assignments[0] += 1;
 
  	} else {
- 		std::cerr << "ERROR: No best overlap found for read assignment.\n";
- 		throw "ERROR: No best overlap found for read assignment.";
+ 		throw std::runtime_error("ERROR: No best overlap found for read assignment.");
  	}
 }
 
@@ -68,7 +68,7 @@ void resolve_transcript_assignment(ClusterList *list, ClusterNode *node, GeneNod
 		std::cerr << "ERROR: No best overlap found for read assignment.\n"
 				  << "Cluster: " << node -> get_contig_name() << ":" 
 				  << node -> get_start() << "-" << node -> get_stop() << "\n";
- 		throw "ERROR: No best overlap found for read assignment.";
+ 		throw std::runtime_error("ERROR: No best overlap found for read assignment.");
  	}
 }
 
