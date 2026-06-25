@@ -108,7 +108,7 @@ TEST_F(impactTest, DBSCAN) {
 TEST_F(impactTest, GetCoordinates) {
 
    get_linked_clusters(node, paths, assign_vec_5, assign_vec_3);
-   get_coordinates(node, paths,
+   get_coordinates(paths,
                    regions_5, regions_3,
                    &transcripts, &counts);
 

@@ -167,7 +167,7 @@ void compare_and_update_overlap(GeneNode *&gene, GeneNode *&best_gene, const int
 /* Overlapper Functions */
 
 // Assigning expression of transcripts to genes
-void assign_transcripts_to_genes(ClusterNode *node, GeneNode *prev_gene, ClusterList *list,  AnnotationList &annotation, const int &t_num) {
+void assign_transcripts_to_genes(ClusterNode *node, GeneNode *prev_gene, ClusterList *list, const int &t_num) {
 
 	GeneNode *gene;
 	GeneNode *best_gene;
@@ -201,7 +201,7 @@ void assign_transcripts_to_genes(ClusterNode *node, GeneNode *prev_gene, Cluster
 }
 
 // Assigning expression of transcripts to genes
-void assign_reads_to_genes(ClusterNode *node, GeneNode *prev_gene, ClusterList *list, AnnotationList &annotation) {
+void assign_reads_to_genes(ClusterNode *node, GeneNode *prev_gene, ClusterList *list) {
 
 	GeneNode *gene;
 	GeneNode *best_gene;
@@ -296,7 +296,7 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 				start = node -> get_transcript_start();
 				gene = get_closest_gene(start, prev_gene, node);
 				if (gene != NULL) {
-					assign_transcripts_to_genes(node, gene, list, annotation, t_num);
+					assign_transcripts_to_genes(node, gene, list, t_num);
 				}
 
 			} else {
@@ -305,7 +305,7 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 				start = (node -> get_five_vec())[0];
 				gene = get_closest_gene(start, prev_gene, node);
 				if (gene != NULL) {
-					assign_reads_to_genes(node, gene, list, annotation);				
+					assign_reads_to_genes(node, gene, list);				
 				}
 				node -> empty_vectors();			}
 

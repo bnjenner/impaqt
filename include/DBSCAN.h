@@ -19,7 +19,7 @@ bool overlap_aux(std::vector<std::vector<int>> &transcripts);
 void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts);
 
 /// Get Transcript Coordinates
-void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &paths,
+void get_coordinates(const std::map<std::string, int> &paths,
                      const std::map<int, std::vector<int>> &regions_5, const std::map<int, std::vector<int>> &regions_3,
                      std::vector<std::vector<int>> *transcripts, std::vector<int> *counts);
 

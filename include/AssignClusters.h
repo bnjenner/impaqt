@@ -31,11 +31,10 @@ void compare_and_update_overlap(GeneNode *&gene, GeneNode *&best_gene, const int
 /* Overlapper Functions */
 
 // Assigning expression of transcripts to genes
-void assign_transcripts_to_genes(ClusterNode *cluster, GeneNode *prev_gene, ClusterList *list, 
-								 AnnotationList &annotation, const int &t_num);
+void assign_transcripts_to_genes(ClusterNode *cluster, GeneNode *prev_gene, ClusterList *list, const int &t_num);
 
 // Assigning expression of transcripts to genes
-void assign_reads_to_genes(ClusterNode *cluster, GeneNode *prev_gene, ClusterList *list, AnnotationList &annotation);
+void assign_reads_to_genes(ClusterNode *cluster, GeneNode *prev_gene, ClusterList *list);
 
 /////////////////////////////////////////////////////////////
 /* Main Assignment Function */

@@ -128,7 +128,7 @@ void overlap_clusters(ClusterNode *node, std::vector<std::vector<int>> &transcri
 
 
 // Get Transcript Coordinates
-void get_coordinates(ClusterNode *node, const std::map<std::string, int> &paths,
+void get_coordinates(const std::map<std::string, int> &paths,
                      const std::map<int, std::vector<int>> &regions_5, const std::map<int, std::vector<int>> &regions_3,
                      std::vector<std::vector<int>> *transcripts, std::vector<int> *counts) {
 
@@ -429,7 +429,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				// If clusters were  found
 				get_linked_clusters(node, paths, assign_vec_5, assign_vec_3);
 
-				get_coordinates(node, paths,
+				get_coordinates(paths,
 				                regions_5, regions_3,
 				                &transcripts, &counts);
 
