@@ -86,31 +86,28 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
-	int get_features() { return features; }
+	int get_features() const { return features; }
 
-	GeneNode* get_head(const int t_strand) {
+	GeneNode* get_head(const int t_strand) const {
 		if (t_strand == 0) { return pos_head; }
 		return neg_head;
 	}
 
 	// Get Tail Node
-	GeneNode* get_tail(const int t_strand) {
+	GeneNode* get_tail(const int t_strand) const {
 		if (t_strand == 0) { return pos_tail; }
 		return neg_tail;
 	}
 
-	GeneNode* jump_to_chrom(const std::string t_chrom, const int t_strand) {
-		if (t_strand == 0) { 
-			if (pos_chrom_map.find(t_chrom) == pos_chrom_map.end()) { return nullptr; }
-			return pos_chrom_map[t_chrom];
-		} else {
-			if (neg_chrom_map.find(t_chrom) == neg_chrom_map.end()) { return nullptr; }
-			return neg_chrom_map[t_chrom];
-		}
+	GeneNode* jump_to_chrom(const std::string t_chrom, const int t_strand) const {
+		const std::unordered_map<std::string, GeneNode*> &chrom_map = (t_strand == 0) ? pos_chrom_map : neg_chrom_map;
+		auto it = chrom_map.find(t_chrom);
+		if (it == chrom_map.end()) { return nullptr; }
+		return it -> second;
 	}
 
 	// Get first gene by position (just trust me on this one)
-	GeneNode* get_first_gene(bool &strand) {
+	GeneNode* get_first_gene(bool &strand) const {
 		if (pos_head == nullptr && neg_head != nullptr) {
 			strand = 1; return neg_head;
 		} else if (neg_head == nullptr && pos_head != nullptr) {
@@ -126,7 +123,7 @@ public:
 
 
 	// Get next gene by position
-	GeneNode* get_next_gene(GeneNode *&c_node, GeneNode *&a_prev, GeneNode *&b_prev, bool &strand) {
+	GeneNode* get_next_gene(GeneNode *&c_node, GeneNode *&a_prev, GeneNode *&b_prev, bool &strand) const {
 		
 		a_prev = c_node -> get_next();
 		if (a_prev == nullptr) {

@@ -66,14 +66,14 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
-	std::string get_contig_name() { return contig_name; }
+	const std::string& get_contig_name() const { return contig_name; }
 
 	// Gets
-	ClusterNode* get_head(int t_strand) {
+	ClusterNode* get_head(int t_strand) const {
 		if (t_strand == 0) { return pos_head; }
 		return neg_head;
 	}
-	ClusterNode* get_tail(int t_strand) {
+	ClusterNode* get_tail(int t_strand) const {
 		if (t_strand == 0) { return pos_tail; }
 		return neg_tail;
 	}
@@ -95,7 +95,7 @@ public:
 	}
 
 	// Get First cluster by position (just trust me on this one)
-	ClusterNode* get_first_cluster(bool &strand) {
+	ClusterNode* get_first_cluster(bool &strand) const {
 		if (pos_head == nullptr && neg_head != nullptr) {
 			strand = 1; return neg_head;
 		} else if (neg_head == nullptr && pos_head != nullptr) {
@@ -110,7 +110,7 @@ public:
 	}
 
 	// Get Next cluster by position
-	ClusterNode* get_next_cluster(ClusterNode *&c_node, ClusterNode *&a_prev, ClusterNode *&b_prev, bool &strand) {
+	ClusterNode* get_next_cluster(ClusterNode *&c_node, ClusterNode *&a_prev, ClusterNode *&b_prev, bool &strand) const {
 		
 		a_prev = c_node -> get_next();
 		if (a_prev == nullptr) {
@@ -127,19 +127,19 @@ public:
 	}
 
 	// Get Reads Stats
-	long double get_assigned_reads() { return assigned_reads + (long double)assigned_singles; }
-	long double get_unassigned_reads() { return unassigned_reads + (long double)unassigned_singles; }
-	long double get_ambiguous_reads() { return ambiguous_reads + (long double)ambiguous_singles; }
-	size_t get_multimapped_reads() { return multimapped_reads; }
-	size_t get_low_quality_reads() { return low_quality_reads; }
-	size_t get_total_reads() { return total_reads; }
-	size_t get_passing_reads(const int &strand) {
+	long double get_assigned_reads() const { return assigned_reads + (long double)assigned_singles; }
+	long double get_unassigned_reads() const { return unassigned_reads + (long double)unassigned_singles; }
+	long double get_ambiguous_reads() const { return ambiguous_reads + (long double)ambiguous_singles; }
+	size_t get_multimapped_reads() const { return multimapped_reads; }
+	size_t get_low_quality_reads() const { return low_quality_reads; }
+	size_t get_total_reads() const { return total_reads; }
+	size_t get_passing_reads(const int &strand) const {
 		if (strand == 0) { return passing_pos_reads; }
 		return passing_neg_reads;
 	}
 
 	// Get Transcript Number
-	size_t get_transcript_num() {
+	size_t get_transcript_num() const {
 		size_t total = 0;
 		ClusterNode *node = pos_head;
 		for (int i = 0; i < 2; i ++) {
