@@ -132,7 +132,7 @@ int run_impaqt(int argc, char const ** argv) {
                   << "//multimapping\t" << total_multimapping << "\n"
                   << "//low_quality\t" << total_low_quality << "\n"
                   << "//total\t" << total_reads << "\n"
-                  << "//transcripts\t" << total_transcripts << std::endl;
+                  << "//transcripts\t" << total_transcripts << "\n";
     }
 
     // The longest line of "get the time" I have ever seen.
@@ -141,7 +141,7 @@ int run_impaqt(int argc, char const ** argv) {
 
     // Say goodbye :)
     std::cerr << "//Program: Complete!\n";
-    std::cerr << "//Runtime: " << duration.count() << " seconds" << std::endl;
+    std::cerr << "//Runtime: " << duration.count() << " seconds\n";
 
     return 0;
 }
