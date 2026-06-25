@@ -26,10 +26,10 @@ private:
 	std::string feature_id;
 	std::string feature_tag;
 
-	GeneNode *pos_head = NULL;
-	GeneNode *pos_tail = NULL;
-	GeneNode *neg_head = NULL;
-	GeneNode *neg_tail = NULL;
+	GeneNode *pos_head = nullptr;
+	GeneNode *pos_tail = nullptr;
+	GeneNode *neg_head = nullptr;
+	GeneNode *neg_tail = nullptr;
 
 
 	/////////////////////////////////////////////////////////////
@@ -72,10 +72,10 @@ public:
 	// Destrpy
 	~AnnotationList() {
 		GeneNode *c_node = pos_head;
-		GeneNode *t_node = NULL;
+		GeneNode *t_node = nullptr;
 		for (int i = 0; i < 2; i ++) {
-			if (i != 0) { c_node = neg_head; t_node = NULL; }
-			while (c_node != NULL) {
+			if (i != 0) { c_node = neg_head; t_node = nullptr; }
+			while (c_node != nullptr) {
 				t_node = c_node;
 				c_node = c_node -> get_next();
 				delete t_node;
@@ -101,19 +101,19 @@ public:
 
 	GeneNode* jump_to_chrom(const std::string t_chrom, const int t_strand) {
 		if (t_strand == 0) { 
-			if (pos_chrom_map.find(t_chrom) == pos_chrom_map.end()) { return NULL; }
+			if (pos_chrom_map.find(t_chrom) == pos_chrom_map.end()) { return nullptr; }
 			return pos_chrom_map[t_chrom];
 		} else {
-			if (neg_chrom_map.find(t_chrom) == neg_chrom_map.end()) { return NULL; }
+			if (neg_chrom_map.find(t_chrom) == neg_chrom_map.end()) { return nullptr; }
 			return neg_chrom_map[t_chrom];
 		}
 	}
 
 	// Get first gene by position (just trust me on this one)
 	GeneNode* get_first_gene(bool &strand) {
-		if (pos_head == NULL && neg_head != NULL) {
+		if (pos_head == nullptr && neg_head != nullptr) {
 			strand = 1; return neg_head;
-		} else if (neg_head == NULL && pos_head != NULL) {
+		} else if (neg_head == nullptr && pos_head != nullptr) {
 			strand = 0; return pos_head;
 		} else {
 			if (pos_head -> get_start() <= neg_head -> get_start()) {
@@ -129,11 +129,11 @@ public:
 	GeneNode* get_next_gene(GeneNode *&c_node, GeneNode *&a_prev, GeneNode *&b_prev, bool &strand) {
 		
 		a_prev = c_node -> get_next();
-		if (a_prev == NULL) {
+		if (a_prev == nullptr) {
 			c_node = b_prev; strand = !strand;
 
 			// If oppostie strand exhausted or this strand first, continue
-		} else if (b_prev == NULL || a_prev -> get_start() <= b_prev -> get_start()) {
+		} else if (b_prev == nullptr || a_prev -> get_start() <= b_prev -> get_start()) {
 			c_node = a_prev;
 
 			// If positives are after negatives, switch strands
@@ -162,7 +162,7 @@ public:
 	std::string string_genes(const int &strand) {
 		std::stringstream ss;
 		GeneNode *c_node = get_head(strand);
-		while (c_node != NULL) {
+		while (c_node != nullptr) {
 			ss << c_node -> get_chrom() << "\t" << c_node -> get_geneID() << "\t";
 			for (const auto &region : c_node -> get_exon_vec()) { ss << region << "\t"; }
 			ss << "\n";
@@ -174,7 +174,7 @@ public:
 	// Print genes 
 	void print_genes(const int &strand) {
 		GeneNode *c_node = get_head(strand);
-		while (c_node != NULL) {
+		while (c_node != nullptr) {
 			std::cerr << c_node -> get_chrom() << ": " << c_node -> get_geneID() << "\n";
 			for (int i = 0; i < c_node -> get_exon_num(); i++) {
 				std::cerr << "\t" << c_node -> get_exon_vec()[(2*i)] << "\t"
@@ -186,7 +186,7 @@ public:
 
 	void print_specific_gene(const std::string &geneID, const int &strand) {
 		GeneNode *c_node = get_head(strand);
-		while (c_node != NULL) {
+		while (c_node != nullptr) {
 			if (c_node -> get_geneID() == geneID) {
 				std::cerr << c_node -> get_chrom() << ": " << c_node -> get_geneID() << "\n";
 				for (int i = 0; i < c_node -> get_exon_num(); i++) {

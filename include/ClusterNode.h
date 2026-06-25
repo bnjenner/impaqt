@@ -33,8 +33,8 @@ private:
 	std::vector<int> junctions;                        // splice junctions (determined by alignments)
 
 	// Links
-	ClusterNode *next = NULL;
-	ClusterNode *prev = NULL;
+	ClusterNode *next = nullptr;
+	ClusterNode *prev = nullptr;
 
 	// Transcript Results
 	size_t transcript_num = 0;                         // number of transcripts identified
@@ -100,7 +100,7 @@ public:
 	}
 
 	// Destroy
-	~ClusterNode() { next = NULL; prev = NULL; }
+	~ClusterNode() { next = nullptr; prev = nullptr; }
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */

@@ -15,12 +15,12 @@
 
 // Get Next Cloest Gene
 GeneNode* get_closest_gene(const int &t, GeneNode *gene, ClusterNode *clust) {
-	if (gene == NULL) { return NULL; }
+	if (gene == nullptr) { return nullptr; }
 	while (t > gene -> get_stop()) {
 		gene = gene -> get_next();
-		if (gene == NULL)  { break; }
+		if (gene == nullptr)  { break; }
 		if (gene -> get_chrom() != clust -> get_contig_name()) {
-			gene = NULL; break; // Not on same contig
+			gene = nullptr; break; // Not on same contig
 		}
 	}
 	return gene;
@@ -32,13 +32,13 @@ GeneNode* get_closest_gene(const int &t, GeneNode *gene, ClusterNode *clust) {
 // Resolve Read Assignment To Genes
 void resolve_read_assignment(GeneNode *gene, const int &max, std::vector<size_t> &read_assignments) {
 
-	if (gene == NULL && max != 0) {
+	if (gene == nullptr && max != 0) {
 		read_assignments[2] += 1; // Add to ambiguous
 
 	} else if (max == 0) {
 		read_assignments[1] += 1; // Add to Unassigned
 
-	} else if (gene != NULL) {
+	} else if (gene != nullptr) {
 		gene -> add_expression(1.0f); // add expression
 		read_assignments[0] += 1;
 
@@ -52,14 +52,14 @@ void resolve_transcript_assignment(ClusterList *list, ClusterNode *node, GeneNod
 	
 	long double expr = node -> get_transcript_expr(i);
 
-	if (gene == NULL && max != 0) {
+	if (gene == nullptr && max != 0) {
 		node -> assign_ambiguous(i);
 		list -> add_ambiguous_reads(expr);
 		
 	} else if (max == 0) {
 		list -> add_unassigned_reads(expr);
 
-	} else if (gene != NULL) {
+	} else if (gene != nullptr) {
 		node -> assign_transcript(gene -> get_geneID(), i);
 		gene -> add_expression(expr);
 		list -> add_assigned_reads(expr);
@@ -159,7 +159,7 @@ void compare_and_update_overlap(GeneNode *&gene, GeneNode *&best_gene, const int
 
 		 // If ambiguous
 	} else if (overlap == max_overlap && max_overlap != 0) {
-		best_gene = NULL;
+		best_gene = nullptr;
 	}
 }
 
@@ -178,7 +178,7 @@ void assign_transcripts_to_genes(ClusterNode *node, GeneNode *prev_gene, Cluster
 	for (int i = 0; i < t_num; i++) {
 
 		gene = prev_gene;
-		best_gene = NULL;
+		best_gene = nullptr;
 		max_overlap = 0;
 		
 		// Get node stop (transcript end bounds the gene search)
@@ -191,7 +191,7 @@ void assign_transcripts_to_genes(ClusterNode *node, GeneNode *prev_gene, Cluster
 			compare_and_update_overlap(gene, best_gene, overlap, max_overlap);
 
 			gene = gene -> get_next();
-			if (gene == NULL || gene -> get_chrom() != node -> get_contig_name()) {
+			if (gene == nullptr || gene -> get_chrom() != node -> get_contig_name()) {
 				break;
 			}
 		}
@@ -230,7 +230,7 @@ void assign_reads_to_genes(ClusterNode *node, GeneNode *prev_gene, ClusterList *
 
 			prev_read = index;
 			max_overlap = 0;
-			best_gene = NULL;
+			best_gene = nullptr;
 		}
 
 
@@ -243,7 +243,7 @@ void assign_reads_to_genes(ClusterNode *node, GeneNode *prev_gene, ClusterList *
 			compare_and_update_overlap(gene, best_gene, overlap, max_overlap);
 
 			gene = gene -> get_next();
-			if (gene == NULL || gene -> get_chrom() != node -> get_contig_name()) {
+			if (gene == nullptr || gene -> get_chrom() != node -> get_contig_name()) {
 				break;
 			}
 		}
@@ -280,12 +280,12 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 	}
 
 	// If no genes
-	if (prev_gene == NULL) {
+	if (prev_gene == nullptr) {
 		list -> add_unassigned_singles(list -> get_passing_reads(strand));
 		return;
 	}
 
-	while (node != NULL) {
+	while (node != nullptr) {
 
 		if (!(node -> is_skipped())) {
 
@@ -295,7 +295,7 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 			if (t_num != 0) {
 				start = node -> get_transcript_start();
 				gene = get_closest_gene(start, prev_gene, node);
-				if (gene != NULL) {
+				if (gene != nullptr) {
 					assign_transcripts_to_genes(node, gene, list, t_num);
 				}
 
@@ -304,12 +304,12 @@ void assign_to_genes(AnnotationList &annotation, ClusterList *list, const std::s
 				node -> index_sort_vectors();
 				start = (node -> get_five_vec())[0];
 				gene = get_closest_gene(start, prev_gene, node);
-				if (gene != NULL) {
+				if (gene != nullptr) {
 					assign_reads_to_genes(node, gene, list);				
 				}
 				node -> empty_vectors();			}
 
-			if (gene == NULL) {
+			if (gene == nullptr) {
 				list -> add_unassigned_singles(node -> get_read_count());
 			}
 		}

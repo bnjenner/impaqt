@@ -18,8 +18,8 @@ private:
 	std::vector<int> exon_vec = {0, 0};          // vector for bounds
 
 	// Links
-	GeneNode *next = NULL;                       // next ClusterNode
-	GeneNode *prev = NULL;                       // pevsious ClusterNode
+	GeneNode *next = nullptr;                       // next ClusterNode
+	GeneNode *prev = nullptr;                       // pevsious ClusterNode
 
 	/////////////////////////////////////////////////////////////
 	/* Private Gene Functions */
@@ -109,7 +109,7 @@ public:
 	}
 
 	// Destroy
-	~GeneNode() { next = NULL; prev = NULL; }
+	~GeneNode() { next = nullptr; prev = nullptr; }
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */

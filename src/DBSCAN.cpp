@@ -363,7 +363,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 
 	ClusterNode *node = cluster -> get_head(strand);
 
-	while (node != NULL) {
+	while (node != nullptr) {
 
 		expr = node -> get_read_count();
 		points = node -> get_vec_count();
@@ -464,16 +464,16 @@ void merge_transcripts(ClusterNode *c_node, ClusterNode *n_node) {
 void collapse_transcripts(ClusterList *cluster, int t_strand) {
 
 	ClusterNode *c_node = cluster -> get_head(t_strand);
-	ClusterNode *n_node = NULL;
+	ClusterNode *n_node = nullptr;
 
-	while (c_node != NULL) {
+	while (c_node != nullptr) {
 
 		// Only Collapse transcripts
 		if (c_node -> get_transcript_num() != 0) {
 
 			n_node = c_node -> get_next();
 
-			while (n_node != NULL) {
+			while (n_node != nullptr) {
 
 				if (n_node -> get_transcript_num() != 0) {
 
