@@ -2,3 +2,5 @@ docs/impaqt_derivation*
 build/
 impaqt.sublime*
 notes.txt
+*.code-workspace
+temp/
