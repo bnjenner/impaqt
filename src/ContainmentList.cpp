@@ -69,7 +69,7 @@ void ContainmentList::collapse_intervals() {
 	}
 
 	// Try to Merge Children
-	bool unique;
+	bool unique = false;
 	while (!unique) {
 		
 		unique = true;
