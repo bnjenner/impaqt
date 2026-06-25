@@ -41,7 +41,6 @@ private:
 	size_t total_reads = 0;
 	size_t passing_pos_reads = 0;             // Reads passing read check on +
 	size_t passing_neg_reads = 0;             // Reads passing read check on -
-	size_t transcript_num = 0;
 
 	/////////////////////////////////////////////////////////////
 	/* Private Node Methods */
@@ -141,15 +140,16 @@ public:
 
 	// Get Transcript Number
 	size_t get_transcript_num() {
+		size_t total = 0;
 		ClusterNode *node = pos_head;
 		for (int i = 0; i < 2; i ++) {
 			if (i != 0) { node = neg_head; }
 			while (node != NULL) {
-				if (!(node -> is_skipped())) { transcript_num += node -> get_transcript_num(); }
+				if (!(node -> is_skipped())) { total += node -> get_transcript_num(); }
 				node = node -> get_next();
 			}
 		}
-		return transcript_num;
+		return total;
 	}
 
 	/////////////////////////////////////////////////////////////
