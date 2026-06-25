@@ -13,7 +13,8 @@
 // Get Core Points of Transcript
 int get_quant(const std::vector <int> result, const std::vector<std::vector<int>> &init_copy, const std::vector<int> counts) {
 	int core_points = 0;
-	for (int i = 0; i < init_copy.size(); i++) {
+	const int n = init_copy.size();
+	for (int i = 0; i < n; i++) {
 		if (check_containment_strict(init_copy[i], result)) {
 			core_points += counts[i];
 		}
@@ -23,7 +24,8 @@ int get_quant(const std::vector <int> result, const std::vector<std::vector<int>
 
 // Report Unique Transcripts (no overlapping, used for Mitochrondria)
 void report_transcripts(ClusterNode *node, std::vector<std::vector<int>> &result, std::vector<int> &counts) {
-	for (int i = 0; i < result.size(); i++) { node -> add_transcript(result[i], counts[i]); }
+	const int n = result.size();
+	for (int i = 0; i < n; i++) { node -> add_transcript(result[i], counts[i]); }
 }
 
 
@@ -37,7 +39,8 @@ bool overlap_aux(std::vector<std::vector<int>> &transcripts) {
 
 	// Construct containment list
 	bool unique = true;
-	for (int i = 0; i < transcripts.size(); i++) {
+	const int n = transcripts.size();
+	for (int i = 0; i < n; i++) {
 
 		// Set head
 		if (head.indices == 0) {
@@ -51,7 +54,7 @@ bool overlap_aux(std::vector<std::vector<int>> &transcripts) {
 
 		} else { continue; }
 
-		for (int j = i + 1; j < transcripts.size(); j++) {
+		for (int j = i + 1; j < n; j++) {
 
 			// Skip if overlap notpossible
 			if (transcripts[j][0] > curr -> get_back()) { continue; }
@@ -113,8 +116,9 @@ void overlap_clusters(ClusterNode *node, std::vector<std::vector<int>> &transcri
 		counts = {core_points};
 	
 	} else {
-		std::vector<int> new_counts(transcripts.size(), 0);
-		for (int i = 0; i < transcripts.size(); i++) {
+		const int n = transcripts.size();
+		std::vector<int> new_counts(n, 0);
+		for (int i = 0; i < n; i++) {
 			core_points = get_quant(transcripts[i], init_copy, counts);
 			new_counts[i] = core_points;
 		}
@@ -184,7 +188,8 @@ void get_linked_clusters(ClusterNode *node, std::map<std::string, int> &path_map
 
 	std::string path;
 
-	for (int i = 0; i < node -> get_vec_count(); i++) {
+	const int n = node -> get_vec_count();
+	for (int i = 0; i < n; i++) {
 
 		path = "";
 
@@ -209,7 +214,7 @@ void get_linked_clusters(ClusterNode *node, std::map<std::string, int> &path_map
 	}
 
 	// Absorb orphan paths
-	int pos;
+	size_t pos;
 	for (const auto& p1 : path_map) {
 
 		if (p1.second < 10) { path_map[p1.first] = 0; continue; }
@@ -303,14 +308,14 @@ std::vector<int> dbscan(ClusterNode *node, const int &points, const int &min_cou
 		neighbors = get_nearest_neighbors(i, points, queued, indices, adj_vec);
 
 		// If core point
-		if (neighbors.size() >= min_counts) {
+		if ((int)neighbors.size() >= min_counts) {
 
 			visted[i] = true;
 			assign_vec.at(p1) = clust_num;
 			std::vector<int> cluster_points = {adj_vec -> at(p1)};
 
 			int x = 0;
-			while (x < neighbors.size()) {
+			while (x < (int)neighbors.size()) {
 
 				index = neighbors[x];
 				p2 = indices[index];
@@ -336,7 +341,7 @@ std::vector<int> dbscan(ClusterNode *node, const int &points, const int &min_cou
 						sub_neighbors = get_nearest_neighbors(index, points, empty_vec, indices, adj_vec);
 
 						// If also a core point, copy subneighbors into neighbors to also be checked
-						if (sub_neighbors.size() >= min_counts) {
+						if ((int)sub_neighbors.size() >= min_counts) {
 							for (const auto &n : sub_neighbors) {
 								if (!queued[n]) {
 									neighbors.push_back(n);
@@ -434,7 +439,8 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 					overlap_clusters(node, transcripts, counts);
 
 					// Clean up (close gaps of single clusters not representing splice junctions)
-					for (int i = 0; i < transcripts.size(); i ++) {
+					const int n_trans = transcripts.size();
+					for (int i = 0; i < n_trans; i ++) {
 						if (transcripts[i].size() != 4) { continue; }
 						if (!(node -> contains_junction(transcripts[i][1], transcripts[i][2]))) {
 							transcripts[i] = {transcripts[i][0], transcripts[i][3]};
@@ -458,8 +464,10 @@ void merge_transcripts(ClusterNode *c_node, ClusterNode *n_node) {
 	std::vector<int> counts(c_node -> get_transcript_num(), 0);
 
 	// Populate New Transcript and Count Vecs
-	for (int i = 0; i < c_node -> get_transcript_num(); i++) { counts[i] = (int)(c_node -> get_transcript_expr(i)); }
-	for (int i = 0; i < n_node -> get_transcript_num(); i++) {
+	const int cn = c_node -> get_transcript_num();
+	const int nn = n_node -> get_transcript_num();
+	for (int i = 0; i < cn; i++) { counts[i] = (int)(c_node -> get_transcript_expr(i)); }
+	for (int i = 0; i < nn; i++) {
 		transcripts.push_back(n_node -> get_transcripts() -> at(i));
 		counts.push_back((int)(n_node -> get_transcript_expr(i)));
 	}

@@ -215,7 +215,8 @@ void assign_reads_to_genes(ClusterNode *node, GeneNode *prev_gene, ClusterList *
 	const std::vector<int> &five_vec = node -> get_five_vec();
 	const std::vector<int> &three_vec = node -> get_three_vec();
 
-	for (int i = 0; i < node -> get_vec_count(); i++) {
+	const int vec_count = node -> get_vec_count();
+	for (int i = 0; i < vec_count; i++) {
 
 		index = index_vec[i];
 		gene = prev_gene;

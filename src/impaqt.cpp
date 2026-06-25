@@ -59,7 +59,7 @@ int run_impaqt(int argc, char const ** argv) {
 
    
     // Multithreading Initialization
-    size_t n = processes[init_thread] -> get_chrom_num();
+    int n = processes[init_thread] -> get_chrom_num();
     if (n > 1) {
         processes.reserve(n);
         for (int i = 1; i < n; i++) { processes.emplace_back(std::make_unique<Impaqt>(i)); }

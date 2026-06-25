@@ -12,8 +12,10 @@
 // Convert two vectors into vector of pairs
 std::vector<std::pair<int, int>> ContainmentList::make_pairs(const std::vector<int> &a, const std::vector<int> &b) {
 	std::vector<std::pair<int, int>> pairs;
-	for (int i = 0; i < a.size() / 2; i++) { pairs.emplace_back(a[(2*i)], a[(2*i)+1]); }
-	for (int i = 0; i < b.size() / 2; i++) { pairs.emplace_back(b[(2*i)], b[(2*i)+1]); }
+	const int na = a.size() / 2;
+	const int nb = b.size() / 2;
+	for (int i = 0; i < na; i++) { pairs.emplace_back(a[(2*i)], a[(2*i)+1]); }
+	for (int i = 0; i < nb; i++) { pairs.emplace_back(b[(2*i)], b[(2*i)+1]); }
 	return pairs;
 }
 
@@ -30,11 +32,12 @@ std::vector<int> ContainmentList::merge_intervals(std::vector<std::pair<int, int
   // Flatten and merge
   int end;
 	std::vector<int> tmp;
-  for (int i = 0; i < pairs.size(); i++) {
+  const int np = pairs.size();
+  for (int i = 0; i < np; i++) {
   	tmp.push_back(pairs[i].first);
   	end = pairs[i].second;
-  	
-  	for (int j = i + 1; j < pairs.size(); j++) {
+
+  	for (int j = i + 1; j < np; j++) {
   		if (end >= pairs[j].first || std::abs(end - pairs[j].first) <= ImpaqtArguments::Args.epsilon) {
     		end = std::max(end, pairs[j].second);
     		i = j; 
@@ -70,14 +73,15 @@ void ContainmentList::collapse_intervals() {
 
 	// Try to Merge Children
 	bool unique = false;
+	const int nt = tmp.size();
 	while (!unique) {
-		
+
 		unique = true;
-		for (int i = 0; i < tmp.size(); i++) {
-			
+		for (int i = 0; i < nt; i++) {
+
 			if (tmp[i].empty()) { continue; }
 
-			for (int j = i + 1; j < tmp.size(); j++) {
+			for (int j = i + 1; j < nt; j++) {
 			
 				if (check_containment(tmp[j], tmp[i])) {
 					pairs = make_pairs(tmp[i], tmp[j]);

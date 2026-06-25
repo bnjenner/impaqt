@@ -28,7 +28,8 @@ std::vector<int> reverse_and_negate(const std::vector<int> &vec) {
 
 // Reverse Transcripts
 void reverse_transcripts(std::vector<std::vector<int>> &transcripts) {
-	for (int i = 0; i < transcripts.size(); i++) {
+	const int n = transcripts.size();
+	for (int i = 0; i < n; i++) {
 		transcripts[i] = reverse_and_negate(transcripts[i]);
 	}
 	std::sort(transcripts.begin(), transcripts.end(), compare_first_element);
