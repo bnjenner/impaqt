@@ -110,16 +110,16 @@ public:
 	int get_start() { return start; }
 	int get_stop() { return stop; }
 
-	std::string get_contig_name() { return contig_name; }
-	std::string get_headID() { return headID; }
+	const std::string& get_contig_name() const { return contig_name; }
+	const std::string& get_headID() const { return headID; }
 
 	size_t get_read_count() { return read_count; }
 	size_t get_vec_count() { return vec_count; }
 
-	std::vector<int> get_five_vec() { return five_vec; }
-	std::vector<int> get_three_vec() { return three_vec; }
-	std::vector<int> get_junct_vec() { return junctions; }
-	std::vector<int> get_index_vec() { return index_vec; }
+	const std::vector<int>& get_five_vec() const { return five_vec; }
+	const std::vector<int>& get_three_vec() const { return three_vec; }
+	const std::vector<int>& get_junct_vec() const { return junctions; }
+	const std::vector<int>& get_index_vec() const { return index_vec; }
 	std::vector<int>* get_five_ref() { return &five_vec; }
 	std::vector<int>* get_three_ref() { return &three_vec; }
 	std::vector<int>* get_index_ref() { return &index_vec; }

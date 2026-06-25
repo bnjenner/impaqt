@@ -80,7 +80,7 @@ int get_read_overlap(const int &a, const int &b, GeneNode *gene) {
 	int match = 0;
 	bool overlap_a, overlap_b;
 	int m = gene -> get_exon_num();
-	std::vector<int> exons = gene -> get_exon_vec();
+	const std::vector<int> &exons = gene -> get_exon_vec();
 
 	for (int i = 0; i < m; i++) {
 
@@ -111,7 +111,7 @@ int get_transcript_overlap(const std::vector<int> &transcript, GeneNode *gene) {
 	int i = 0, j = 0;
 	int n = transcript.size() / 2;
 	int m = gene -> get_exon_num();
-	std::vector<int> exons = gene -> get_exon_vec();
+	const std::vector<int> &exons = gene -> get_exon_vec();
 	bool overlap_a, overlap_b;
 
 	// Iterate through clusters, see if match is complete 
@@ -211,11 +211,15 @@ void assign_reads_to_genes(ClusterNode *node, GeneNode *prev_gene, ClusterList *
 
 	int prev_read = -1;
 	std::vector<size_t> read_assignments = {0, 0, 0}; // {Assigned, Unassigned, Ambiguous}, could probably make an array
-	
+
+	// Bind references once; these getters return the underlying vectors by const ref
+	const std::vector<int> &index_vec = node -> get_index_vec();
+	const std::vector<int> &five_vec = node -> get_five_vec();
+	const std::vector<int> &three_vec = node -> get_three_vec();
 
 	for (int i = 0; i < node -> get_vec_count(); i++) {
 
-		index = node -> get_index_vec()[i];
+		index = index_vec[i];
 		gene = prev_gene;
 
 		// If onto new read, reset overlap stats
@@ -231,8 +235,8 @@ void assign_reads_to_genes(ClusterNode *node, GeneNode *prev_gene, ClusterList *
 		}
 
 
-		start = (node -> get_five_vec())[i];
-		stop = (node -> get_three_vec())[i];
+		start = five_vec[i];
+		stop = three_vec[i];
 
 		// Check all possible genes
 		while (stop >= gene -> get_start()) {

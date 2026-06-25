@@ -114,8 +114,8 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
-	std::string get_chrom() { return chrom; }
-	std::string get_geneID() { return geneID; }
+	const std::string& get_chrom() const { return chrom; }
+	const std::string& get_geneID() const { return geneID; }
 	
 	int get_strand() { return strand; }
 	int get_start() { return start; }
@@ -124,7 +124,7 @@ public:
 	
 	float get_read_count() { return read_count; }
 
-	std::vector<int> get_exon_vec() { return exon_vec; }
+	const std::vector<int>& get_exon_vec() const { return exon_vec; }
 	std::vector<int>* get_exon_ref() { return &exon_vec; }
 
 	GeneNode* get_next() { return next; }
