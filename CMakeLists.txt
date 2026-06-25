@@ -2,8 +2,12 @@ cmake_minimum_required(VERSION 3.18)
 project(impaqt)
 
 # C++ standard
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Warning flags for first-party targets only (vendored ext/ deps are included
+# as SYSTEM headers and built separately, so they are not affected).
+set(IMPAQT_WARNINGS -Wall -Wextra)
 
 # Source files
 file(GLOB IMPAQT_FILES
@@ -38,6 +42,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/ext/bamtools/src/api EXCLUDE_FROM_ALL)
 
 # Executable
 add_executable(impaqt ${IMPAQT_FILES})
+target_compile_options(impaqt PRIVATE ${IMPAQT_WARNINGS})
 target_link_libraries(impaqt
     BamTools
     ${ZLIB_LIBRARIES}
