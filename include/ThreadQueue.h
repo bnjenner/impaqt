@@ -46,9 +46,9 @@ public:
 	}
 
 	// dispatch (basically enqueue)
-	void dispatch(const call &&job) {
+	void dispatch(call job) {
 		std::unique_lock<std::mutex> lock(mlock);    // create lock
-		call_queue.push(std::move(job));             // enqueue
+		call_queue.push(std::move(job));             // enqueue (job is a non-const value, so this moves)
 		cv.notify_one();                             // notify conditional var
 	}
 
