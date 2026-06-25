@@ -48,7 +48,7 @@ public:
 
    ClusterNode *node;
 
-   static std::map<std::string, int> paths;
+   static std::map<Path, int> paths;
    static std::vector<int> counts;
    static std::vector<std::vector<int>> transcripts;
    static std::vector<int> assign_vec_5, assign_vec_3;
@@ -57,7 +57,7 @@ public:
 };
 
 
-std::map<std::string, int> impactTest::paths;
+std::map<Path, int> impactTest::paths;
 std::vector<int> impactTest::counts;
 std::vector<std::vector<int>> impactTest::transcripts;
 std::vector<int> impactTest::assign_vec_5; 
