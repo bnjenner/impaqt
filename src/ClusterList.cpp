@@ -159,7 +159,6 @@ bool ClusterList::create_clusters(BamTools::BamReader &inFile, BamTools::BamAlig
 	std::vector<int> positions, junctions;
 	ClusterNode *pos_node = ClusterList::get_head(t_strand);
 	ClusterNode *neg_node = ClusterList::get_head(!t_strand);
-	ClusterNode *t_node = neg_node; // This needs to exist because BAM is ordered by left most position
 
 	while (true) {
 

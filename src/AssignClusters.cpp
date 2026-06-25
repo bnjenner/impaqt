@@ -106,7 +106,6 @@ int get_read_overlap(const int &a, const int &b, GeneNode *gene) {
 // Check the number of exons that overlap with transcript
 int get_transcript_overlap(const std::vector<int> &transcript, GeneNode *gene) {
 
-	int strand = gene -> get_strand();
 	int matches = 0;
 	int i = 0, j = 0;
 	int n = transcript.size() / 2;
@@ -172,7 +171,7 @@ void assign_transcripts_to_genes(ClusterNode *node, GeneNode *prev_gene, Cluster
 
 	GeneNode *gene;
 	GeneNode *best_gene;
-	int t_start, t_stop, overlap, max_overlap;
+	int t_stop, overlap, max_overlap;
 	std::vector<std::vector<int>> transcripts = *(node -> get_transcripts());
 
 	// Iterate through transcripts
@@ -182,8 +181,7 @@ void assign_transcripts_to_genes(ClusterNode *node, GeneNode *prev_gene, Cluster
 		best_gene = NULL;
 		max_overlap = 0;
 		
-		// Get node start and stop
-		t_start = transcripts[i][0];
+		// Get node stop (transcript end bounds the gene search)
 		t_stop = transcripts[i][transcripts[i].size() - 1];
 
 		// Check all possible genes
