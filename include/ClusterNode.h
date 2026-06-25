@@ -106,16 +106,16 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
-	int get_contig_index() { return contig_index; }
-	int get_strand() { return strand; }
-	int get_start() { return start; }
-	int get_stop() { return stop; }
+	int get_contig_index() const { return contig_index; }
+	int get_strand() const { return strand; }
+	int get_start() const { return start; }
+	int get_stop() const { return stop; }
 
 	const std::string& get_contig_name() const { return contig_name; }
 	const std::string& get_headID() const { return headID; }
 
-	size_t get_read_count() { return read_count; }
-	size_t get_vec_count() { return vec_count; }
+	size_t get_read_count() const { return read_count; }
+	size_t get_vec_count() const { return vec_count; }
 
 	const std::vector<int>& get_five_vec() const { return five_vec; }
 	const std::vector<int>& get_three_vec() const { return three_vec; }
@@ -134,15 +134,15 @@ public:
 		total_core_points = 0;
 	}
 
-	size_t get_transcript_num() { return transcript_num; }
+	size_t get_transcript_num() const { return transcript_num; }
 	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
-	std::vector<long double> get_transexpr_vec() { return transcript_expression; }
+	std::vector<long double> get_transexpr_vec() const { return transcript_expression; }
 
-	int get_transcript_start() {
+	int get_transcript_start() const {
 		if (transcript_vec.empty()) { return -1; }
 		return transcript_vec[0][0];
 	}
-	int get_transcript_stop() {
+	int get_transcript_stop() const {
 		if (transcript_vec.empty()) { return -1; }
 		int last = transcript_vec[0].back();
 		for (const auto &t: transcript_vec) {
@@ -150,19 +150,19 @@ public:
 		}
 		return last;
 	}
-	long double get_transcript_expr(const int &i) {
-		if (transcript_expression.empty() || i < 0 || i >= transcript_expression.size()) {
-			return -1.0; 
+	long double get_transcript_expr(const int &i) const {
+		if (transcript_expression.empty() || i < 0 || i >= (int)transcript_expression.size()) {
+			return -1.0;
 		}
 		return transcript_expression.at(i);
 	}
 
-	ClusterNode* get_next() { return next; }
-	ClusterNode* get_prev() { return prev; }
+	ClusterNode* get_next() const { return next; }
+	ClusterNode* get_prev() const { return prev; }
 
-	bool is_skipped() { return skip; }
-	bool read_contained(const int pos) { return check_point_overlap(pos, this -> get_start(), this -> get_stop()); }
-	bool contains_junction(const int &a, const int &b) {
+	bool is_skipped() const { return skip; }
+	bool read_contained(const int pos) const { return check_point_overlap(pos, this -> get_start(), this -> get_stop()); }
+	bool contains_junction(const int &a, const int &b) const {
 		for (const auto &j : junctions) {
 			if (j >= a && j <= b) {
 				return true;

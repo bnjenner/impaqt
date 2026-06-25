@@ -113,18 +113,18 @@ public:
 	const std::string& get_chrom() const { return chrom; }
 	const std::string& get_geneID() const { return geneID; }
 	
-	int get_strand() { return strand; }
-	int get_start() { return start; }
-	int get_stop() { return stop; }
-	int get_exon_num() { return exons; }
-	
-	float get_read_count() { return read_count; }
+	int get_strand() const { return strand; }
+	int get_start() const { return start; }
+	int get_stop() const { return stop; }
+	int get_exon_num() const { return exons; }
+
+	float get_read_count() const { return read_count; }
 
 	const std::vector<int>& get_exon_vec() const { return exon_vec; }
 	std::vector<int>* get_exon_ref() { return &exon_vec; }
 
-	GeneNode* get_next() { return next; }
-	GeneNode* get_prev() { return prev; }
+	GeneNode* get_next() const { return next; }
+	GeneNode* get_prev() const { return prev; }
 
 	/////////////////////////////////////////////////////////////
 	/* Set functions */
