@@ -9,13 +9,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # as SYSTEM headers and built separately, so they are not affected).
 set(IMPAQT_WARNINGS -Wall -Wextra)
 
-# Source files
-file(GLOB IMPAQT_FILES
+# Source files (listed explicitly; GLOB does not re-run when files are added)
+set(IMPAQT_FILES
 	${PROJECT_SOURCE_DIR}/src/impaqt.cpp
-        ${PROJECT_SOURCE_DIR}/src/AnnotationList.cpp
+	${PROJECT_SOURCE_DIR}/src/AnnotationList.cpp
 	${PROJECT_SOURCE_DIR}/src/ClusterList.cpp
 	${PROJECT_SOURCE_DIR}/src/DBSCAN.cpp
-        ${PROJECT_SOURCE_DIR}/src/ContainmentList.cpp
+	${PROJECT_SOURCE_DIR}/src/ContainmentList.cpp
 	${PROJECT_SOURCE_DIR}/src/AssignClusters.cpp
 	${PROJECT_SOURCE_DIR}/src/utils.cpp
 )

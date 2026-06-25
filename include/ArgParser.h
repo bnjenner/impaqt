@@ -7,7 +7,7 @@
 
 /////////////////////////////////////////////////////////////
 // Argument Parser
-seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
+inline seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
 
     // Setup ArgumentParser.
     seqan::ArgumentParser parser("impaqt");
