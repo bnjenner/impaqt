@@ -139,6 +139,7 @@ void ClusterList::delete_list() {
 	ClusterNode *node = pos_head;
 	for (int i = 0; i < 2; i ++) {
 		if (i != 0) { node = neg_head; }
+		if (node == nullptr) { continue; } // empty strand (e.g. no reads) -> nothing to free
 		while (node -> get_next() != nullptr) {
 			node = node -> get_next();
 			delete node -> get_prev();
