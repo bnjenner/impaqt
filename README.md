@@ -71,59 +71,32 @@ impaqt input.sorted.bam
 
 ## Usage
 ```
-SYNOPSIS
-    impaqt input.sorted.bam [options]
+impaqt -- Identifies Multiple Peaks and Quantifies Transcripts.
 
-DESCRIPTION
-    Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms utilizing distinct 3'
-    ends. Generates a GTF file of identified transcripts and optionally a counts file written to stdout if a reference
-    annotation is provided.
+Identifies and quantifies isoforms utilizing distinct 3' ends. Generates a GTF
+file of identified transcripts and optionally a counts file to stdout if a
+reference annotation is provided.
 
-REQUIRED ARGUMENTS
-    BAM INPUT_FILE
+Usage: impaqt input.sorted.bam [options]
 
-OPTIONS
-    -h, --help
-          Display the help message.
-    -t, --threads INTEGER
-          Number of processers for multithreading. Default: 1.
-    -a, --annotation INPUT_FILE
-          Annotation File (GTF or GFF). If specified, a counts table will be output through standard out. NOTICE: File
-          type identified by file extension. Default: .
-    -s, --strandedness STRING
-          Strandedness of library. One of forward and reverse. Default: forward.
-    -n, --nonunique-alignments
-          Count primary and secondary read alignments.
-    -q, --mapq-min INTEGER
-          Minimum mapping quality score to consider. Default: 1.
-    -w, --window-size INTEGER
-          Window size to use to parition genome for read collection. Default: 1000.
-    -m, --min-count INTEGER
-          Minimum read count to initiate DBSCAN transcript identification algorithm. (Hard minimum of 10) Default: 25.
-    -p, --count-percentage INTEGER
-          Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold
-          unless number of reads is less than 10. Default: 5.
-    -e, --epsilon INTEGER
-          Distance (in base pairs) for neighboring reads in DBSCAN algorithm. This should generally be 0.5-1.5x the
-          read length, depending on desired isoform sensitivity (lower = more sensitive). Default: 50.
-    -d, --density-threshold DOUBLE
-          Read density threshold (# reads / # bps) to skip transcript identification. Assignment in super dense
-          regions (usually the mitochrondria) doesn't really benefit from transcript identificaiton. Default is unset.
-          Default: 0.
-    -f, --feature-tag STRING
-          Name of feature in GTF for assignment. Default: exon.
-     -u, --utr-tag STRING
-          Name of UTR feature in GTF for assignment. Default: UTR.
-    -i, --feature-id STRING
-          ID of feature to use for feature assignment. Default: gene_id.
-    -o, --output-gtf STRING
-          Specify name of cluster GTF file. Default is BAM name + ".gtf".
-    --version
-          Display version information.
-
-VERSION
-    Last update: August 2025
-    impaqt version: beta
+Options:
+  -t, --threads INT             Number of processers for multithreading. [1]
+  -a, --annotation FILE         Annotation file (GTF or GFF). If set, a counts
+                                table is written to stdout. Type from extension. []
+  -s, --strandedness STR        Strandedness of library: forward or reverse. [forward]
+  -n, --nonunique-alignments    Count primary and secondary read alignments.
+  -q, --mapq-min INT            Minimum mapping quality score to consider. [1]
+  -w, --window-size INT         Window size to partition genome for read collection. [1000]
+  -m, --min-count INT           Min read count to initiate DBSCAN. (Hard minimum 10) [25]
+  -p, --count-percentage INT    Min read count percentage for core reads in DBSCAN. [5]
+  -e, --epsilon INT             Neighbor distance (bp) for DBSCAN. [50]
+  -d, --density-threshold DBL   Read density (#reads/#bp) to skip identification. [0]
+  -f, --feature-tag STR         Name of feature in GTF for assignment. [exon]
+  -u, --utr-tag STR             Name of UTR feature in GTF for assignment. [UTR]
+  -i, --feature-id STR          ID of feature to use for assignment. [gene_id]
+  -o, --output-gtf STR          Output GTF name. [BAM name + ".gtf"]
+  -h, --help                    Print this help message and exit.
+      --version                 Print version and exit.
 ```
 
 ## Dependencies

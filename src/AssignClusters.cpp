@@ -204,8 +204,8 @@ void assign_transcripts_to_genes(ClusterNode *node, GeneNode *prev_gene, Cluster
 void assign_reads_to_genes(const ClusterNode *node, GeneNode *prev_gene, ClusterList *list) {
 
 	GeneNode *gene;
-	GeneNode *best_gene;
-	int start, stop, overlap, max_overlap, index;
+	GeneNode *best_gene = nullptr;   // init: the final resolve below would read these
+	int start, stop, overlap, max_overlap = 0, index;   // if vec_count were 0 (loop never runs)
 
 	int prev_read = -1;
 	std::vector<size_t> read_assignments = {0, 0, 0}; // {Assigned, Unassigned, Ambiguous}, could probably make an array

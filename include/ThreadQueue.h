@@ -63,8 +63,12 @@ public:
 				return (call_queue.size() || quit);
 			});
 
-			// after wait, we own the lock
-			if (!quit && call_queue.size()) {
+			// Drain every queued job before honoring quit. Previously this ran a
+			// single job only when !quit, so any job still queued when the
+			// destructor set quit was silently dropped -- its launch() never ran
+			// and that contig's ClusterList was never built (null-deref at write
+			// time, surfaced under -O3). Draining guarantees submitted work runs.
+			while (call_queue.size()) {
 
 				// create job
 				auto job = std::move(call_queue.front());
@@ -78,6 +82,14 @@ public:
 
 	}
 
-	bool finished() { return (call_queue.empty()); }
-	int size() { return call_queue.size(); }
+	// Lock when reading shared state: an unlocked empty() read races with the
+	// workers popping the queue (the main-thread drain loop spins on this).
+	bool finished() {
+		std::unique_lock<std::mutex> lock(mlock);
+		return call_queue.empty();
+	}
+	int size() {
+		std::unique_lock<std::mutex> lock(mlock);
+		return call_queue.size();
+	}
 };

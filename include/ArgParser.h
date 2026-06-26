@@ -54,7 +54,7 @@ inline bool parse_double(const std::string &s, double &out, const std::string &n
 
 inline void print_usage() {
     std::cerr <<
-        "impaqt -- Identifies Multiple Peaks and Quantifies Transcripts.\n"
+        "impaqt -- Identifies Multiple Peaks and Quantifies Transcripts.\n\n"
         "Identifies and quantifies isoforms utilizing distinct 3' ends. Generates a GTF\n"
         "file of identified transcripts and optionally a counts file to stdout if a\n"
         "reference annotation is provided.\n\n"
