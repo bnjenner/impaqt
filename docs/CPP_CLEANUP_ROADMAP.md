@@ -49,13 +49,23 @@ behavior preserved unless a change is explicitly a bug fix.
 - `≥10`-cluster path regression test (`LargeClusterIndexPaths`, pins `2b5cae6`) — `9d8fc84`
 - Gene-assignment unit tests (new `assign_test` target) — `aa9d189`
 
+**Correctness / memory (2026-06-26 session)**
+- `ClusterList::delete_list()` null-head crash — guarded; `DestroyEmptyList` regression test (SEGFAULTs without the fix) — `edf0862`
+- **Memory-leak audit (ASan/LSan).** Found one real leak: `Impaqt::cluster_list` was a
+  raw `ClusterList*`, `new`'d in `create_clusters()`, never freed (empty `~Impaqt`) →
+  every contig's list + nodes + transcripts leaked at exit (LSan: single root, 26
+  allocs). Fixed by making it `std::unique_ptr<ClusterList>` — `f5640e7`. The rest of
+  the raw `new`/`delete` (`merge_nodes`, `delete_list`, `AnnotationList`) is **ASan-clean
+  on the real 3.8M-read data** — no leaks, use-after-free, or double-free. This is the
+  evidence backing the decision to leave the linked-list internals as raw pointers.
+
 ---
 
 ## ⏳ Remaining from the audit
 
 | Item | Notes | Effort | Risk |
 |---|---|---|---|
-| **RAII for the linked lists** | `ClusterList`/`AnnotationList` still raw `new`/`delete` with hand-written teardown. Owning `unique_ptr` nodes, or a flat pool. Remove the no-op `~ClusterNode`/`~GeneNode`. | Medium | Watch destructor recursion depth on long lists. |
+| **RAII for the linked lists** | **Decided: leave as-is.** `ClusterList`/`AnnotationList` keep raw `new`/`delete`. The ASan audit proved the teardown + `merge_nodes` are leak/UAF/double-free-clean on real data; a `unique_ptr<next>` rewrite trades that for recursion + merge-ownership churn (see the `merge_with_next` discussion). Revisit only if the lists ever outlive a single process. | — | — |
 | **Deeper const-threading** | Getters are `const` now; read-only free funcs (`get_read_overlap`, `get_transcript_overlap`, `assign_*`, etc.) still take non-`const` `GeneNode*`/`ClusterNode*`. Thread `const` through. Now covered by `assign_test`. | Medium | Low, but ripples through signatures. |
 
 ---
@@ -115,6 +125,19 @@ Two scripts (were in `/tmp`; copy back if the box rebooted):
 ### `verify_impaqt.sh` — fast guard (unit tests + small e2e)
 Rebuilds, runs `ctest`, and diffs end-to-end output for the small `test/data` BAMs
 against a captured baseline. Run after every change.
+
+### ASan / LeakSanitizer (memory audit)
+No valgrind on this box, but gcc's ASan+LSan works and is faster. Separate build dir:
+```bash
+cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g" \
+  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address"
+cmake --build build-asan --target impaqt -j4
+ASAN_OPTIONS=detect_leaks=1 ./build-asan/impaqt temp/TS25_2_1_dedup.bam \
+  -a temp/gencode.vM35.annotation.gtf -t 8 -o /tmp/asan_real.gtf
+```
+Exit 0 with no `SUMMARY: AddressSanitizer` line = clean. Run the real BAM (not just
+`test/data/`) — only it exercises `merge_nodes` and large lists. As of `f5640e7`: clean.
 
 ### `bench_impaqt.sh` — real-data guard + timing
 ```bash
