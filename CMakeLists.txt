@@ -24,32 +24,38 @@ set(IMPAQT_FILES
 find_package(ZLIB REQUIRED)
 find_package(Threads REQUIRED)
 
-# GoogleTest
-include(cmake/gtest.cmake)
-message(STATUS "GTest include dirs: ${GTEST_INCLUDE_DIRS}")
-
-# BamTools via FetchContent, pinned to v2.5.3 by immutable commit SHA.
-# A full SHA (not a bare tag) can't be force-moved upstream, so builds are
-# reproducible. v2.5.3 already carries the std::-qualified C-function fix that the
-# previously-vendored copy was hand-patched for, so it builds clean under C++17.
+# Third-party dependencies via FetchContent, each pinned to an immutable commit
+# SHA (not a bare tag, which can be force-moved upstream) so builds are reproducible.
 include(FetchContent)
+
+# GoogleTest (release-1.12.1) -- tests only.
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG 58d77fa8070e8cec2dc1ed015d66b454c8d78850  # release-1.12.1
+    SYSTEM
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)  # don't override the parent's CRT (Windows)
+FetchContent_MakeAvailable(googletest)
+
+# BamTools (v2.5.3). v2.5.3 already carries the std::-qualified C-function fix the
+# previously-vendored copy was hand-patched for, so it builds clean under C++17.
+# In 2.5.3 the BamTools library target lives in src/ (not src/api), so we build the
+# project as upstream intends via a full MakeAvailable; this also builds the toolkit
+# and registers 2 of its own ctest cases (bamtools_help/_stats), which pass and
+# sanity-check the pinned dep.
 FetchContent_Declare(
     bamtools
     GIT_REPOSITORY https://github.com/pezmaster31/bamtools.git
     GIT_TAG 7e5c183cdf37a6ab216402b26c07296807416472  # v2.5.3
     SYSTEM  # treat bamtools headers as system (suppress its warnings under -Wall -Wextra)
 )
-# Full MakeAvailable: in 2.5.3 the BamTools library target lives in src/ (not
-# src/api), so we build the project as upstream intends. It also builds the
-# bamtools toolkit + registers 2 of its own ctest cases (bamtools_help/_stats);
-# both pass and serve as a sanity check that the pinned dep itself works.
 FetchContent_MakeAvailable(bamtools)
 
 # Include paths
 include_directories(SYSTEM
     ${PROJECT_SOURCE_DIR}/include
     ${bamtools_SOURCE_DIR}/src
-    ${GTEST_INCLUDE_DIRS}
 )
 
 # Executable
@@ -69,7 +75,6 @@ install(TARGETS impaqt DESTINATION bin)
 # -----------------------
 
 enable_testing()
-link_directories(${GTEST_LIBS_DIR})
 
 
 # Test: annotation_test
