@@ -124,6 +124,12 @@ pin to `double` only if exact cross-platform reproducibility is required.
 
 ## 🧪 Verification setup (recreate tomorrow)
 
+> ⚠️ **Build the guards in Release (`-DCMAKE_BUILD_TYPE=Release`, -O3).** An -O0
+> build hid a deterministic Release-only segfault — `thread_queue` was dropping a
+> queued job on shutdown (fixed, branch `fix-release-crash`). `-Wmaybe-uninitialized`
+> also only fires under optimization. CI runs Release but only the unit tests, never
+> the binary end-to-end, so it missed it too.
+
 Local benchmark/regression fixtures live in `temp/` (gitignored, ~1.1 GB, **not** in the repo):
 - `temp/TS25_2_1_dedup.bam` (+ `.bai`) — real mouse data, 3.8M reads, 61 contigs, coordinate-sorted, **forward-stranded**.
 - `temp/gencode.vM35.annotation.gtf` — GENCODE vM35 (matches the BAM's `chr` naming).
