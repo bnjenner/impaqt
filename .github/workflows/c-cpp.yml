@@ -11,7 +11,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, macos-14 ]   # macos-14 = Apple Silicon (arm64)
+        os:
+          - ubuntu-latest      # x86_64 Linux
+          - ubuntu-24.04-arm   # arm64 Linux (GitHub arm64 runners)
+          - macos-14           # arm64 macOS (Apple Silicon)
     runs-on: ${{ matrix.os }}
 
     steps:
