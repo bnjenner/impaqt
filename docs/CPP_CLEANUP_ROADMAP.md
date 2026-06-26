@@ -72,22 +72,28 @@ behavior preserved unless a change is explicitly a bug fix.
 
 ## 📋 Separately tracked (raised during the session)
 
-### Dependency stack (large)
-Replace the vendored `ext/` copies. Progress: **seqan dropped** (`5efd998`) →
-ext/ tracked files 1201 → 471.
-- ✅ **Drop seqan** — done `5efd998`. Was used only for CLI parsing; replaced
-  `ArgParser.h` with a hand-rolled parser (no new dep), `argparse` now returns a
-  `ParseStatus` enum. All options/defaults/checks preserved; byte-identical output.
-- ⏳ **bamtools** (NEXT) — currently vendored (11 MB) and built via
-  `add_subdirectory(ext/bamtools/src/api)`; used pervasively (`BamReader`,
-  `BamAlignment`, `GetNextAlignment`, `Jump`, `RefID`, CIGAR). Move to FetchContent or
-  submodule, likely **update to a recent release** (upstream: github.com/pezmaster31/bamtools).
-  Riskiest of the three (compiled C++, own CMake) — isolate it and run both guards.
-  The 2.x API we use is stable across releases.
-- ⏳ **googletest** 1.12.1 — currently `ExternalProject_Add` from vendored source
-  (`cmake/gtest.cmake`). Move to FetchContent. Trivial; do last.
-- Caveat: deps must still compile under C++17 + `-Wall -Wextra`. The Apple Silicon CI
-  job below would surface libc++ friction.
+### Dependency stack ✅ DONE
+Vendored `ext/` (1201 files, ~30 MB) fully replaced; **ext/ removed entirely.**
+- ✅ **Drop seqan** — `5efd998`. Was used only for CLI parsing; replaced `ArgParser.h`
+  with a hand-rolled parser (no new dep), `argparse` returns a `ParseStatus` enum.
+- ✅ **bamtools → FetchContent v2.5.3** — `774a78f`, pinned by immutable SHA `7e5c183`.
+  The vendored copy was a hand-patched ~2.5.1 (std::-qualified C funcs to build on
+  modern libstdc++); v2.5.3 already carries that fix upstream, so it builds clean under
+  C++17. Full `MakeAvailable` (the `BamTools` lib target lives in `src/` in 2.5.3);
+  headers `SYSTEM`. Side effect: 2 bamtools toolkit tests register in ctest and pass.
+- ✅ **googletest → FetchContent release-1.12.1** — `5379f43`, pinned by SHA `58d77fa`
+  (same version as vendored → pure structural change). Replaced `cmake/gtest.cmake`
+  (ExternalProject) + removed `GTEST_INCLUDE_DIRS`/`GTEST_LIBS_DIR` wiring.
+- ✅ `ext/` removed — `<sha>` (see git log). Provenance now lives in CMakeLists comments.
+
+**How "correct version" is guaranteed:** each dep pinned to a full commit SHA (a bare
+tag can be force-moved; a SHA is content-addressed → reproducible), and verified by
+byte-identical guard output (proves identical BAM decoding) + all tests. A fresh
+configure re-fetches both in ~9 s.
+
+Caveat for the Apple Silicon job below: deps build under C++17 + `-Wall -Wextra`
+(bamtools headers are `SYSTEM`, so its warnings don't fail our build); arm64 libc++
+is the remaining unknown.
 
 ### Apple Silicon CI (small)
 Add a `macos-14` (Apple Silicon, arm64) matrix job to `.github/workflows/c-cpp.yml`.
