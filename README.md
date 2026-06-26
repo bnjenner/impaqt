@@ -25,7 +25,7 @@ transcript of origin cannot be identified are handled individually.
 
 ## Installation
 
-0. Make sure cmake and make are installed on your machine.
+0. Make sure `cmake` (≥ 3.18), `make`, a C++17 compiler, and `zlib` are installed on your machine.
 
 ```
 # Linux
@@ -35,6 +35,10 @@ sudo apt install cmake zlib1g-dev
 brew install cmake zlib
 ```
 
+> **Note:** The remaining third-party libraries (bamtools, GoogleTest) are
+> downloaded and built automatically by CMake on the first configure, so an
+> internet connection is required the first time you build. They are pinned to
+> specific versions and are not vendored in this repository.
 
 1. Clone this repository and change into it.
 ```
@@ -42,24 +46,25 @@ git clone https://github.com/bnjenner/impaqt.git
 cd impaqt
 ```
 
-2. Create a build directory and change into it.
+### Quick install (recommended)
+
+Use the provided script, which configures, builds, and (optionally) installs:
 ```
-mkdir build
-cd build
+./install.sh --install            # build + install to the system prefix (uses sudo)
+./install.sh                      # build only -> ./build/impaqt
+./install.sh --install --prefix ~/.local   # install without sudo
+```
+Run `./install.sh --help` for all options (build type, parallel jobs, prefix).
+
+### Manual build
+
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+sudo cmake --install build         # installs only the impaqt binary
 ```
 
-3. Compile
-```
-cmake ../
-make
-```
-
-4. Install
-```
-sudo make install
-```
-
-5. Give it a go! 
+Then give it a go!
 ```
 impaqt input.sorted.bam
 ```
@@ -119,11 +124,18 @@ OPTIONS
 VERSION
     Last update: August 2025
     impaqt version: beta
-    SeqAn version: 2.4.0
 ```
 
 ## Dependencies
-Utilizes libraries like [bamtools](https://github.com/pezmaster31/bamtools) and [seqan](https://github.com/seqan/seqan) and the DBSCAN algorithm is inspired by [EmbeddedArtistry](https://github.com/embeddedartistry/embedded-resources/blob/master/examples/cpp/dispatch.cpp) and github user [Eleobert](https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp).
+Build requirements: `cmake` (≥ 3.18), a C++17 compiler, `make`, and `zlib`.
+
+The following libraries are fetched and built automatically by CMake (via
+`FetchContent`) on the first configure — they are pinned to specific versions and
+not vendored in this repository:
+- [bamtools](https://github.com/pezmaster31/bamtools) (v2.5.3) — BAM file I/O.
+- [GoogleTest](https://github.com/google/googletest) (release-1.12.1) — unit tests only.
+
+The DBSCAN clustering algorithm is inspired by github user [Eleobert](https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp), and the thread dispatch by [EmbeddedArtistry](https://github.com/embeddedartistry/embedded-resources/blob/master/examples/cpp/dispatch.cpp).
 
 ## Contact
 For questions or comments, please contact

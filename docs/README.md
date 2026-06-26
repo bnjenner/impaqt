@@ -35,9 +35,11 @@ treat them as if they were another exon, even though they do not belong to the s
 ambiguous assignment.
 
 ### Dependencies
-Dependency on seqan is sort of not necessary. Bamtools is a necessary dependency, but I need to find a better 
-way to include it besides just having an 'ext' folder containing the files I need. Additionally, the Bamtools
-version is a bit behind and calls to the API will need to be revised. 
+**Resolved.** seqan has been dropped (the argument parser is now hand-rolled, no
+dependency). bamtools and GoogleTest are no longer vendored in an `ext/` folder —
+they are fetched and built by CMake (`FetchContent`), each pinned to a specific
+commit. bamtools was updated to v2.5.3; the API calls required no revision (output
+is byte-identical to the old version).
 
 ### Test Code Coverage
 Need I say more.
