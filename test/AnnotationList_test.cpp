@@ -44,10 +44,13 @@ std::unordered_map<int, int> Impaqt::contig_lengths;
 class annotationTest : public ::testing::Test {
 public:
 
-   Impaqt *test_process;
-   AnnotationList* annotation;
+   static Impaqt *test_process;     // static: shared across the test cases below
+   static AnnotationList* annotation;
 
 };
+
+Impaqt *annotationTest::test_process = nullptr;
+AnnotationList *annotationTest::annotation = nullptr;
 
 std::string read_test_file(std::string filename) {
 
