@@ -44,9 +44,11 @@ std::unordered_map<int, int> Impaqt::contig_lengths;
 class impactTest : public ::testing::Test {
 public:
 
-   Impaqt *test_process;
+   static Impaqt *test_process;   // static: shared across the test cases below
 
 };
+
+Impaqt *impactTest::test_process = nullptr;
 
 // Read In Results File as string
 std::string read_test_file(std::string filename) {

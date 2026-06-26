@@ -43,10 +43,10 @@ std::unordered_map<int, int> Impaqt::contig_lengths;
 class impactTest : public ::testing::Test {
 public:
 
-   Impaqt *test_process;
+   static Impaqt *test_process;   // static: shared across the test cases below
    int expr, points, min_counts;
 
-   ClusterNode *node;
+   static ClusterNode *node;      // set in DBSCAN, used in GetCoordinates/Overlap
 
    static std::map<Path, int> paths;
    static std::vector<int> counts;
@@ -57,6 +57,8 @@ public:
 };
 
 
+Impaqt *impactTest::test_process = nullptr;
+ClusterNode *impactTest::node = nullptr;
 std::map<Path, int> impactTest::paths;
 std::vector<int> impactTest::counts;
 std::vector<std::vector<int>> impactTest::transcripts;
