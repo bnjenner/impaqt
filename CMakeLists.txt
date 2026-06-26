@@ -34,8 +34,10 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/google/googletest.git
     GIT_TAG 58d77fa8070e8cec2dc1ed015d66b454c8d78850  # release-1.12.1
     SYSTEM
+    EXCLUDE_FROM_ALL  # don't add gtest's targets/install rules to our build & install
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)  # don't override the parent's CRT (Windows)
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)           # don't install gtest with impaqt
 FetchContent_MakeAvailable(googletest)
 
 # BamTools (v2.5.3). v2.5.3 already carries the std::-qualified C-function fix the
@@ -48,9 +50,18 @@ FetchContent_Declare(
     bamtools
     GIT_REPOSITORY https://github.com/pezmaster31/bamtools.git
     GIT_TAG 7e5c183cdf37a6ab216402b26c07296807416472  # v2.5.3
-    SYSTEM  # treat bamtools headers as system (suppress its warnings under -Wall -Wextra)
+    SYSTEM            # treat bamtools headers as system (suppress its warnings under -Wall -Wextra)
+    EXCLUDE_FROM_ALL  # build only the BamTools lib we link; skip its toolkit & install rules
 )
 FetchContent_MakeAvailable(bamtools)
+
+# bamtools' root CMakeLists registers two ctest cases (bamtools_help/_stats) that
+# invoke its toolkit binary, which we don't build (EXCLUDE_FROM_ALL). They are
+# defined in a subdirectory scope (so set_tests_properties can't reach them from
+# here); instead tell ctest to ignore them via CTestCustom, so `ctest` runs only
+# impaqt's own suite.
+file(WRITE "${CMAKE_BINARY_DIR}/CTestCustom.cmake"
+     "set(CTEST_CUSTOM_TESTS_IGNORE bamtools_help bamtools_stats)\n")
 
 # Include paths
 include_directories(SYSTEM
