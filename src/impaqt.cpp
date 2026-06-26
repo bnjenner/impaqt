@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <vector>
 #include <thread>
@@ -35,8 +36,9 @@ int run_impaqt(int argc, char const ** argv) {
     auto start = std::chrono::high_resolution_clock::now();
 
     // Parse arguments
-    seqan::ArgumentParser::ParseResult res = argparse(argc, argv);
-    if (res != seqan::ArgumentParser::PARSE_OK) { return res; }
+    ParseStatus res = argparse(argc, argv);
+    if (res == ParseStatus::Error) { return 1; }
+    if (res == ParseStatus::Done) { return 0; }  // --help / --version printed
 
     // Welcome!
     std::cerr << "//Impaqt\n";

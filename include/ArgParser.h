@@ -1,172 +1,245 @@
 #pragma once
 
+#include <iostream>
+#include <string>
 #include <stdexcept>
 
-#include "seqan/arg_parse.h"
+#include "global_args.h"
 #include "utils.h"
 
 /////////////////////////////////////////////////////////////
-// Argument Parser
-inline seqan::ArgumentParser::ParseResult argparse(int argc, char const **argv) {
+// Argument Parser (hand-rolled; replaces the former seqan dependency)
 
-    // Setup ArgumentParser.
-    seqan::ArgumentParser parser("impaqt");
-    seqan::addDescription(parser,
-                          "Identifies Multiple Peaks and Qauntifies Transcripts. Identifies and quantifies isoforms utilizing distinct 3' ends. Generates a GTF file of identified transcripts and optionally a counts file written to stdout if a reference annotation is provided.");
+// Result of parsing: proceed, exit with failure, or exit cleanly (help/version).
+enum class ParseStatus { Ok, Error, Done };
 
+namespace argparse_detail {
 
-    // Define Arguments
-    seqan::addArgument(parser, seqan::ArgParseArgument(
-                           seqan::ArgParseArgument::INPUT_FILE, "BAM"));
+// Extension after the final '.' in the basename (no leading dot); "" if none.
+// Matches the seqan getFileExtension behaviour the checks below relied on.
+inline std::string file_extension(const std::string &path) {
+    const size_t slash = path.find_last_of("/\\");
+    const size_t dot = path.find_last_of('.');
+    if (dot == std::string::npos || (slash != std::string::npos && dot < slash)) { return ""; }
+    return path.substr(dot + 1);
+}
 
-    // Define Program Options
-    seqan::addOption(parser, seqan::ArgParseOption(
-                         "t", "threads",
-                         "Number of processers for multithreading.",
-                         seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "threads", "1");
+// Parse an integer option value; reports and returns false on bad input.
+inline bool parse_int(const std::string &s, int &out, const std::string &name) {
+    try {
+        size_t pos = 0;
+        const int v = std::stoi(s, &pos);
+        if (pos != s.size()) { throw std::invalid_argument("trailing characters"); }
+        out = v;
+        return true;
+    } catch (const std::exception &) {
+        std::cerr << "ERROR: Option \"" << name << "\" expects an integer, got \"" << s << "\".\n";
+        return false;
+    }
+}
 
-    seqan::addOption(parser, seqan::ArgParseOption(
-                         "a", "annotation",
-                         "Annotation File (GTF or GFF). If specified, a counts table will be output through standard out. NOTICE: File type identified by file extension.",
-                         seqan::ArgParseArgument::INPUT_FILE, "STRING"));
-    seqan::setDefaultValue(parser, "annotation", "");
+// Parse a double option value; reports and returns false on bad input.
+inline bool parse_double(const std::string &s, double &out, const std::string &name) {
+    try {
+        size_t pos = 0;
+        const double v = std::stod(s, &pos);
+        if (pos != s.size()) { throw std::invalid_argument("trailing characters"); }
+        out = v;
+        return true;
+    } catch (const std::exception &) {
+        std::cerr << "ERROR: Option \"" << name << "\" expects a number, got \"" << s << "\".\n";
+        return false;
+    }
+}
 
+inline void print_usage() {
+    std::cerr <<
+        "impaqt -- Identifies Multiple Peaks and Quantifies Transcripts.\n"
+        "Identifies and quantifies isoforms utilizing distinct 3' ends. Generates a GTF\n"
+        "file of identified transcripts and optionally a counts file to stdout if a\n"
+        "reference annotation is provided.\n\n"
+        "Usage: impaqt input.sorted.bam [options]\n\n"
+        "Options:\n"
+        "  -t, --threads INT             Number of processers for multithreading. [1]\n"
+        "  -a, --annotation FILE         Annotation file (GTF or GFF). If set, a counts\n"
+        "                                table is written to stdout. Type from extension. []\n"
+        "  -s, --strandedness STR        Strandedness of library: forward or reverse. [forward]\n"
+        "  -n, --nonunique-alignments    Count primary and secondary read alignments.\n"
+        "  -q, --mapq-min INT            Minimum mapping quality score to consider. [1]\n"
+        "  -w, --window-size INT         Window size to partition genome for read collection. [1000]\n"
+        "  -m, --min-count INT           Min read count to initiate DBSCAN. (Hard minimum 10) [25]\n"
+        "  -p, --count-percentage INT    Min read count percentage for core reads in DBSCAN. [5]\n"
+        "  -e, --epsilon INT             Neighbor distance (bp) for DBSCAN. [50]\n"
+        "  -d, --density-threshold DBL   Read density (#reads/#bp) to skip identification. [0]\n"
+        "  -f, --feature-tag STR         Name of feature in GTF for assignment. [exon]\n"
+        "  -u, --utr-tag STR             Name of UTR feature in GTF for assignment. [UTR]\n"
+        "  -i, --feature-id STR          ID of feature to use for assignment. [gene_id]\n"
+        "  -o, --output-gtf STR          Output GTF name. [BAM name + \".gtf\"]\n"
+        "  -h, --help                    Print this help message and exit.\n"
+        "      --version                 Print version and exit.\n";
+}
 
-    // Define Read Options
-    seqan::addOption(parser, seqan::ArgParseOption(
-                         "s", "strandedness", "Strandedness of library.",
-                         seqan::ArgParseArgument::STRING, "STRING"));
-    seqan::setDefaultValue(parser, "strandedness", "forward");
-    seqan::setValidValues(parser, "strandedness", "forward reverse");
+} // namespace argparse_detail
 
-    seqan::addOption(parser, seqan::ArgParseOption(
-                         "n", "nonunique-alignments", "Count primary and secondary read alignments."));
+inline ParseStatus argparse(int argc, char const **argv) {
 
-    seqan::addOption(parser, seqan::ArgParseOption(
-                         "q", "mapq-min",
-                         "Minimum mapping quality score to consider.",
-                         seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "mapq-min", "1");
+    using namespace argparse_detail;
 
-    // Binning Options
-    seqan::addOption(parser, seqan::ArgParseOption(
-                  "w", "window-size",
-                  "Window size to use to parition genome for read collection.",
-                  seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "window-size", "1000");
+    // Defaults (formerly seqan setDefaultValue)
+    ImpaqtArguments::Args.threads = 1;
+    ImpaqtArguments::Args.annotation_file = "";
+    ImpaqtArguments::Args.stranded = "forward";
+    ImpaqtArguments::Args.nonunique_alignments = false;
+    ImpaqtArguments::Args.mapq = 1;
+    ImpaqtArguments::Args.window_size = 1000;
+    ImpaqtArguments::Args.min_count = 25;
+    ImpaqtArguments::Args.count_percentage = 5;
+    ImpaqtArguments::Args.epsilon = 50;
+    ImpaqtArguments::Args.density_threshold = 0;
+    ImpaqtArguments::Args.feature_tag = "exon";
+    ImpaqtArguments::Args.utr_tag = "UTR";
+    ImpaqtArguments::Args.feature_id = "gene_id";
+    ImpaqtArguments::Args.gtf_output = "";
+    ImpaqtArguments::Args.isGFF = false;
 
-    // Define DBSCAN Options
-    seqan::addOption(parser, seqan::ArgParseOption(
-                  "m", "min-count",
-                  "Minimum read count to initiate DBSCAN transcript identification algorithm. (Hard minimum of 10)",
-                  seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "min-count", "25");
+    std::string bam;
+    bool have_bam = false;
 
-    seqan::addOption(parser, seqan::ArgParseOption(
-                  "p", "count-percentage",
-                  "Minimum read count percentage for identifying core reads in DBSCAN algorithm. This will be the threshold unless number of reads is less than 10.",
-                  seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "count-percentage", "5");
+    for (int i = 1; i < argc; i++) {
 
-    seqan::addOption(parser, seqan::ArgParseOption(
-                  "e", "epsilon",
-                  "Distance (in base pairs) for neighboring reads in DBSCAN algorithm. This should generally be 0.5-1.5x the read length, depending on desired isoform sensitivity (lower = more sensitive).",
-                  seqan::ArgParseArgument::INTEGER, "INT"));
-    seqan::setDefaultValue(parser, "epsilon", "50");
+        std::string tok = argv[i];
 
-    seqan::addOption(parser, seqan::ArgParseOption(
-                  "d", "density-threshold",
-                  "Read density threshold (# reads / # bps) to skip transcript identification. Assignment in super dense regions (usually the mitochrondria) doesn't really benefit from transcript identificaiton. Default is unset.",
-                  seqan::ArgParseArgument::DOUBLE, "DOUBLE"));
-    seqan::setDefaultValue(parser, "density-threshold", "0");
+        if (tok == "-h" || tok == "--help") { print_usage(); return ParseStatus::Done; }
+        if (tok == "--version") { std::cerr << "impaqt beta\n"; return ParseStatus::Done; }
 
+        // Boolean flag (no value)
+        if (tok == "-n" || tok == "--nonunique-alignments") {
+            ImpaqtArguments::Args.nonunique_alignments = true;
+            continue;
+        }
 
-    // Define Annotation Options
-    seqan::addOption(parser, seqan::ArgParseOption(
-                         "f", "feature-tag", "Name of feature in GTF for assignment.",
-                         seqan::ArgParseArgument::STRING, "STRING"));
-    seqan::setDefaultValue(parser, "feature-tag", "exon");
+        // Positional argument (the input BAM)
+        if (tok.empty() || tok[0] != '-') {
+            if (have_bam) {
+                std::cerr << "ERROR: Unexpected extra argument: \"" << tok << "\".\n";
+                return ParseStatus::Error;
+            }
+            bam = tok;
+            have_bam = true;
+            continue;
+        }
 
-    seqan::addOption(parser, seqan::ArgParseOption(
-                         "u", "utr-tag", "Name of UTR feature in GTF for assignment.",
-                         seqan::ArgParseArgument::STRING, "STRING"));
-    seqan::setDefaultValue(parser, "utr-tag", "UTR");
+        // Option with a value. Support both "--name value" and "--name=value".
+        std::string name = tok, inline_val;
+        bool has_inline = false;
+        const size_t eq = tok.find('=');
+        if (tok.rfind("--", 0) == 0 && eq != std::string::npos) {
+            name = tok.substr(0, eq);
+            inline_val = tok.substr(eq + 1);
+            has_inline = true;
+        }
 
-    seqan::addOption(parser, seqan::ArgParseOption(
-                         "i", "feature-id", "ID of feature to use for feature assignment.",
-                         seqan::ArgParseArgument::STRING, "STRING"));
-    seqan::setDefaultValue(parser, "feature-id", "gene_id");
+        // Pull the value from "=" or the next token.
+        auto get_value = [&](std::string &out) -> bool {
+            if (has_inline) { out = inline_val; return true; }
+            if (i + 1 >= argc) {
+                std::cerr << "ERROR: Option \"" << name << "\" requires a value.\n";
+                return false;
+            }
+            out = argv[++i];
+            return true;
+        };
 
-    seqan::addOption(parser, seqan::ArgParseOption(
-                         "o", "output-gtf", "Specify name of cluster GTF file. Default is BAM name + \".gtf\".",
-                         seqan::ArgParseArgument::STRING, "STRING"));
+        std::string val;
+        if (name == "-t" || name == "--threads") {
+            if (!get_value(val) || !parse_int(val, ImpaqtArguments::Args.threads, name)) { return ParseStatus::Error; }
 
-    seqan::addUsageLine(parser, "input.sorted.bam [options]");
-    seqan::setDefaultValue(parser, "version-check", "OFF");
-    seqan::hideOption(parser, "version-check");
-    seqan::setVersion(parser, "beta");
-    seqan::setDate(parser, "August 2025");
+        } else if (name == "-a" || name == "--annotation") {
+            if (!get_value(ImpaqtArguments::Args.annotation_file)) { return ParseStatus::Error; }
 
-    seqan::ArgumentParser::ParseResult res = seqan::parse(parser, argc, argv);
+        } else if (name == "-s" || name == "--strandedness") {
+            if (!get_value(ImpaqtArguments::Args.stranded)) { return ParseStatus::Error; }
+            if (ImpaqtArguments::Args.stranded != "forward" && ImpaqtArguments::Args.stranded != "reverse") {
+                std::cerr << "ERROR: --strandedness must be \"forward\" or \"reverse\".\n";
+                return ParseStatus::Error;
+            }
 
-    // Check if Parse was successful
-    if (res != seqan::ArgumentParser::PARSE_OK) { return seqan::ArgumentParser::PARSE_ERROR; }
+        } else if (name == "-q" || name == "--mapq-min") {
+            if (!get_value(val) || !parse_int(val, ImpaqtArguments::Args.mapq, name)) { return ParseStatus::Error; }
 
-    // Check file type of first positional arg
-    std::string input_file_ext = seqan::getFileExtension(getArgument(parser, 0));
-    if (input_file_ext != "bam") {
-        std::cerr << "ERROR: Unaccapetd File Format: \"." << input_file_ext <<  "\". Only accepts \".bam\",  extension.\n";
-        return seqan::ArgumentParser::PARSE_ERROR;
+        } else if (name == "-w" || name == "--window-size") {
+            if (!get_value(val) || !parse_int(val, ImpaqtArguments::Args.window_size, name)) { return ParseStatus::Error; }
+
+        } else if (name == "-m" || name == "--min-count") {
+            if (!get_value(val) || !parse_int(val, ImpaqtArguments::Args.min_count, name)) { return ParseStatus::Error; }
+
+        } else if (name == "-p" || name == "--count-percentage") {
+            if (!get_value(val) || !parse_int(val, ImpaqtArguments::Args.count_percentage, name)) { return ParseStatus::Error; }
+
+        } else if (name == "-e" || name == "--epsilon") {
+            if (!get_value(val) || !parse_int(val, ImpaqtArguments::Args.epsilon, name)) { return ParseStatus::Error; }
+
+        } else if (name == "-d" || name == "--density-threshold") {
+            if (!get_value(val) || !parse_double(val, ImpaqtArguments::Args.density_threshold, name)) { return ParseStatus::Error; }
+
+        } else if (name == "-f" || name == "--feature-tag") {
+            if (!get_value(ImpaqtArguments::Args.feature_tag)) { return ParseStatus::Error; }
+
+        } else if (name == "-u" || name == "--utr-tag") {
+            if (!get_value(ImpaqtArguments::Args.utr_tag)) { return ParseStatus::Error; }
+
+        } else if (name == "-i" || name == "--feature-id") {
+            if (!get_value(ImpaqtArguments::Args.feature_id)) { return ParseStatus::Error; }
+
+        } else if (name == "-o" || name == "--output-gtf") {
+            if (!get_value(ImpaqtArguments::Args.gtf_output)) { return ParseStatus::Error; }
+
+        } else {
+            std::cerr << "ERROR: Unknown option \"" << name << "\".\n";
+            return ParseStatus::Error;
+        }
     }
 
-    // Get arguments
-    seqan::getArgumentValue(ImpaqtArguments::Args.alignment_file, parser, 0);
-    seqan::getArgumentValue(ImpaqtArguments::Args.index_file, parser, 0);
-    ImpaqtArguments::Args.index_file = ImpaqtArguments::Args.index_file + ".bai";
+    // Require the positional BAM
+    if (!have_bam) {
+        std::cerr << "ERROR: Missing required input BAM file.\n";
+        print_usage();
+        return ParseStatus::Error;
+    }
+
+    // Check file type of the input alignment
+    if (file_extension(bam) != "bam") {
+        std::cerr << "ERROR: Unaccepted File Format: \"." << file_extension(bam)
+                  << "\". Only accepts \".bam\" extension.\n";
+        return ParseStatus::Error;
+    }
+
+    ImpaqtArguments::Args.alignment_file = bam;
+    ImpaqtArguments::Args.index_file = bam + ".bai";
 
     if (!file_exists(ImpaqtArguments::Args.alignment_file)) {
-      std::cerr << "ERROR: Alignment file \"" << ImpaqtArguments::Args.alignment_file <<  "\" does not exist.\n";
-      throw std::runtime_error("ERROR: Make sure alignment file exists.");
+        std::cerr << "ERROR: Alignment file \"" << ImpaqtArguments::Args.alignment_file << "\" does not exist.\n";
+        throw std::runtime_error("ERROR: Make sure alignment file exists.");
     }
-
-
-    // Populate options
-    seqan::getOptionValue(ImpaqtArguments::Args.annotation_file, parser, "annotation");
-    seqan::getOptionValue(ImpaqtArguments::Args.threads, parser, "threads");
-    seqan::getOptionValue(ImpaqtArguments::Args.stranded, parser, "strandedness");
-    ImpaqtArguments::Args.nonunique_alignments = seqan::isSet(parser, "nonunique-alignments");
-    seqan::getOptionValue(ImpaqtArguments::Args.mapq, parser, "mapq-min");
-    seqan::getOptionValue(ImpaqtArguments::Args.window_size, parser, "window-size");
-    seqan::getOptionValue(ImpaqtArguments::Args.min_count, parser, "min-count");
-    seqan::getOptionValue(ImpaqtArguments::Args.count_percentage, parser, "count-percentage");
-    seqan::getOptionValue(ImpaqtArguments::Args.epsilon, parser, "epsilon");
-    seqan::getOptionValue(ImpaqtArguments::Args.density_threshold, parser, "density-threshold");
-    seqan::getOptionValue(ImpaqtArguments::Args.feature_tag, parser, "feature-tag");
-    seqan::getOptionValue(ImpaqtArguments::Args.utr_tag, parser, "utr-tag");
-    seqan::getOptionValue(ImpaqtArguments::Args.feature_id, parser, "feature-id");
-    seqan::getOptionValue(ImpaqtArguments::Args.gtf_output, parser, "output-gtf");
-
 
     if (ImpaqtArguments::Args.gtf_output == "") {
-      ImpaqtArguments::Args.gtf_output = ImpaqtArguments::Args.alignment_file + ".gtf";
+        ImpaqtArguments::Args.gtf_output = ImpaqtArguments::Args.alignment_file + ".gtf";
     }
 
-    // Check file type of annotation
+    // Check file type of the annotation
     if (ImpaqtArguments::Args.annotation_file != "") {
-      if (!file_exists(ImpaqtArguments::Args.annotation_file)) {
-        std::cerr << "ERROR: Annotation file \"" << ImpaqtArguments::Args.annotation_file <<  "\" does not exist.\n";
-        throw std::runtime_error("ERROR: Make sure annotation file exists.");
-      }
-      input_file_ext = seqan::getFileExtension(getOption(parser, "annotation"));
-      
-      if (input_file_ext != "gtf" && input_file_ext != "gff") {
-          std::cerr << "ERROR: Unaccapetd File Format: \"." << input_file_ext <<  "\". Only accepts \".gtf\" and \".gff\",  extension.\n";
-          return seqan::ArgumentParser::PARSE_ERROR;
-      }
-      if (input_file_ext == "gff") { ImpaqtArguments::Args.isGFF = true; }
+        if (!file_exists(ImpaqtArguments::Args.annotation_file)) {
+            std::cerr << "ERROR: Annotation file \"" << ImpaqtArguments::Args.annotation_file << "\" does not exist.\n";
+            throw std::runtime_error("ERROR: Make sure annotation file exists.");
+        }
+        const std::string ext = file_extension(ImpaqtArguments::Args.annotation_file);
+        if (ext != "gtf" && ext != "gff") {
+            std::cerr << "ERROR: Unaccepted File Format: \"." << ext
+                      << "\". Only accepts \".gtf\" and \".gff\" extension.\n";
+            return ParseStatus::Error;
+        }
+        if (ext == "gff") { ImpaqtArguments::Args.isGFF = true; }
     }
 
-
-    return seqan::ArgumentParser::PARSE_OK;
+    return ParseStatus::Ok;
 }
