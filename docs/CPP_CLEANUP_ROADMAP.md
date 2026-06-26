@@ -47,6 +47,7 @@ behavior preserved unless a change is explicitly a bug fix.
 **Quick wins (2026-06-26 session)**
 - `ClusterNode::add_alignment` manual `% 1000` resize → `reserve` + `push_back` — `dd10a36`
 - `≥10`-cluster path regression test (`LargeClusterIndexPaths`, pins `2b5cae6`) — `9d8fc84`
+- Gene-assignment unit tests (new `assign_test` target) — `aa9d189`
 
 ---
 
@@ -55,8 +56,7 @@ behavior preserved unless a change is explicitly a bug fix.
 | Item | Notes | Effort | Risk |
 |---|---|---|---|
 | **RAII for the linked lists** | `ClusterList`/`AnnotationList` still raw `new`/`delete` with hand-written teardown. Owning `unique_ptr` nodes, or a flat pool. Remove the no-op `~ClusterNode`/`~GeneNode`. | Medium | Watch destructor recursion depth on long lists. |
-| **Deeper const-threading** | Getters are `const` now; read-only free funcs (`get_read_overlap`, `get_transcript_overlap`, `assign_*`, etc.) still take non-`const` `GeneNode*`/`ClusterNode*`. Thread `const` through. | Medium | Low, but ripples through signatures. |
-| **Assignment unit test** | `assign_*` logic has no dedicated unit test (the old stub was an empty `TEST_F`). | Medium | — |
+| **Deeper const-threading** | Getters are `const` now; read-only free funcs (`get_read_overlap`, `get_transcript_overlap`, `assign_*`, etc.) still take non-`const` `GeneNode*`/`ClusterNode*`. Thread `const` through. Now covered by `assign_test`. | Medium | Low, but ripples through signatures. |
 
 ---
 
@@ -155,9 +155,9 @@ ambiguous / 1,450,774 multimapping (NH>1, excluded by default) / 15,855 transcri
 ## 🗺️ Suggested order
 
 1. ~~Quick wins: `add_alignment` resize → `reserve`; ≥10-cluster regression test.~~ ✅ done `dd10a36`, `9d8fc84`
-2. **Assignment unit test** — gives real coverage before deeper refactors.
+2. ~~Assignment unit test — real coverage before deeper refactors.~~ ✅ done `aa9d189`
 3. **RAII for the lists** — do it against both guards; watch destructor recursion.
-4. **Deeper const-threading** — mechanical once #3 is in.
+4. **Deeper const-threading** — mechanical, now backed by `assign_test`.
 5. Then pick up the **dependency stack** (start by dropping seqan / replacing the arg
    parser, since it's self-contained) and add the **Apple Silicon CI** job.
 
