@@ -41,8 +41,18 @@ done
 # Require cmake
 if ! command -v cmake >/dev/null 2>&1; then
     echo "ERROR: cmake not found. Install it first:" >&2
-    echo "  Linux: sudo apt install cmake zlib1g-dev" >&2
+    echo "  Linux: sudo apt install build-essential cmake zlib1g-dev" >&2
     echo "  macOS: brew install cmake zlib" >&2
+    exit 1
+fi
+
+# Require a C++ compiler. cmake will happily find a C compiler (cc) and then fail
+# later with a cryptic "No CMAKE_CXX_COMPILER could be found"; catch it up front.
+if ! { [ -n "${CXX:-}" ] || command -v c++ >/dev/null 2>&1 \
+       || command -v g++ >/dev/null 2>&1 || command -v clang++ >/dev/null 2>&1; }; then
+    echo "ERROR: no C++ compiler found (need g++ or clang++)." >&2
+    echo "  Linux: sudo apt install build-essential" >&2
+    echo "  macOS: xcode-select --install" >&2
     exit 1
 fi
 

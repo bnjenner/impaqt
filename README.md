@@ -28,10 +28,10 @@ transcript of origin cannot be identified are handled individually.
 0. Make sure `cmake` (≥ 3.18), `make`, a C++17 compiler, and `zlib` are installed on your machine.
 
 ```
-# Linux
-sudo apt install cmake zlib1g-dev
+# Linux  (build-essential provides g++ and make)
+sudo apt install build-essential cmake zlib1g-dev
 
-# Mac
+# Mac  (xcode-select --install provides the compiler, if not already present)
 brew install cmake zlib
 ```
 
