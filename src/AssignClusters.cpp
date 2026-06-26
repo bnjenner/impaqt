@@ -14,7 +14,7 @@
 /* Traversal Functions */
 
 // Get Next Cloest Gene
-GeneNode* get_closest_gene(const int &t, GeneNode *gene, ClusterNode *clust) {
+GeneNode* get_closest_gene(const int &t, GeneNode *gene, const ClusterNode *clust) {
 	if (gene == nullptr) { return nullptr; }
 	while (t > gene -> get_stop()) {
 		gene = gene -> get_next();
@@ -75,7 +75,7 @@ void resolve_transcript_assignment(ClusterList *list, ClusterNode *node, GeneNod
 /////////////////////////////////////////////////////////////
 /* Overlapper Helper Functions */
 
-int get_read_overlap(const int &a, const int &b, GeneNode *gene) {
+int get_read_overlap(const int &a, const int &b, const GeneNode *gene) {
 
 	int match = 0;
 	bool overlap_a, overlap_b;
@@ -104,7 +104,7 @@ int get_read_overlap(const int &a, const int &b, GeneNode *gene) {
 }
 
 // Check the number of exons that overlap with transcript
-int get_transcript_overlap(const std::vector<int> &transcript, GeneNode *gene) {
+int get_transcript_overlap(const std::vector<int> &transcript, const GeneNode *gene) {
 
 	int matches = 0;
 	int i = 0, j = 0;
@@ -201,7 +201,7 @@ void assign_transcripts_to_genes(ClusterNode *node, GeneNode *prev_gene, Cluster
 }
 
 // Assigning expression of transcripts to genes
-void assign_reads_to_genes(ClusterNode *node, GeneNode *prev_gene, ClusterList *list) {
+void assign_reads_to_genes(const ClusterNode *node, GeneNode *prev_gene, ClusterList *list) {
 
 	GeneNode *gene;
 	GeneNode *best_gene;
