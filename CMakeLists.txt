@@ -105,3 +105,19 @@ target_link_libraries(dbscan_test
     BamTools
 )
 add_test(NAME dbscan_test COMMAND dbscan_test)
+
+
+# Test: assign_test
+add_executable(assign_test
+    ${PROJECT_SOURCE_DIR}/test/AssignClusters_test.cpp
+)
+target_sources(assign_test
+    PRIVATE ${PROJECT_SOURCE_DIR}/src/AssignClusters.cpp
+    ${PROJECT_SOURCE_DIR}/src/ClusterList.cpp
+    ${PROJECT_SOURCE_DIR}/src/utils.cpp
+)
+target_link_libraries(assign_test
+    gtest gtest_main
+    BamTools
+)
+add_test(NAME assign_test COMMAND assign_test)
