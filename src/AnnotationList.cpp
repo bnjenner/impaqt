@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
+#include <stdexcept>
 
 #include "global_args.h"
 #include "AnnotationList.h"
@@ -75,7 +76,7 @@ void AnnotationList::add_line(const std::vector<std::string> &columns) {
 	}
 
 	// If first gene on strand
-	if ((*head) == NULL) {
+	if ((*head) == nullptr) {
 		AnnotationList::set_head(columns);
 
 	} else {
@@ -100,7 +101,7 @@ void AnnotationList::create_gene_list() {
 
 	// Open file
 	std::ifstream infile(AnnotationList::annotation_file);
-	if (!infile) { throw "ERROR: Could not read annotation file."; }
+	if (!infile) { throw std::runtime_error("ERROR: Could not read annotation file."); }
 
 	// Iterate through lines in file
 	std::string col;
@@ -124,7 +125,7 @@ void AnnotationList::create_gene_list() {
 			// if feature id not found
 			if (!AnnotationList::set_feature_id(columns)) {
 				std::cerr << "ERROR: Could not find feature tag in line:\n" << line << "\n";
-				throw "ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.";
+				throw std::runtime_error("ERROR: Could not find feature tag in line of annotation file. Check consistency of formatting.");
 			}
 
 			AnnotationList::add_line(columns);
@@ -140,7 +141,7 @@ void AnnotationList::create_gene_list() {
 void  AnnotationList::print_gene_counts() {
 
 	// Return if empty GTF?
-	if (AnnotationList::pos_head == NULL && AnnotationList::neg_head == NULL) {
+	if (AnnotationList::pos_head == nullptr && AnnotationList::neg_head == nullptr) {
 		std::cerr << "// NOTICE: No genes found in annotation file.\n";
 		return;
 	}
@@ -154,7 +155,7 @@ void  AnnotationList::print_gene_counts() {
 	while (true) {
 
 		// Break When all genes have been exhausted
-		if (prev_neg == NULL && prev_pos == NULL) { break; }
+		if (prev_neg == nullptr && prev_pos == nullptr) { break; }
 
 		// Report Gene and Counts
 		std::cout << node -> GeneNode::get_geneID() << "\t" 

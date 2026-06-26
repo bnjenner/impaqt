@@ -21,9 +21,6 @@ int get_pos_min(const int &index, std::vector<std::vector<int>> &core, std::vect
 // Get Max Position of Identified Cluster
 int get_pos_max(const int &index, std::vector<std::vector<int>> &core, std::vector<int> *vec);
 
-// Swap Int Variables
-void variable_swap(int &a, int &b);
-
 // Checks to see if regions of transcript overlap a gene, also used to overlap transrcipts
 bool check_bounds(const int &a_start, const int &a_stop, const int &b_start, const int &b_stop);
 

@@ -28,7 +28,8 @@ std::vector<int> reverse_and_negate(const std::vector<int> &vec) {
 
 // Reverse Transcripts
 void reverse_transcripts(std::vector<std::vector<int>> &transcripts) {
-	for (int i = 0; i < transcripts.size(); i++) {
+	const int n = transcripts.size();
+	for (int i = 0; i < n; i++) {
 		transcripts[i] = reverse_and_negate(transcripts[i]);
 	}
 	std::sort(transcripts.begin(), transcripts.end(), compare_first_element);
@@ -44,15 +45,6 @@ int get_pos_min(const int &index, std::vector<std::vector<int>> &core, std::vect
 int get_pos_max(const int &index, std::vector<std::vector<int>> &core, std::vector<int> *vec) {
 	std::vector<int>::iterator max_result = std::max_element(core.at(index).begin(), core.at(index).end());
 	return vec -> at(*max_result);
-}
-
-// Swap Int Variables
-void variable_swap(int &a, int &b) {
-	if (a > b) {
-		b = b + a;
-		a = b - a;
-		b = b - a;
-	}
 }
 
 // Checks to see if regions of transcript overlap a gene, also used to overlap transrcipts
@@ -158,9 +150,5 @@ void print_transcripts(const std::vector<std::vector<int>> &transcripts) {
 
 // Check if file exists
 bool file_exists(const std::string& filename) {
-	bool exists = false;
-    std::ifstream file(filename);
-    if (file.is_open()) { exists = true; }
-    file.close();
-    return exists;
+	return std::ifstream(filename).good();
 }

@@ -13,7 +13,8 @@
 // Get Core Points of Transcript
 int get_quant(const std::vector <int> result, const std::vector<std::vector<int>> &init_copy, const std::vector<int> counts) {
 	int core_points = 0;
-	for (int i = 0; i < init_copy.size(); i++) {
+	const int n = init_copy.size();
+	for (int i = 0; i < n; i++) {
 		if (check_containment_strict(init_copy[i], result)) {
 			core_points += counts[i];
 		}
@@ -23,7 +24,8 @@ int get_quant(const std::vector <int> result, const std::vector<std::vector<int>
 
 // Report Unique Transcripts (no overlapping, used for Mitochrondria)
 void report_transcripts(ClusterNode *node, std::vector<std::vector<int>> &result, std::vector<int> &counts) {
-	for (int i = 0; i < result.size(); i++) { node -> add_transcript(result[i], counts[i]); }
+	const int n = result.size();
+	for (int i = 0; i < n; i++) { node -> add_transcript(result[i], counts[i]); }
 }
 
 
@@ -37,7 +39,8 @@ bool overlap_aux(std::vector<std::vector<int>> &transcripts) {
 
 	// Construct containment list
 	bool unique = true;
-	for (int i = 0; i < transcripts.size(); i++) {
+	const int n = transcripts.size();
+	for (int i = 0; i < n; i++) {
 
 		// Set head
 		if (head.indices == 0) {
@@ -51,7 +54,7 @@ bool overlap_aux(std::vector<std::vector<int>> &transcripts) {
 
 		} else { continue; }
 
-		for (int j = i + 1; j < transcripts.size(); j++) {
+		for (int j = i + 1; j < n; j++) {
 
 			// Skip if overlap notpossible
 			if (transcripts[j][0] > curr -> get_back()) { continue; }
@@ -113,8 +116,9 @@ void overlap_clusters(ClusterNode *node, std::vector<std::vector<int>> &transcri
 		counts = {core_points};
 	
 	} else {
-		std::vector<int> new_counts(transcripts.size(), 0);
-		for (int i = 0; i < transcripts.size(); i++) {
+		const int n = transcripts.size();
+		std::vector<int> new_counts(n, 0);
+		for (int i = 0; i < n; i++) {
 			core_points = get_quant(transcripts[i], init_copy, counts);
 			new_counts[i] = core_points;
 		}
@@ -124,16 +128,14 @@ void overlap_clusters(ClusterNode *node, std::vector<std::vector<int>> &transcri
 
 
 // Get Transcript Coordinates
-void get_coordinates(ClusterNode *node, const std::map<std::string, int> &paths,
+void get_coordinates(const std::map<Path, int> &paths,
                      const std::map<int, std::vector<int>> &regions_5, const std::map<int, std::vector<int>> &regions_3,
                      std::vector<std::vector<int>> *transcripts, std::vector<int> *counts) {
 
 	// Get transcript coordinates
 	//	BNJ: 5/31/2025 - Worth mentioning, the tmp_vec should never be more than 4 in length
-	//	BNJ: 6/04/2025 - Man, I should really find a better struct than strings for the paths.
-	//  BNJ: 8/10/2025 - ... Say that again? 
 
-	int index, n; 
+	int index, n;
 
 	for (const auto &p : paths) {
 
@@ -142,20 +144,20 @@ void get_coordinates(ClusterNode *node, const std::map<std::string, int> &paths,
 		std::vector<int> tmp_vec;
 
 		// add 5' region
-		if (p.first[0] != '-') {
-			index = std::stoi(p.first.substr(0, 1));
+		if (p.first.five != -1) {
+			index = p.first.five;
 			tmp_vec.push_back(regions_5.at(index)[0]);
 			tmp_vec.push_back(regions_5.at(index)[1]);
-			if (tmp_vec[0] > tmp_vec[1]) { variable_swap(tmp_vec[0], tmp_vec[1]); } 
+			if (tmp_vec[0] > tmp_vec[1]) { std::swap(tmp_vec[0], tmp_vec[1]); }
 		}
 
 		// add 3' region
-		if (p.first[1] != '-') {
+		if (p.first.three != -1) {
 			n = tmp_vec.size() + 2;
-			index = std::stoi(p.first.substr(1, 1));
+			index = p.first.three;
 			tmp_vec.push_back(regions_3.at(index)[0]);
 			tmp_vec.push_back(regions_3.at(index)[1]);
-			if (tmp_vec[n-2] > tmp_vec[n-1]) { variable_swap(tmp_vec[n-2], tmp_vec[n-1]); } 
+			if (tmp_vec[n-2] > tmp_vec[n-1]) { std::swap(tmp_vec[n-2], tmp_vec[n-1]); }
 		}
 
 		if (tmp_vec.size() > 2) {
@@ -179,52 +181,36 @@ void get_coordinates(ClusterNode *node, const std::map<std::string, int> &paths,
 
 
 // Find all linked DBSCAN clusters
-void get_linked_clusters(ClusterNode *node, std::map<std::string, int> &path_map,
+void get_linked_clusters(ClusterNode *node, std::map<Path, int> &path_map,
                          const std::vector<int> &assign_5, const std::vector<int> &assign_3) {
 
-	std::string path;
+	const int n = node -> get_vec_count();
+	for (int i = 0; i < n; i++) {
 
-	for (int i = 0; i < node -> get_vec_count(); i++) {
+		// Skip points unassigned in both the 5' and 3' DBSCAN
+		if (assign_5.at(i) == -1 && assign_3.at(i) == -1) { continue; }
 
-		path = "";
-
-		// assigned in 5' DBSCAN
-		if (assign_5.at(i) != -1) {
-			path = std::to_string(assign_5.at(i)) + '-';
-			if (assign_3.at(i) != -1) {
-				path.at(1) = std::to_string(assign_3.at(i))[0];
-			}
-
-			// unassigned in 5' DBSCAN
-		} else if (assign_5.at(i) == -1 && assign_3.at(i) != -1) {
-			path = "-" + std::to_string(assign_3.at(i));
-		}
-
-		if (path == "") { continue; }
-		if (path_map.find(path) != path_map.end()) {
-			path_map[path] += 1; // Increment count if path already exists
-		} else {
-			path_map[path] = 1; // Add new path with count of 1
-		}
+		path_map[Path{assign_5.at(i), assign_3.at(i)}] += 1;
 	}
 
-	// Absorb orphan paths
-	int pos;
+	// Absorb orphan paths: a path with only one prime assigned is dropped if
+	// another path uses that same cluster on that prime.
 	for (const auto& p1 : path_map) {
 
 		if (p1.second < 10) { path_map[p1.first] = 0; continue; }
 
-		// if path is orphaned
-		pos = p1.first.find('-');
-		if (pos != std::string::npos) {
-			for (const auto& p2 : path_map) { 
-				if (p1.first == p2.first) { continue; }
+		const bool five_only  = (p1.first.five != -1 && p1.first.three == -1);
+		const bool three_only = (p1.first.five == -1 && p1.first.three != -1);
+		if (!five_only && !three_only) { continue; } // both primes assigned -> not an orphan
 
-				// Check if part of path (ft. tricky bit flip)
-				if (p1.first[!pos] == p2.first[!pos]) {
-					path_map[p1.first] = 0;
-					break;
-				}
+		for (const auto& p2 : path_map) {
+			if (p2.first.five == p1.first.five && p2.first.three == p1.first.three) { continue; }
+
+			const bool shares = five_only ? (p2.first.five == p1.first.five)
+			                              : (p2.first.three == p1.first.three);
+			if (shares) {
+				path_map[p1.first] = 0;
+				break;
 			}
 		}
 	}
@@ -303,14 +289,14 @@ std::vector<int> dbscan(ClusterNode *node, const int &points, const int &min_cou
 		neighbors = get_nearest_neighbors(i, points, queued, indices, adj_vec);
 
 		// If core point
-		if (neighbors.size() >= min_counts) {
+		if ((int)neighbors.size() >= min_counts) {
 
 			visted[i] = true;
 			assign_vec.at(p1) = clust_num;
 			std::vector<int> cluster_points = {adj_vec -> at(p1)};
 
 			int x = 0;
-			while (x < neighbors.size()) {
+			while (x < (int)neighbors.size()) {
 
 				index = neighbors[x];
 				p2 = indices[index];
@@ -336,7 +322,7 @@ std::vector<int> dbscan(ClusterNode *node, const int &points, const int &min_cou
 						sub_neighbors = get_nearest_neighbors(index, points, empty_vec, indices, adj_vec);
 
 						// If also a core point, copy subneighbors into neighbors to also be checked
-						if (sub_neighbors.size() >= min_counts) {
+						if ((int)sub_neighbors.size() >= min_counts) {
 							for (const auto &n : sub_neighbors) {
 								if (!queued[n]) {
 									neighbors.push_back(n);
@@ -369,7 +355,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 	int expr, points, min_counts;
 	int count_threshold = std::max(ImpaqtArguments::Args.min_count, 10);
 
-	std::map<std::string, int> paths;
+	std::map<Path, int> paths;
 	std::vector<int> counts;
 	std::vector<std::vector<int>> transcripts;
 	std::vector<int> assign_vec_5, assign_vec_3;
@@ -377,7 +363,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 
 	ClusterNode *node = cluster -> get_head(strand);
 
-	while (node != NULL) {
+	while (node != nullptr) {
 
 		expr = node -> get_read_count();
 		points = node -> get_vec_count();
@@ -404,7 +390,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				assign_vec_5 = dbscan(node, points, min_counts, regions_5, prime_5);
 				assign_vec_3 = dbscan(node, points, min_counts, regions_3, !prime_5);
 
-			} else {		
+			} else {
 				// If read mitochrondrial genome detected, don't bother loll
 				std::cerr << "//    NOTICE: Density threshold met (" 
 						  << std::fixed << std::setprecision(2) << density << "). Skipping "
@@ -424,7 +410,7 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 				// If clusters were  found
 				get_linked_clusters(node, paths, assign_vec_5, assign_vec_3);
 
-				get_coordinates(node, paths,
+				get_coordinates(paths,
 				                regions_5, regions_3,
 				                &transcripts, &counts);
 
@@ -434,7 +420,8 @@ void identify_transcripts_dbscan(ClusterList *cluster,  const int &strand) {
 					overlap_clusters(node, transcripts, counts);
 
 					// Clean up (close gaps of single clusters not representing splice junctions)
-					for (int i = 0; i < transcripts.size(); i ++) {
+					const int n_trans = transcripts.size();
+					for (int i = 0; i < n_trans; i ++) {
 						if (transcripts[i].size() != 4) { continue; }
 						if (!(node -> contains_junction(transcripts[i][1], transcripts[i][2]))) {
 							transcripts[i] = {transcripts[i][0], transcripts[i][3]};
@@ -458,8 +445,10 @@ void merge_transcripts(ClusterNode *c_node, ClusterNode *n_node) {
 	std::vector<int> counts(c_node -> get_transcript_num(), 0);
 
 	// Populate New Transcript and Count Vecs
-	for (int i = 0; i < c_node -> get_transcript_num(); i++) { counts[i] = (int)(c_node -> get_transcript_expr(i)); }
-	for (int i = 0; i < n_node -> get_transcript_num(); i++) {
+	const int cn = c_node -> get_transcript_num();
+	const int nn = n_node -> get_transcript_num();
+	for (int i = 0; i < cn; i++) { counts[i] = (int)(c_node -> get_transcript_expr(i)); }
+	for (int i = 0; i < nn; i++) {
 		transcripts.push_back(n_node -> get_transcripts() -> at(i));
 		counts.push_back((int)(n_node -> get_transcript_expr(i)));
 	}
@@ -475,16 +464,16 @@ void merge_transcripts(ClusterNode *c_node, ClusterNode *n_node) {
 void collapse_transcripts(ClusterList *cluster, int t_strand) {
 
 	ClusterNode *c_node = cluster -> get_head(t_strand);
-	ClusterNode *n_node = NULL;
+	ClusterNode *n_node = nullptr;
 
-	while (c_node != NULL) {
+	while (c_node != nullptr) {
 
 		// Only Collapse transcripts
 		if (c_node -> get_transcript_num() != 0) {
 
 			n_node = c_node -> get_next();
 
-			while (n_node != NULL) {
+			while (n_node != nullptr) {
 
 				if (n_node -> get_transcript_num() != 0) {
 

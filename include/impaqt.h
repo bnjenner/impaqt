@@ -1,4 +1,6 @@
+#include <memory>
 #include <unordered_map>
+#include <stdexcept>
 #include <api/BamAux.h>
 #include <api/BamReader.h>
 
@@ -19,7 +21,7 @@ private:
 	BamTools::BamAlignment alignment;
 
 	// Files and Data Structure
-	ClusterList* cluster_list;
+	std::unique_ptr<ClusterList> cluster_list;
 	static AnnotationList annotation;
 	static std::string alignment_file_name;
 	static std::string index_file_name;
@@ -73,7 +75,7 @@ public:
 
 	// Get Data Structures
 	AnnotationList* get_annotation() { return &annotation; }
-	ClusterList* get_clusters() { return cluster_list; }
+	ClusterList* get_clusters() { return cluster_list.get(); }
 
 	// Get Chromosome Info
 	bool is_ignored() { return ignore; }
@@ -90,11 +92,11 @@ public:
 	void open_alignment_file() {
 		if (!inFile.Open(alignment_file_name)) {
 			std::cerr << "ERROR: Could not read alignment file: " << alignment_file_name << "\n";
-			throw "ERROR: Make sure alignment file exists.";
+			throw std::runtime_error("ERROR: Make sure alignment file exists.");
 		}
 		if (!inFile.OpenIndex(index_file_name)) {
 			std::cerr << "ERROR: Could not read index file: " << index_file_name << "\n";
-			throw "ERROR: Make sure index is present in BAM file location.";
+			throw std::runtime_error("ERROR: Make sure index is present in BAM file location.");
 		}
 	}
 
@@ -109,11 +111,11 @@ public:
 			std::string sortOrder = head.SortOrder;
 			if (sortOrder.compare("coordinate") != 0) {
 				std::cerr << "ERROR: Sorted alignment file required.\n";
-				throw "ERROR: Could not read alignment file.";
+				throw std::runtime_error("ERROR: Could not read alignment file.");
 			}
 		} else {
 			std::cerr << "ERROR: BAM file has no @HD SO:<SortOrder> attribute. Impossible to determine sort order.\n";
-			throw "ERROR: Could determine sort status. Please ensure file is sorted.";
+			throw std::runtime_error("ERROR: Could determine sort status. Please ensure file is sorted.");
 		}
 
 		// Generate Contig Map (contig indicies -> contig name)
@@ -139,11 +141,11 @@ public:
 
 	void create_clusters() {
 
-		cluster_list = new ClusterList(contig_index, contig_name, contig_length);
+		cluster_list = std::make_unique<ClusterList>(contig_index, contig_name, contig_length);
 
 		if (!inFile.Jump(contig_index)) {
 			std::cerr << "//ERROR: Could not jump to region: " << contig_name << "\n";
-			throw "ERROR: Could not jump to region. Make sure BAM header is correct.";
+			throw std::runtime_error("ERROR: Could not jump to region. Make sure BAM header is correct.");
 		}
 
 		// If failed to create clusters, flag to ignore
@@ -159,14 +161,14 @@ public:
 	void find_transcripts() {
 		if (ignore) { return; }
 		int t_strand = 0; // Forward
-		identify_transcripts(cluster_list, t_strand);
-		identify_transcripts(cluster_list, !t_strand);
+		identify_transcripts(cluster_list.get(), t_strand);
+		identify_transcripts(cluster_list.get(), !t_strand);
 	}
 
 	void assign_transcripts() {
 		int t_strand = 0; // Forward
-		assign_to_genes(annotation, cluster_list, contig_name, t_strand);
-		assign_to_genes(annotation, cluster_list, contig_name, !t_strand);
+		assign_to_genes(annotation, cluster_list.get(), contig_name, t_strand);
+		assign_to_genes(annotation, cluster_list.get(), contig_name, !t_strand);
 	}
 
 	/////////////////////////////////////////////////////////////

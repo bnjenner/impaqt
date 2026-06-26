@@ -22,10 +22,10 @@ private:
 	int window_size;
 
 	// Links
-	ClusterNode *pos_head = NULL;
-	ClusterNode *pos_tail = NULL;
-	ClusterNode *neg_head = NULL;
-	ClusterNode *neg_tail = NULL;
+	ClusterNode *pos_head = nullptr;
+	ClusterNode *pos_tail = nullptr;
+	ClusterNode *neg_head = nullptr;
+	ClusterNode *neg_tail = nullptr;
 
 	// Summary
 	long double assigned_reads = 0.0;         // Assigned Transcript counts
@@ -41,7 +41,6 @@ private:
 	size_t total_reads = 0;
 	size_t passing_pos_reads = 0;             // Reads passing read check on +
 	size_t passing_neg_reads = 0;             // Reads passing read check on -
-	size_t transcript_num = 0;
 
 	/////////////////////////////////////////////////////////////
 	/* Private Node Methods */
@@ -67,14 +66,14 @@ public:
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
-	std::string get_contig_name() { return contig_name; }
+	const std::string& get_contig_name() const { return contig_name; }
 
 	// Gets
-	ClusterNode* get_head(int t_strand) {
+	ClusterNode* get_head(int t_strand) const {
 		if (t_strand == 0) { return pos_head; }
 		return neg_head;
 	}
-	ClusterNode* get_tail(int t_strand) {
+	ClusterNode* get_tail(int t_strand) const {
 		if (t_strand == 0) { return pos_tail; }
 		return neg_tail;
 	}
@@ -96,10 +95,10 @@ public:
 	}
 
 	// Get First cluster by position (just trust me on this one)
-	ClusterNode* get_first_cluster(bool &strand) {
-		if (pos_head == NULL && neg_head != NULL) {
+	ClusterNode* get_first_cluster(bool &strand) const {
+		if (pos_head == nullptr && neg_head != nullptr) {
 			strand = 1; return neg_head;
-		} else if (neg_head == NULL && pos_head != NULL) {
+		} else if (neg_head == nullptr && pos_head != nullptr) {
 			strand = 0; return pos_head;
 		} else {
 			if (pos_head -> get_start() <= neg_head -> get_start()) {
@@ -111,14 +110,14 @@ public:
 	}
 
 	// Get Next cluster by position
-	ClusterNode* get_next_cluster(ClusterNode *&c_node, ClusterNode *&a_prev, ClusterNode *&b_prev, bool &strand) {
+	ClusterNode* get_next_cluster(ClusterNode *&c_node, ClusterNode *&a_prev, ClusterNode *&b_prev, bool &strand) const {
 		
 		a_prev = c_node -> get_next();
-		if (a_prev == NULL) {
+		if (a_prev == nullptr) {
 			c_node = b_prev; strand = !strand;
 
 			// If oppostie strand exhausted or this strand first, continue
-		} else if (b_prev == NULL || a_prev -> get_start() <= b_prev -> get_start()) {
+		} else if (b_prev == nullptr || a_prev -> get_start() <= b_prev -> get_start()) {
 			c_node = a_prev;
 
 			// If positives are after negatives, switch strands
@@ -128,28 +127,29 @@ public:
 	}
 
 	// Get Reads Stats
-	long double get_assigned_reads() { return assigned_reads + (long double)assigned_singles; }
-	long double get_unassigned_reads() { return unassigned_reads + (long double)unassigned_singles; }
-	long double get_ambiguous_reads() { return ambiguous_reads + (long double)ambiguous_singles; }
-	size_t get_multimapped_reads() { return multimapped_reads; }
-	size_t get_low_quality_reads() { return low_quality_reads; }
-	size_t get_total_reads() { return total_reads; }
-	size_t get_passing_reads(const int &strand) {
+	long double get_assigned_reads() const { return assigned_reads + (long double)assigned_singles; }
+	long double get_unassigned_reads() const { return unassigned_reads + (long double)unassigned_singles; }
+	long double get_ambiguous_reads() const { return ambiguous_reads + (long double)ambiguous_singles; }
+	size_t get_multimapped_reads() const { return multimapped_reads; }
+	size_t get_low_quality_reads() const { return low_quality_reads; }
+	size_t get_total_reads() const { return total_reads; }
+	size_t get_passing_reads(const int &strand) const {
 		if (strand == 0) { return passing_pos_reads; }
 		return passing_neg_reads;
 	}
 
 	// Get Transcript Number
-	size_t get_transcript_num() {
+	size_t get_transcript_num() const {
+		size_t total = 0;
 		ClusterNode *node = pos_head;
 		for (int i = 0; i < 2; i ++) {
 			if (i != 0) { node = neg_head; }
-			while (node != NULL) {
-				if (!(node -> is_skipped())) { transcript_num += node -> get_transcript_num(); }
+			while (node != nullptr) {
+				if (!(node -> is_skipped())) { total += node -> get_transcript_num(); }
 				node = node -> get_next();
 			}
 		}
-		return transcript_num;
+		return total;
 	}
 
 	/////////////////////////////////////////////////////////////
@@ -171,7 +171,7 @@ public:
 
 	// Find Nearest Region in List
 	void jump_to_cluster(ClusterNode *&node, const int &pos) {
-		while (node -> get_next() != NULL) {
+		while (node -> get_next() != nullptr) {
 			if (!(node -> read_contained(pos))) {
 				node = node -> get_next();
 			} else { break; }
@@ -191,7 +191,7 @@ public:
 	/* Functions for Testing Suite */
 	void print_clusters(int t_strand) {
 		ClusterNode *node = get_head(t_strand);
-		while (node != NULL) {
+		while (node != nullptr) {
 			std::cout << node -> get_contig_name() << "\t"
 			          << node -> get_start() << "\t" << node -> get_stop() << "\t"
 			          << node -> get_read_count() << "\n";
@@ -202,7 +202,7 @@ public:
 	std::string string_clusters(int t_strand) {
 		std::stringstream ss;
 		ClusterNode *node = get_head(t_strand);
-		while (node != NULL) {
+		while (node != nullptr) {
 			ss << node -> get_contig_name() << "\t"
 			   << node -> get_start() << "\t" << node -> get_stop() << "\t"
 			   << node -> get_read_count() << "\n";

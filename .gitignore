@@ -1,4 +1,7 @@
 docs/impaqt_derivation*
 build/
+build-asan/
 impaqt.sublime*
 notes.txt
+*.code-workspace
+temp/

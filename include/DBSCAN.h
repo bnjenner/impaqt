@@ -3,6 +3,18 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* DBSCAN and Related Functions */
 
+// Links a 5' DBSCAN cluster to a 3' DBSCAN cluster. -1 means that prime is
+// unassigned. Ordered by {five, three} with -1 sorting first, which matches the
+// iteration order of the 2-char-string keys this replaced.
+struct Path {
+	int five = -1;
+	int three = -1;
+	bool operator<(const Path &o) const {
+		if (five != o.five) { return five < o.five; }
+		return three < o.three;
+	}
+};
+
 // Check if transcripts overlap / are contained in another transcript
 bool check_subset(const std::vector<int>& a, const std::vector<int>& b);
 
@@ -19,12 +31,12 @@ bool overlap_aux(std::vector<std::vector<int>> &transcripts);
 void overlap_clusters(ClusterNode *curr_node, std::vector<std::vector<int>> &transcripts, std::vector<int> &counts);
 
 /// Get Transcript Coordinates
-void get_coordinates(ClusterNode *curr_node, const std::map<std::string, int> &paths,
+void get_coordinates(const std::map<Path, int> &paths,
                      const std::map<int, std::vector<int>> &regions_5, const std::map<int, std::vector<int>> &regions_3,
                      std::vector<std::vector<int>> *transcripts, std::vector<int> *counts);
 
 // Find all linked DBSCAN clusters
-void get_linked_clusters(ClusterNode *curr_node, std::map<std::string, int> &path_map,
+void get_linked_clusters(ClusterNode *curr_node, std::map<Path, int> &path_map,
                          const std::vector<int> &assign_5, const std::vector<int> &assign_3);
 
 // Get Nearest neighbors for Indices in DBSCAN

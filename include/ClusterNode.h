@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "global_args.h"
 #include "utils.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,8 +34,8 @@ private:
 	std::vector<int> junctions;                        // splice junctions (determined by alignments)
 
 	// Links
-	ClusterNode *next = NULL;
-	ClusterNode *prev = NULL;
+	ClusterNode *next = nullptr;
+	ClusterNode *prev = nullptr;
 
 	// Transcript Results
 	size_t transcript_num = 0;                         // number of transcripts identified
@@ -58,9 +59,9 @@ public:
 		this -> strand = strand;
 		this -> contig_index = contig_index;
 		this -> contig_name = contig_name;
-		five_vec.resize(1000, 0);
-		three_vec.resize(1000, 0);
-		index_vec.resize(1000, 0);
+		five_vec.reserve(1000);
+		three_vec.reserve(1000);
+		index_vec.reserve(1000);
 	}
 
 	// For combined Nodes 
@@ -100,26 +101,26 @@ public:
 	}
 
 	// Destroy
-	~ClusterNode() { next = NULL; prev = NULL; }
+	~ClusterNode() { next = nullptr; prev = nullptr; }
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
-	int get_contig_index() { return contig_index; }
-	int get_strand() { return strand; }
-	int get_start() { return start; }
-	int get_stop() { return stop; }
+	int get_contig_index() const { return contig_index; }
+	int get_strand() const { return strand; }
+	int get_start() const { return start; }
+	int get_stop() const { return stop; }
 
-	std::string get_contig_name() { return contig_name; }
-	std::string get_headID() { return headID; }
+	const std::string& get_contig_name() const { return contig_name; }
+	const std::string& get_headID() const { return headID; }
 
-	size_t get_read_count() { return read_count; }
-	size_t get_vec_count() { return vec_count; }
+	size_t get_read_count() const { return read_count; }
+	size_t get_vec_count() const { return vec_count; }
 
-	std::vector<int> get_five_vec() { return five_vec; }
-	std::vector<int> get_three_vec() { return three_vec; }
-	std::vector<int> get_junct_vec() { return junctions; }
-	std::vector<int> get_index_vec() { return index_vec; }
+	const std::vector<int>& get_five_vec() const { return five_vec; }
+	const std::vector<int>& get_three_vec() const { return three_vec; }
+	const std::vector<int>& get_junct_vec() const { return junctions; }
+	const std::vector<int>& get_index_vec() const { return index_vec; }
 	std::vector<int>* get_five_ref() { return &five_vec; }
 	std::vector<int>* get_three_ref() { return &three_vec; }
 	std::vector<int>* get_index_ref() { return &index_vec; }
@@ -133,15 +134,15 @@ public:
 		total_core_points = 0;
 	}
 
-	size_t get_transcript_num() { return transcript_num; }
+	size_t get_transcript_num() const { return transcript_num; }
 	std::vector<std::vector<int>>* get_transcripts() { return &transcript_vec; }
-	std::vector<long double> get_transexpr_vec() { return transcript_expression; }
+	std::vector<long double> get_transexpr_vec() const { return transcript_expression; }
 
-	int get_transcript_start() {
+	int get_transcript_start() const {
 		if (transcript_vec.empty()) { return -1; }
 		return transcript_vec[0][0];
 	}
-	int get_transcript_stop() {
+	int get_transcript_stop() const {
 		if (transcript_vec.empty()) { return -1; }
 		int last = transcript_vec[0].back();
 		for (const auto &t: transcript_vec) {
@@ -149,19 +150,19 @@ public:
 		}
 		return last;
 	}
-	long double get_transcript_expr(const int &i) {
-		if (transcript_expression.empty() || i < 0 || i >= transcript_expression.size()) {
-			return -1.0; 
+	long double get_transcript_expr(const int &i) const {
+		if (transcript_expression.empty() || i < 0 || i >= (int)transcript_expression.size()) {
+			return -1.0;
 		}
 		return transcript_expression.at(i);
 	}
 
-	ClusterNode* get_next() { return next; }
-	ClusterNode* get_prev() { return prev; }
+	ClusterNode* get_next() const { return next; }
+	ClusterNode* get_prev() const { return prev; }
 
-	bool is_skipped() { return skip; }
-	bool read_contained(const int pos) { return check_point_overlap(pos, this -> get_start(), this -> get_stop()); }
-	bool contains_junction(const int &a, const int &b) {
+	bool is_skipped() const { return skip; }
+	bool read_contained(const int pos) const { return check_point_overlap(pos, this -> get_start(), this -> get_stop()); }
+	bool contains_junction(const int &a, const int &b) const {
 		for (const auto &j : junctions) {
 			if (j >= a && j <= b) {
 				return true;
@@ -196,30 +197,21 @@ public:
 	// Add alignment to cluster
 	void add_alignment(const std::vector<int> &positions, const std::vector<int> &junctions) {
 
-		// Resize count vecs if necessary
-		int n = positions.size();
-		for (int i = 1; i <= n; i++) {
-			if ((vec_count + i) % 1000 == 0) { 
-				five_vec.resize(five_vec.size() + 1000, 0);
-				three_vec.resize(three_vec.size() + 1000, 0);
-				index_vec.resize(index_vec.size() + 1000, 0);
-				break;
-			}
-		}
+		const int n = positions.size();
 
-		// Add positions to 3 and 5 vec
+		// Add positions to 5' and 3' vecs (amortized growth via push_back)
 		for (int i = 0; i < n; i++) {
 			if (i % 2 == 0) {
-				five_vec.at(vec_count) = positions[i];
-				index_vec.at(vec_count) = read_count; // Store index for sorting
+				five_vec.push_back(positions[i]);
+				index_vec.push_back(read_count); // Store index for sorting
 			} else {
-				three_vec.at(vec_count) = positions[i];
+				three_vec.push_back(positions[i]);
 				vec_count += 1;
 			}
 		}
 
-		for (int i = 0; i < junctions.size(); i++) { 
-			this -> junctions.push_back(junctions[i]);
+		for (const int junction : junctions) {
+			this -> junctions.push_back(junction);
 		}
 
 		read_count += 1;

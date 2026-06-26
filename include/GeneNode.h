@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils.h"
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Gene Node Class (node in a doubly linked list) */
 
@@ -18,17 +20,11 @@ private:
 	std::vector<int> exon_vec = {0, 0};          // vector for bounds
 
 	// Links
-	GeneNode *next = NULL;                       // next ClusterNode
-	GeneNode *prev = NULL;                       // pevsious ClusterNode
+	GeneNode *next = nullptr;                       // next ClusterNode
+	GeneNode *prev = nullptr;                       // pevsious ClusterNode
 
 	/////////////////////////////////////////////////////////////
 	/* Private Gene Functions */
-
-	// If two exons overlap
-	bool overlap(const int &e1, const int &e2, const int &t1, const int &t2) {
-		if (e1 > t2 || e2 < t1) { return false; }
-		return true;
-	}
 
 	// Insert exon
 	void insert_exon(const int &t1, const int &t2) {
@@ -109,26 +105,26 @@ public:
 	}
 
 	// Destroy
-	~GeneNode() { next = NULL; prev = NULL; }
+	~GeneNode() { next = nullptr; prev = nullptr; }
 
 	/////////////////////////////////////////////////////////////
 	/* Get Functions */
 
-	std::string get_chrom() { return chrom; }
-	std::string get_geneID() { return geneID; }
+	const std::string& get_chrom() const { return chrom; }
+	const std::string& get_geneID() const { return geneID; }
 	
-	int get_strand() { return strand; }
-	int get_start() { return start; }
-	int get_stop() { return stop; }
-	int get_exon_num() { return exons; }
-	
-	float get_read_count() { return read_count; }
+	int get_strand() const { return strand; }
+	int get_start() const { return start; }
+	int get_stop() const { return stop; }
+	int get_exon_num() const { return exons; }
 
-	std::vector<int> get_exon_vec() { return exon_vec; }
+	float get_read_count() const { return read_count; }
+
+	const std::vector<int>& get_exon_vec() const { return exon_vec; }
 	std::vector<int>* get_exon_ref() { return &exon_vec; }
 
-	GeneNode* get_next() { return next; }
-	GeneNode* get_prev() { return prev; }
+	GeneNode* get_next() const { return next; }
+	GeneNode* get_prev() const { return prev; }
 
 	/////////////////////////////////////////////////////////////
 	/* Set functions */
@@ -150,7 +146,7 @@ public:
 		for (int i = 0; i < n; i++) {
 
 			// If intersection
-			if (overlap(exon_vec[(2*i)], exon_vec[(2*i)+1], t_start, t_stop)) {
+			if (check_bounds(exon_vec[(2*i)], exon_vec[(2*i)+1], t_start, t_stop)) {
 				
 				exon_vec[(2*i)] = std::min(exon_vec[(2*i)], t_start);
 				exon_vec[(2*i)+1] = std::max(exon_vec[(2*i)+1], t_stop);

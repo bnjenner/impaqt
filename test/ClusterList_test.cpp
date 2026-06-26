@@ -124,4 +124,13 @@ TEST_F(impactTest, BasicCollapse) {
    ASSERT_EQ(test_process -> get_clusters() -> string_clusters(1), answer);
 };
 
+// Test 4: regression for the delete_list() null-head crash.
+// A list with no reads on a strand leaves that head null; tearing it down must
+// not dereference a null node. Pre-fix this segfaulted in delete_list().
+TEST_F(impactTest, DestroyEmptyList) {
+   { ClusterList empty_list(0, "chr1", 1000); }  // both heads null; destructs here
+   { ClusterList default_list; }                 // default-constructed, also empty
+   SUCCEED();
+};
+
 

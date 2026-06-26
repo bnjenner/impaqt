@@ -48,7 +48,7 @@ public:
 
    ClusterNode *node;
 
-   static std::map<std::string, int> paths;
+   static std::map<Path, int> paths;
    static std::vector<int> counts;
    static std::vector<std::vector<int>> transcripts;
    static std::vector<int> assign_vec_5, assign_vec_3;
@@ -57,7 +57,7 @@ public:
 };
 
 
-std::map<std::string, int> impactTest::paths;
+std::map<Path, int> impactTest::paths;
 std::vector<int> impactTest::counts;
 std::vector<std::vector<int>> impactTest::transcripts;
 std::vector<int> impactTest::assign_vec_5; 
@@ -108,7 +108,7 @@ TEST_F(impactTest, DBSCAN) {
 TEST_F(impactTest, GetCoordinates) {
 
    get_linked_clusters(node, paths, assign_vec_5, assign_vec_3);
-   get_coordinates(node, paths,
+   get_coordinates(paths,
                    regions_5, regions_3,
                    &transcripts, &counts);
 
@@ -126,10 +126,57 @@ TEST_F(impactTest, OverlapTranscripts) {
    overlap_clusters(node, transcripts, counts);
    report_transcripts(node, transcripts, counts);
 
-   std::string result = ""; 
+   std::string result = "";
    for (const auto &p : transcripts) {
       for (const auto &pos : p) { result += std::to_string(pos) + ","; }
    }
 
    ASSERT_EQ(result, "4959707,4959824,4960962,4961094,4962137,4962291,");
+};
+
+// Test 3: regression for the >=10 cluster-index path bug.
+//
+// The old path key was a 2-char string: the producer did path = to_string(5') + '-'
+// then path.at(1) = to_string(3')[0], and the consumer read substr(0,1)/substr(1,1).
+// So a point linking 5' cluster 1 -> 3' cluster 10 was encoded "1-" then "11",
+// colliding with a genuine 5'=1 -> 3'=1 link and silently dropping the real linkage.
+// struct Path keys both as distinct integer pairs. This pins that fix.
+TEST_F(impactTest, LargeClusterIndexPaths) {
+
+   // A node whose only role is to report vec_count as the loop bound.
+   ClusterNode big_node;
+   std::vector<int> a5, a3;
+
+   // 12 points linking 5' cluster 1 -> 3' cluster 1  (both single-digit)
+   // 12 points linking 5' cluster 1 -> 3' cluster 10 (double-digit 3')
+   // Under the old encoding both collapsed to "11"; they must stay distinct now.
+   for (int i = 0; i < 12; i++) { a5.push_back(1); a3.push_back(1);  }
+   for (int i = 0; i < 12; i++) { a5.push_back(1); a3.push_back(10); }
+   big_node.update_vec_counts(a5.size());
+
+   std::map<Path, int> local_paths;
+   get_linked_clusters(&big_node, local_paths, a5, a3);
+
+   // Two distinct surviving paths (each count 12 >= the threshold of 10),
+   // not one merged "11" entry of 24.
+   ASSERT_EQ(local_paths.size(), (size_t)2);
+   ASSERT_EQ(local_paths[(Path{1, 1})],  12);
+   ASSERT_EQ(local_paths[(Path{1, 10})], 12);
+
+   std::map<int, std::vector<int>> r5, r3;
+   r5[1]  = {1000, 1100};
+   r3[1]  = {5000, 5100};
+   r3[10] = {8000, 8100};   // would be read as r3[1] under the old substr(1,1) bug
+
+   std::vector<std::vector<int>> local_transcripts;
+   std::vector<int> local_counts;
+   get_coordinates(local_paths, r5, r3, &local_transcripts, &local_counts);
+
+   // Path{1,1} sorts before Path{1,10}; each keeps its own 3' region.
+   ASSERT_EQ(local_transcripts.size(), (size_t)2);
+   std::string result = "";
+   for (const auto &p : local_transcripts) {
+      for (const auto &pos : p) { result += std::to_string(pos) + ","; }
+   }
+   ASSERT_EQ(result, "1000,1100,5000,5100,1000,1100,8000,8100,");
 };

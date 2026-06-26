@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <vector>
 #include <thread>
@@ -30,13 +31,14 @@ bool MAIN_THREAD = false;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* IMPAQT */
 
-int main(int argc, char const ** argv) {
+int run_impaqt(int argc, char const ** argv) {
 
     auto start = std::chrono::high_resolution_clock::now();
 
     // Parse arguments
-    seqan::ArgumentParser::ParseResult res = argparse(argc, argv);
-    if (res != seqan::ArgumentParser::PARSE_OK) { return res; }
+    ParseStatus res = argparse(argc, argv);
+    if (res == ParseStatus::Error) { return 1; }
+    if (res == ParseStatus::Done) { return 0; }  // --help / --version printed
 
     // Welcome!
     std::cerr << "//Impaqt\n";
@@ -45,7 +47,8 @@ int main(int argc, char const ** argv) {
     // Set Up Impaqt Threads
     const int init_thread = 0;
     std::cerr << "//    Alignment File.....\n";
-    std::vector<Impaqt*> processes = {new Impaqt(init_thread)};
+    std::vector<std::unique_ptr<Impaqt>> processes;
+    processes.emplace_back(std::make_unique<Impaqt>(init_thread));
     processes[init_thread] -> open_alignment_file();
     processes[init_thread] -> set_chrom_order();
 
@@ -58,10 +61,10 @@ int main(int argc, char const ** argv) {
 
    
     // Multithreading Initialization
-    size_t n = processes[init_thread] -> get_chrom_num();
+    int n = processes[init_thread] -> get_chrom_num();
     if (n > 1) {
         processes.reserve(n);
-        for (int i = 1; i < n; i++) { processes.emplace_back(new Impaqt(i)); }
+        for (int i = 1; i < n; i++) { processes.emplace_back(std::make_unique<Impaqt>(i)); }
     }
 
     // Launch Threads
@@ -123,7 +126,6 @@ int main(int argc, char const ** argv) {
             total_low_quality += processes[i] -> get_low_quality_reads();
             total_reads += processes[i] -> get_total_reads();
             total_transcripts += processes[i] -> get_transcript_num();
-            delete processes[i];
         }
 
         std::cout << "//assigned\t" << std::fixed << std::setprecision(2) << total_assigned << "\n"
@@ -132,7 +134,7 @@ int main(int argc, char const ** argv) {
                   << "//multimapping\t" << total_multimapping << "\n"
                   << "//low_quality\t" << total_low_quality << "\n"
                   << "//total\t" << total_reads << "\n"
-                  << "//transcripts\t" << total_transcripts << std::endl;
+                  << "//transcripts\t" << total_transcripts << "\n";
     }
 
     // The longest line of "get the time" I have ever seen.
@@ -141,7 +143,21 @@ int main(int argc, char const ** argv) {
 
     // Say goodbye :)
     std::cerr << "//Program: Complete!\n";
-    std::cerr << "//Runtime: " << duration.count() << " seconds" << std::endl;
+    std::cerr << "//Runtime: " << duration.count() << " seconds\n";
 
     return 0;
+}
+
+
+int main(int argc, char const ** argv) {
+    // NOTE: exceptions thrown inside worker threads (via launch()) cannot be
+    // caught here; for those the default terminate handler still prints the
+    // std::exception message. This catches the main-thread paths (argument
+    // parsing, file opening, sort-order checks, annotation loading).
+    try {
+        return run_impaqt(argc, argv);
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << "\n";
+        return 1;
+    }
 }
