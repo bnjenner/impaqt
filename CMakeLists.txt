@@ -28,16 +28,29 @@ find_package(Threads REQUIRED)
 include(cmake/gtest.cmake)
 message(STATUS "GTest include dirs: ${GTEST_INCLUDE_DIRS}")
 
+# BamTools via FetchContent, pinned to v2.5.3 by immutable commit SHA.
+# A full SHA (not a bare tag) can't be force-moved upstream, so builds are
+# reproducible. v2.5.3 already carries the std::-qualified C-function fix that the
+# previously-vendored copy was hand-patched for, so it builds clean under C++17.
+include(FetchContent)
+FetchContent_Declare(
+    bamtools
+    GIT_REPOSITORY https://github.com/pezmaster31/bamtools.git
+    GIT_TAG 7e5c183cdf37a6ab216402b26c07296807416472  # v2.5.3
+    SYSTEM  # treat bamtools headers as system (suppress its warnings under -Wall -Wextra)
+)
+# Full MakeAvailable: in 2.5.3 the BamTools library target lives in src/ (not
+# src/api), so we build the project as upstream intends. It also builds the
+# bamtools toolkit + registers 2 of its own ctest cases (bamtools_help/_stats);
+# both pass and serve as a sanity check that the pinned dep itself works.
+FetchContent_MakeAvailable(bamtools)
+
 # Include paths
 include_directories(SYSTEM
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/ext/bamtools/src
+    ${bamtools_SOURCE_DIR}/src
     ${GTEST_INCLUDE_DIRS}
 )
-
-# BamTools: Prevent installation
-set(BAMTOOLS_SUBPROJECT ON)
-add_subdirectory(${PROJECT_SOURCE_DIR}/ext/bamtools/src/api EXCLUDE_FROM_ALL)
 
 # Executable
 add_executable(impaqt ${IMPAQT_FILES})
