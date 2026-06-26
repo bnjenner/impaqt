@@ -11,10 +11,10 @@ linux-64, linux-aarch64, osx-64, and osx-arm64 (bioconda's CI builds each).
   from the network during the build.
 
 ## Before submitting
-1. **Cut/confirm the release** the recipe points at (`v1.1.0` here) and fill in the
-   tarball `sha256` in `meta.yaml`:
+1. **Release**: pinned to `v1.2.0` with its tarball `sha256` already filled in
+   `meta.yaml`. To re-point at a future release, bump `version` and recompute:
    ```
-   curl -sL https://github.com/bnjenner/impaqt/archive/refs/tags/v1.1.0.tar.gz | sha256sum
+   curl -sL https://github.com/bnjenner/impaqt/archive/refs/tags/v<VER>.tar.gz | sha256sum
    ```
 2. (Recommended) test the recipe locally:
    ```

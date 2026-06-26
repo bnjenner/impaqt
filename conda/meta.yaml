@@ -1,5 +1,5 @@
 {% set name = "impaqt" %}
-{% set version = "1.1.0" %}
+{% set version = "1.2.0" %}
 
 package:
   name: {{ name|lower }}
@@ -7,9 +7,7 @@ package:
 
 source:
   url: https://github.com/bnjenner/impaqt/archive/refs/tags/v{{ version }}.tar.gz
-  # TODO: fill in. Get it with:
-  #   curl -sL https://github.com/bnjenner/impaqt/archive/refs/tags/v1.1.0.tar.gz | sha256sum
-  sha256: 0000000000000000000000000000000000000000000000000000000000000000
+  sha256: 0d86c0b629cf798030f34d499eb574500bd029d2e1b25d73156efd18e4666c87
 
 build:
   number: 0
