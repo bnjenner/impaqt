@@ -59,9 +59,9 @@ public:
 		this -> strand = strand;
 		this -> contig_index = contig_index;
 		this -> contig_name = contig_name;
-		five_vec.resize(1000, 0);
-		three_vec.resize(1000, 0);
-		index_vec.resize(1000, 0);
+		five_vec.reserve(1000);
+		three_vec.reserve(1000);
+		index_vec.reserve(1000);
 	}
 
 	// For combined Nodes 
@@ -197,30 +197,21 @@ public:
 	// Add alignment to cluster
 	void add_alignment(const std::vector<int> &positions, const std::vector<int> &junctions) {
 
-		// Resize count vecs if necessary
-		int n = positions.size();
-		for (int i = 1; i <= n; i++) {
-			if ((vec_count + i) % 1000 == 0) { 
-				five_vec.resize(five_vec.size() + 1000, 0);
-				three_vec.resize(three_vec.size() + 1000, 0);
-				index_vec.resize(index_vec.size() + 1000, 0);
-				break;
-			}
-		}
+		const int n = positions.size();
 
-		// Add positions to 3 and 5 vec
+		// Add positions to 5' and 3' vecs (amortized growth via push_back)
 		for (int i = 0; i < n; i++) {
 			if (i % 2 == 0) {
-				five_vec.at(vec_count) = positions[i];
-				index_vec.at(vec_count) = read_count; // Store index for sorting
+				five_vec.push_back(positions[i]);
+				index_vec.push_back(read_count); // Store index for sorting
 			} else {
-				three_vec.at(vec_count) = positions[i];
+				three_vec.push_back(positions[i]);
 				vec_count += 1;
 			}
 		}
 
-		for (int i = 0; i < junctions.size(); i++) { 
-			this -> junctions.push_back(junctions[i]);
+		for (const int junction : junctions) {
+			this -> junctions.push_back(junction);
 		}
 
 		read_count += 1;
