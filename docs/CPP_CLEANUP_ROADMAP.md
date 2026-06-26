@@ -66,20 +66,26 @@ behavior preserved unless a change is explicitly a bug fix.
 | Item | Notes | Effort | Risk |
 |---|---|---|---|
 | **RAII for the linked lists** | **Decided: leave as-is.** `ClusterList`/`AnnotationList` keep raw `new`/`delete`. The ASan audit proved the teardown + `merge_nodes` are leak/UAF/double-free-clean on real data; a `unique_ptr<next>` rewrite trades that for recursion + merge-ownership churn (see the `merge_with_next` discussion). Revisit only if the lists ever outlive a single process. | — | — |
-| **Deeper const-threading** | Getters are `const` now; read-only free funcs (`get_read_overlap`, `get_transcript_overlap`, `assign_*`, etc.) still take non-`const` `GeneNode*`/`ClusterNode*`. Thread `const` through. Now covered by `assign_test`. | Medium | Low, but ripples through signatures. |
+| **Deeper const-threading** | ✅ **done** `b1e9311`. `get_read_overlap`/`get_transcript_overlap` → `const GeneNode*`; `get_closest_gene` clust + `assign_reads_to_genes` node → `const ClusterNode*`. Mutating funcs correctly left non-const. Covered by `assign_test`. | — | — |
 
 ---
 
 ## 📋 Separately tracked (raised during the session)
 
 ### Dependency stack (large)
-Replace the vendored `ext/` copies (~1200 committed files).
-- **Drop seqan entirely.** Used only in `include/ArgParser.h` for `seqan::ArgumentParser`
-  + a file-extension helper. Replace the arg parser (hand-rolled, or CLI11 / cxxopts).
-  Must re-implement: positional BAM arg; options `-t -a -s -n -q -w -m -p -e -d -f -u -i -o`
-  with their current defaults; `.bam`/`.gtf`/`.gff` extension checks.
-- **bamtools**: integrate via FetchContent or submodule; likely **update to a recent release**.
-- **googletest**: FetchContent/submodule.
+Replace the vendored `ext/` copies. Progress: **seqan dropped** (`5efd998`) →
+ext/ tracked files 1201 → 471.
+- ✅ **Drop seqan** — done `5efd998`. Was used only for CLI parsing; replaced
+  `ArgParser.h` with a hand-rolled parser (no new dep), `argparse` now returns a
+  `ParseStatus` enum. All options/defaults/checks preserved; byte-identical output.
+- ⏳ **bamtools** (NEXT) — currently vendored (11 MB) and built via
+  `add_subdirectory(ext/bamtools/src/api)`; used pervasively (`BamReader`,
+  `BamAlignment`, `GetNextAlignment`, `Jump`, `RefID`, CIGAR). Move to FetchContent or
+  submodule, likely **update to a recent release** (upstream: github.com/pezmaster31/bamtools).
+  Riskiest of the three (compiled C++, own CMake) — isolate it and run both guards.
+  The 2.x API we use is stable across releases.
+- ⏳ **googletest** 1.12.1 — currently `ExternalProject_Add` from vendored source
+  (`cmake/gtest.cmake`). Move to FetchContent. Trivial; do last.
 - Caveat: deps must still compile under C++17 + `-Wall -Wextra`. The Apple Silicon CI
   job below would surface libc++ friction.
 
