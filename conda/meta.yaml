@@ -1,0 +1,51 @@
+{% set name = "impaqt" %}
+{% set version = "1.1.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://github.com/bnjenner/impaqt/archive/refs/tags/v{{ version }}.tar.gz
+  # TODO: fill in. Get it with:
+  #   curl -sL https://github.com/bnjenner/impaqt/archive/refs/tags/v1.1.0.tar.gz | sha256sum
+  sha256: 0000000000000000000000000000000000000000000000000000000000000000
+
+build:
+  number: 0
+  skip: true  # [win]
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - cmake >=3.18
+    - make
+    - pkg-config
+  host:
+    - zlib
+    - bamtools
+  run:
+    # zlib and bamtools are normally pinned automatically via their run_exports;
+    # listed here for clarity.
+    - bamtools
+
+test:
+  commands:
+    - impaqt --help
+
+about:
+  home: https://github.com/bnjenner/impaqt
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: "Identifies Multiple Peaks and Quantifies Transcripts (TAGseq / 3' mRNA-seq)"
+  description: |
+    IMPAQT identifies and quantifies transcripts and isoforms with distinct 3'
+    ends from TAGseq and 3' mRNA-seq data by clustering read ends (DBSCAN). It
+    emits a GTF of identified transcripts and, optionally, a gene-level counts
+    table when given a reference annotation.
+  dev_url: https://github.com/bnjenner/impaqt
+
+extra:
+  recipe-maintainers:
+    - bnjenner

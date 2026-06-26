@@ -24,49 +24,69 @@ set(IMPAQT_FILES
 find_package(ZLIB REQUIRED)
 find_package(Threads REQUIRED)
 
-# Third-party dependencies via FetchContent, each pinned to an immutable commit
-# SHA (not a bare tag, which can be force-moved upstream) so builds are reproducible.
+# Build options
+#  USE_SYSTEM_BAMTOOLS  link an externally-provided bamtools (found via pkg-config,
+#                       e.g. from conda or the system) instead of fetching+building
+#                       it. Use for packaging (conda/bioconda) where deps come from
+#                       the package manager and the build must not download anything.
+#  IMPAQT_BUILD_TESTS   build the unit tests (fetches GoogleTest). Turn OFF for
+#                       packaging so no test deps are needed at build time.
+option(USE_SYSTEM_BAMTOOLS "Link an external bamtools instead of fetching it" OFF)
+option(IMPAQT_BUILD_TESTS  "Build the unit tests (fetches GoogleTest)"        ON)
+
 include(FetchContent)
 
-# GoogleTest (release-1.12.1) -- tests only.
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG 58d77fa8070e8cec2dc1ed015d66b454c8d78850  # release-1.12.1
-    SYSTEM
-    EXCLUDE_FROM_ALL  # don't add gtest's targets/install rules to our build & install
-)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)  # don't override the parent's CRT (Windows)
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)           # don't install gtest with impaqt
-FetchContent_MakeAvailable(googletest)
+# --- BamTools ---
+if(USE_SYSTEM_BAMTOOLS)
+    # Find an installed bamtools via its pkg-config file (bamtools-1.pc) and expose
+    # it under the same 'BamTools' target name the rest of this file links against.
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(BAMTOOLS REQUIRED IMPORTED_TARGET bamtools-1)
+    add_library(BamTools INTERFACE)
+    # A system bamtools is usually a static lib whose zlib dependency is only a
+    # pkg-config *private* requirement (not pulled in for non-static linking), so
+    # link zlib explicitly or its BGZF deflate/inflate/crc32 symbols stay undefined.
+    target_link_libraries(BamTools INTERFACE PkgConfig::BAMTOOLS ZLIB::ZLIB)
+    set(BAMTOOLS_INCLUDE_DIR ${BAMTOOLS_INCLUDE_DIRS})
+else()
+    # Fetch bamtools v2.5.3, pinned to an immutable commit SHA so builds are
+    # reproducible. v2.5.3 already carries the std::-qualified C-function fix the
+    # old vendored copy was hand-patched for, so it builds clean under C++17. The
+    # BamTools library target lives in src/ in 2.5.3, so use a full MakeAvailable.
+    FetchContent_Declare(
+        bamtools
+        GIT_REPOSITORY https://github.com/pezmaster31/bamtools.git
+        GIT_TAG 7e5c183cdf37a6ab216402b26c07296807416472  # v2.5.3
+        SYSTEM            # treat bamtools headers as system (suppress its warnings)
+        EXCLUDE_FROM_ALL  # build only the BamTools lib we link; skip toolkit & install
+    )
+    FetchContent_MakeAvailable(bamtools)
+    # bamtools registers 2 ctest cases (bamtools_help/_stats) that invoke its toolkit
+    # binary, which we don't build (EXCLUDE_FROM_ALL); they're in a subdirectory scope
+    # (unreachable by set_tests_properties), so tell ctest to ignore them.
+    file(WRITE "${CMAKE_BINARY_DIR}/CTestCustom.cmake"
+         "set(CTEST_CUSTOM_TESTS_IGNORE bamtools_help bamtools_stats)\n")
+    set(BAMTOOLS_INCLUDE_DIR ${bamtools_SOURCE_DIR}/src)
+endif()
 
-# BamTools (v2.5.3). v2.5.3 already carries the std::-qualified C-function fix the
-# previously-vendored copy was hand-patched for, so it builds clean under C++17.
-# In 2.5.3 the BamTools library target lives in src/ (not src/api), so we build the
-# project as upstream intends via a full MakeAvailable; this also builds the toolkit
-# and registers 2 of its own ctest cases (bamtools_help/_stats), which pass and
-# sanity-check the pinned dep.
-FetchContent_Declare(
-    bamtools
-    GIT_REPOSITORY https://github.com/pezmaster31/bamtools.git
-    GIT_TAG 7e5c183cdf37a6ab216402b26c07296807416472  # v2.5.3
-    SYSTEM            # treat bamtools headers as system (suppress its warnings under -Wall -Wextra)
-    EXCLUDE_FROM_ALL  # build only the BamTools lib we link; skip its toolkit & install rules
-)
-FetchContent_MakeAvailable(bamtools)
-
-# bamtools' root CMakeLists registers two ctest cases (bamtools_help/_stats) that
-# invoke its toolkit binary, which we don't build (EXCLUDE_FROM_ALL). They are
-# defined in a subdirectory scope (so set_tests_properties can't reach them from
-# here); instead tell ctest to ignore them via CTestCustom, so `ctest` runs only
-# impaqt's own suite.
-file(WRITE "${CMAKE_BINARY_DIR}/CTestCustom.cmake"
-     "set(CTEST_CUSTOM_TESTS_IGNORE bamtools_help bamtools_stats)\n")
+# --- GoogleTest (unit tests only) ---
+if(IMPAQT_BUILD_TESTS)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG 58d77fa8070e8cec2dc1ed015d66b454c8d78850  # release-1.12.1
+        SYSTEM
+        EXCLUDE_FROM_ALL  # don't add gtest's targets/install rules to our build & install
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)  # don't override the parent's CRT (Windows)
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)           # don't install gtest with impaqt
+    FetchContent_MakeAvailable(googletest)
+endif()
 
 # Include paths
 include_directories(SYSTEM
     ${PROJECT_SOURCE_DIR}/include
-    ${bamtools_SOURCE_DIR}/src
+    ${BAMTOOLS_INCLUDE_DIR}
 )
 
 # Executable
@@ -84,6 +104,8 @@ install(TARGETS impaqt DESTINATION bin)
 # -----------------------
 # Test Section
 # -----------------------
+
+if(IMPAQT_BUILD_TESTS)
 
 enable_testing()
 
@@ -150,3 +172,5 @@ target_link_libraries(assign_test
     BamTools
 )
 add_test(NAME assign_test COMMAND assign_test)
+
+endif()  # IMPAQT_BUILD_TESTS
