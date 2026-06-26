@@ -1,3 +1,4 @@
+#include <memory>
 #include <unordered_map>
 #include <stdexcept>
 #include <api/BamAux.h>
@@ -20,7 +21,7 @@ private:
 	BamTools::BamAlignment alignment;
 
 	// Files and Data Structure
-	ClusterList* cluster_list;
+	std::unique_ptr<ClusterList> cluster_list;
 	static AnnotationList annotation;
 	static std::string alignment_file_name;
 	static std::string index_file_name;
@@ -74,7 +75,7 @@ public:
 
 	// Get Data Structures
 	AnnotationList* get_annotation() { return &annotation; }
-	ClusterList* get_clusters() { return cluster_list; }
+	ClusterList* get_clusters() { return cluster_list.get(); }
 
 	// Get Chromosome Info
 	bool is_ignored() { return ignore; }
@@ -140,7 +141,7 @@ public:
 
 	void create_clusters() {
 
-		cluster_list = new ClusterList(contig_index, contig_name, contig_length);
+		cluster_list = std::make_unique<ClusterList>(contig_index, contig_name, contig_length);
 
 		if (!inFile.Jump(contig_index)) {
 			std::cerr << "//ERROR: Could not jump to region: " << contig_name << "\n";
@@ -160,14 +161,14 @@ public:
 	void find_transcripts() {
 		if (ignore) { return; }
 		int t_strand = 0; // Forward
-		identify_transcripts(cluster_list, t_strand);
-		identify_transcripts(cluster_list, !t_strand);
+		identify_transcripts(cluster_list.get(), t_strand);
+		identify_transcripts(cluster_list.get(), !t_strand);
 	}
 
 	void assign_transcripts() {
 		int t_strand = 0; // Forward
-		assign_to_genes(annotation, cluster_list, contig_name, t_strand);
-		assign_to_genes(annotation, cluster_list, contig_name, !t_strand);
+		assign_to_genes(annotation, cluster_list.get(), contig_name, t_strand);
+		assign_to_genes(annotation, cluster_list.get(), contig_name, !t_strand);
 	}
 
 	/////////////////////////////////////////////////////////////

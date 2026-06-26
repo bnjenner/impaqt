@@ -66,6 +66,7 @@ add_executable(annotation_test
 )
 target_sources(annotation_test
     PRIVATE ${PROJECT_SOURCE_DIR}/src/AnnotationList.cpp
+    ${PROJECT_SOURCE_DIR}/src/ClusterList.cpp
     ${PROJECT_SOURCE_DIR}/src/utils.cpp
 )
 target_link_libraries(annotation_test
