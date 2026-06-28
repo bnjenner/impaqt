@@ -25,6 +25,23 @@ transcript of origin cannot be identified are handled individually.
 
 ## Installation
 
+### Conda (recommended)
+
+impaqt is on [bioconda](https://anaconda.org/bioconda/impaqt) with prebuilt
+binaries for linux-64, linux-aarch64, osx-64, and osx-arm64 — no compiler or
+manual dependency setup required:
+```
+conda install -c bioconda -c conda-forge impaqt
+```
+(or, with `mamba`, `mamba install -c bioconda -c conda-forge impaqt`)
+
+Then give it a go!
+```
+impaqt input.sorted.bam
+```
+
+### Build from source
+
 0. Make sure `cmake` (≥ 3.18), `make`, a C++17 compiler, and `zlib` are installed on your machine.
 
 ```
