@@ -128,7 +128,7 @@ not vendored in this repository:
 The DBSCAN clustering algorithm is inspired by github user [Eleobert](https://github.com/Eleobert/dbscan/blob/master/dbscan.cpp), and the thread dispatch by [EmbeddedArtistry](https://github.com/embeddedartistry/embedded-resources/blob/master/examples/cpp/dispatch.cpp).
 
 ## Contact
-For questions or comments, please contact
+For questions, concerns, or comments, please contact
 Bradley Jenner at <bnjenner@bu.edu>
 
 
